@@ -1,2 +1,17 @@
-import {drills} from './math';import {preflopDrill} from './preflop';import {postflop} from './postflop';import {exploits} from './opponents';import {Progress,weaknesses} from './progress';
-export function reviewQueue(p:Progress) {const catalog=[...drills,...Array.from({length:845},(_,i)=>preflopDrill(i)),...postflop,...exploits];const topic=weaknesses(p).find(([t])=>catalog.some(d=>d.topic===t))?.[0];return topic?catalog.filter(d=>d.topic===topic):drills;}
+import { drills } from "./math";
+import { preflopDrill } from "./preflop";
+import { postflop } from "./postflop";
+import { exploits } from "./opponents";
+import { Progress, weaknesses } from "./progress";
+export function reviewQueue(p: Progress) {
+  const catalog = [
+    ...drills,
+    ...Array.from({ length: 845 }, (_, i) => preflopDrill(i)),
+    ...postflop,
+    ...exploits,
+  ];
+  const topic = weaknesses(p).find(([t]) =>
+    catalog.some((d) => d.topic === t),
+  )?.[0];
+  return topic ? catalog.filter((d) => d.topic === topic) : drills;
+}

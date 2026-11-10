@@ -16,4 +16,7 @@ Each milestone: implement, test, fix, run regression checks, update these docume
 - [ ] M10 Release hardening: offline restart, accessibility, responsive layouts, full regression; actual iPhone/Expo Go testing and native release build when device/signing access is available.
 
 ## Evidence and limitations
-No application exists at baseline. Native iPhone validation requires a real device or supported iOS simulator; Linux/web tests cannot establish this. No accounts, remote API or credentials required for the initial milestones.
+
+Milestones 1–9 are implemented and verified. M10 local checks passed: 32 unit tests, TypeScript, formatting, web and iOS JavaScript exports, six browser suites, offline reload/persistence, and responsive/accessibility scans. CI is configured but remote results are not claimed.
+
+Remaining external gate: actual iPhone/Expo Go and native release build/signing tests. This Linux host has no Xcode, iOS simulator or connected iPhone. Follow docs/RELEASE.md in a device/macOS environment; do not mark M10 complete from JavaScript exports. No accounts, remote APIs or credentials are needed for training.

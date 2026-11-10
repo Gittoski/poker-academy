@@ -1,2 +1,76 @@
-import React,{useState} from 'react';import {View,Text,Pressable} from 'react-native';import {positions,Position,hands,firstIn,assumptions,preflopDrill} from '../preflop';import {DecisionDrill} from './DecisionDrill';import {ui} from './ui';
-export function Preflop({onAnswer,ready}:{onAnswer:(t:string,c:boolean)=>void;ready:boolean}) {const [position,setPosition]=useState<Position>('UTG');return <><Text style={ui.heading}>Simplified preflop lab</Text><Text style={ui.muted}>{assumptions}</Text><DecisionDrill get={preflopDrill} total={845} onAnswer={onAnswer} ready={ready}/><View style={ui.card}><Text style={ui.heading}>First-in range reference</Text><View style={ui.row}>{positions.map(p=><Pressable accessibilityRole="button" accessibilityState={{selected:p===position}} key={p} style={ui.button} onPress={()=>setPosition(p)}><Text style={ui.text}>{p}</Text></Pressable>)}</View><Text style={ui.muted}>Green = raise; dark = fold. s = suited, o = offsuit. Read chart after attempting a drill.</Text><View style={{flexDirection:'row',flexWrap:'wrap'}}>{hands.map(h=><View key={h} accessibilityLabel={`${h}: ${firstIn(position,h)}`} style={{width:'7.69%',minHeight:28,justifyContent:'center',backgroundColor:firstIn(position,h)==='Raise'?'#245F4C':'#17232D',borderWidth:.5,borderColor:'#0A1015'}}><Text style={{color:'#F2F5F7',fontSize:10,textAlign:'center'}}>{h}</Text></View>)}</View></View></>;}
+import React, { useState } from "react";
+import { View, Text, Pressable } from "react-native";
+import {
+  positions,
+  Position,
+  hands,
+  firstIn,
+  assumptions,
+  preflopDrill,
+} from "../preflop";
+import { DecisionDrill } from "./DecisionDrill";
+import { ui } from "./ui";
+export function Preflop({
+  onAnswer,
+  ready,
+}: {
+  onAnswer: (t: string, c: boolean) => void;
+  ready: boolean;
+}) {
+  const [position, setPosition] = useState<Position>("UTG");
+  return (
+    <>
+      <Text style={ui.heading}>Simplified preflop lab</Text>
+      <Text style={ui.muted}>{assumptions}</Text>
+      <DecisionDrill
+        get={preflopDrill}
+        total={845}
+        onAnswer={onAnswer}
+        ready={ready}
+      />
+      <View style={ui.card}>
+        <Text style={ui.heading}>First-in range reference</Text>
+        <View style={ui.row}>
+          {positions.map((p) => (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ selected: p === position }}
+              key={p}
+              style={ui.button}
+              onPress={() => setPosition(p)}
+            >
+              <Text style={ui.text}>{p}</Text>
+            </Pressable>
+          ))}
+        </View>
+        <Text style={ui.muted}>
+          Green = raise; dark = fold. s = suited, o = offsuit. Read chart after
+          attempting a drill.
+        </Text>
+        <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+          {hands.map((h) => (
+            <View
+              key={h}
+              accessibilityLabel={`${h}: ${firstIn(position, h)}`}
+              style={{
+                width: "7.69%",
+                minHeight: 28,
+                justifyContent: "center",
+                backgroundColor:
+                  firstIn(position, h) === "Raise" ? "#245F4C" : "#17232D",
+                borderWidth: 0.5,
+                borderColor: "#0A1015",
+              }}
+            >
+              <Text
+                style={{ color: "#F2F5F7", fontSize: 10, textAlign: "center" }}
+              >
+                {h}
+              </Text>
+            </View>
+          ))}
+        </View>
+      </View>
+    </>
+  );
+}

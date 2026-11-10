@@ -13,9 +13,11 @@
     "react-native-web": "~0.21.4"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.65.0",
     "@types/node": "^26.6.6",
     "@types/react": "~19.3.0",
+    "prettier": "^3.9.10",
     "tsx": "^4.23.15",
     "typescript": "~6.0.3"
   },
@@ -25,7 +27,13 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/*.test.ts"
+    "test": "tsx --test tests/*.test.ts",
+    "build:web": "EXPO_NO_TELEMETRY=1 EXPO_OFFLINE=1 expo export --platform web && node scripts/offline-web.cjs",
+    "build:ios": "EXPO_NO_TELEMETRY=1 EXPO_OFFLINE=1 expo export --platform ios --output-dir dist-ios",
+    "test:web": "node scripts/web-tests.cjs",
+    "format": "prettier --write App.tsx src tests scripts *.json *.md docs",
+    "format:check": "prettier --check App.tsx src tests scripts *.json *.md docs",
+    "check": "npm run typecheck && npm test && npm run format:check"
   },
   "private": true
 }

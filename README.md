@@ -1,28 +1,40 @@
-# Poker Academy
+# Poker PTO Academy
 
-An offline-first Expo poker learning app. Development proceeds milestone by milestone in [ROADMAP.md](ROADMAP.md). Educational strategy heuristics are not solver outputs. Virtual chips only.
+English, offline-first Expo/React Native training for six-max no-limit Texas Hold’em, focused on exploiting observed mistakes in recreational live games. No accounts, remote APIs or real-money play. Original educational content; no affiliation with PTO or any commercial solver/training product.
 
-## Development
-Node 24 / npm 11. `npm ci`, then `npm start` (Expo Go) or `npm run web`. For sandboxed/cloud commands use `npm_config_cache=/tmp/npm-cache`, `EXPO_NO_TELEMETRY=1` and `EXPO_OFFLINE=1` when Expo metadata endpoints are unavailable. Dependency versions come from the installed SDK's bundled compatibility list.
+Implemented features:
 
-Checks: `npm run typecheck`, `npm test`, `EXPO_NO_TELEMETRY=1 EXPO_OFFLINE=1 npx expo export --platform web`.
+- Dark mobile layout, twelve beginner-to-advanced lessons, prerequisite quizzes and saved completion.
+- Poker math and ranking drills, preflop first-in trainer with 169-hand reference charts, eight postflop scenarios, five opponent profiles and six exploit exercises.
+- Playable six-seat virtual-chip table: betting, all-ins, side pots, showdown, rotating blinds, action history and deterministic replay export. Table sessions reset on leaving the Table tab; learning progress persists.
+- Local XP, levels, accuracy, weakest-topic review, progress backup/restore and confirmed reset. Version-1 progress migrates to version 2.
 
-M1: dark responsive shell and local progress schema implemented. Three progress tests and web export passed. iPhone not tested. Lessons/trainers remain explicitly marked as planned.
+Ranges and exploit recommendations are **authored heuristics**, not GTO solutions. Every scenario explains the relevant assumptions. Numerical examples distinguish calculated results from hypothetical inputs. Bot policies are toy demonstrations, not calibrated opponents. See [correctness evidence](docs/CORRECTNESS.md) and the persistent [roadmap](ROADMAP.md).
 
-M2: four repeatable drills with explicit mathematical assumptions; XP and per-topic accuracy persist through AsyncStorage. Failed answers award 2 XP; correct answers award 10 XP. These are practice rewards, not a skill rating. Seven unit tests pass. `node scripts/smoke.cjs` exercises the exported app served with `python3 -m http.server 8765 --directory dist`; set CHROMIUM_PATH when Chromium is elsewhere. Web reload persistence is tested separately from native device storage.
+## Develop
 
-M3: pure five-to-seven-card evaluator with exhaustive five-card category-frequency validation (2,598,960 combinations), invalid-card rejection and tie-break fixtures. All ten unit tests and TypeScript pass. See [correctness contract](docs/CORRECTNESS.md) for formulas, analytical test oracles and validation limits. The simulator, curriculum lessons, decision trainers and opponent models are still pending; the evaluator is an internal foundation.
+Use Node 24 and npm 11. From the existing checkout (no worktree needed):
 
-The iOS JavaScript/Hermes export also passed; this is not device verification. Local Git commits are created per milestone; nothing has been pushed to GitHub.
+```sh
+npm ci
+npm start
+```
 
-M4: 12 original beginner/intermediate/advanced lessons, gated quizzes, repeat-safe completion XP and persisted unlocks. Twelve unit tests, TypeScript, web export, curriculum browser test and prior practice smoke test passed. Curriculum sources and review scope are documented in `docs/CORRECTNESS.md`.
+Open with a compatible Expo Go on an iPhone, or `npm run web` for browser development. In cloud sandboxes, `npm_config_cache=/tmp/npm-cache` avoids writing to a protected home cache. Expo's metadata hosts are blocked in this environment; build scripts use the installed SDK's bundled compatibility metadata with `EXPO_OFFLINE=1`. Package installation still uses the normal authenticated/TLS-verified npm registry.
 
-M5: first-in preflop training (845 authored position/hand cases), 169-hand reference chart, explicit 100-BB six-max assumptions and no solver claims. Fifteen unit tests, web build, typecheck and all three browser regressions passed. SB uses the documented simplified button range; BB is a walk in this unopened-pot scope.
+## Verify
 
-M6: eight postflop scenarios cover texture, value, draws, sizing, multiway and bluff catching. Supplied-model EV is distinguished from range estimates. Eighteen tests, web build/typecheck and browser regressions passed.
+```sh
+npm run check
+npm run build:web
+npm run test:web
+npm run build:ios
+```
 
-M7: five opponent profiles plus six exploit exercises; assumed observations, conditional adjustment and failure risks are visible. No numerical frequencies are assigned to real players. Twenty unit tests, typecheck, web export and browser regressions passed.
+`check` runs strict TypeScript, unit tests and Prettier. Tests include all 2,598,960 five-card combinations, side-pot/short-raise fixtures and 100 seeded conservation/replay games. The web runner starts and stops its own isolated Python server, then tests learning, trainers, simulator, backup/reset, offline reload and accessibility at 320/390/768px. Python 3 and Chromium are required: `npx playwright install chromium`, or set `CHROMIUM_PATH` to a system browser. CI configuration runs these same commands; remote CI results have not been verified here.
 
-M8: playable six-seat virtual-chip simulator, funded-seat rotation down to heads-up, legal betting, all-ins and short-raise rights, tiered side pots, ties/odd chips, showdown, action history, next hand and replay export. Toy bot policies use only their own cards and public state. No claim of calibrated opponents or optimal strategy. Seeded shuffling is reproducible for education, not suitable for real-money fairness/security. Table sessions currently reset when leaving the Table tab. Thirty unit tests (including 100 seeded chip-conservation/replay games), full-hand browser smoke and all prior browser regressions passed; typecheck and web build passed.
+`build:web` creates a service worker for static hosting over HTTPS. The first visit must be online; subsequent cached reloads and practice work offline. Native bundles include content locally, but native offline cold-start has not been tested. `build:ios` exports JavaScript/Hermes only; **it does not compile or test a native iPhone app**.
 
-M9: version-2 learning-progress schema with legacy migration, level meter, lesson completion summary, weakest-topic review, export/restore and confirmed reset. Invalid backups preserve existing data. Thirty-two unit tests, typecheck, web build and five browser suites passed. Backup/restore/reset and reload were exercised in Chromium. Native share-sheet behavior remains unverified.
+## Release status
+
+Milestones 1–9 are verified and committed. Available release-hardening checks pass. Milestone 10 remains open for actual iPhone/Expo Go, VoiceOver/Dynamic Type, native offline cold-start, native share sheet, and native release build/signing. This Linux host has no Xcode, iOS simulator or connected iPhone. Follow [the device checklist](docs/RELEASE.md) on an iPhone/macOS environment before claiming iPhone readiness. No app-store deployment or environment publication was performed.

@@ -1,2 +1,39 @@
-import {StyleSheet} from 'react-native';
-export const ui=StyleSheet.create({card:{backgroundColor:'#131F29',padding:20,borderRadius:18,gap:14},heading:{color:'#F2F5F7',fontSize:21,fontWeight:'700',lineHeight:29},text:{color:'#F2F5F7',fontSize:16,lineHeight:25},muted:{color:'#AEBCC6',fontSize:15,lineHeight:23},label:{color:'#57D9B0',fontSize:12,fontWeight:'700',letterSpacing:1},button:{minHeight:48,backgroundColor:'#234337',borderRadius:10,padding:14},row:{flexDirection:'row',flexWrap:'wrap',gap:8},input:{color:'#F2F5F7',borderColor:'#678075',borderWidth:1,borderRadius:10,padding:14,fontSize:16},danger:{backgroundColor:'#602B32',padding:14,borderRadius:10,minHeight:48}});
+import { StyleSheet } from "react-native";
+export const ui = StyleSheet.create({
+  card: { backgroundColor: "#131F29", padding: 20, borderRadius: 18, gap: 14 },
+  heading: {
+    color: "#F2F5F7",
+    fontSize: 21,
+    fontWeight: "700",
+    lineHeight: 29,
+  },
+  text: { color: "#F2F5F7", fontSize: 16, lineHeight: 25 },
+  muted: { color: "#AEBCC6", fontSize: 15, lineHeight: 23 },
+  label: {
+    color: "#57D9B0",
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 1,
+  },
+  button: {
+    minHeight: 48,
+    backgroundColor: "#234337",
+    borderRadius: 10,
+    padding: 14,
+  },
+  row: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  input: {
+    color: "#F2F5F7",
+    borderColor: "#678075",
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 14,
+    fontSize: 16,
+  },
+  danger: {
+    backgroundColor: "#602B32",
+    padding: 14,
+    borderRadius: 10,
+    minHeight: 48,
+  },
+});
