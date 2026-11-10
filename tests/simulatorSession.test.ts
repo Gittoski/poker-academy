@@ -29,7 +29,14 @@ test("table sessions replay exactly across storage and reject corrupt actions", 
 test("continuous practice refills busted seats without losing accounting", () => {
   let table = createTable(1, [1, 1, 0, 0, 0, 0]);
   assert.ok(table.done);
-  const s = { version: 1 as const, hand: 7, refills: 0, table };
+  const s = {
+    version: 2 as const,
+    mode: "free" as const,
+    coaching: [],
+    hand: 7,
+    refills: 0,
+    table,
+  };
   const busted = table.players.filter((p) => p.stack <= 2).length;
   const next = continueSession(s);
   assert.equal(next.hand, 8);

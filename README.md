@@ -31,7 +31,7 @@ npm run test:web
 npm run build:ios
 ```
 
-`check` runs strict TypeScript, unit tests and Prettier. Tests include all 2,598,960 five-card combinations, side-pot/short-raise fixtures and 100 seeded conservation/replay games. The nine-suite web runner starts and stops its own isolated Python server, then tests learning, trainers, simulator, backup/reset, offline reload and accessibility at 320/390/768px. Python 3 and Chromium are required: `npx playwright install chromium`, or set `CHROMIUM_PATH` to a system browser. CI configuration runs these same commands; remote CI results have not been verified here.
+`check` runs strict TypeScript, unit tests and Prettier. Tests include all 2,598,960 five-card combinations, side-pot/short-raise fixtures and 100 seeded conservation/replay games. The ten-suite web runner starts and stops its own isolated Python server, then tests learning, trainers, simulator, backup/reset, offline reload and accessibility at 320/390/768px. Python 3 and Chromium are required: `npx playwright install chromium`, or set `CHROMIUM_PATH` to a system browser. CI configuration runs these same commands; remote CI results have not been verified here.
 
 `build:web` creates a service worker for static hosting over HTTPS. The first visit must be online; subsequent cached reloads and practice work offline. Native bundles include content locally, but native offline cold-start has not been tested. `build:ios` exports JavaScript/Hermes only; **it does not compile or test a native iPhone app**.
 
@@ -44,3 +44,5 @@ The refined interface uses a midnight/emerald/ivory theme, persistent bottom nav
 First iPhone feedback led to focused lesson screens: dashboard/tab clutter is hidden while studying; incorrect answers are red, correct answers green, with explicit text/icons and a separate final Finish action. The original first-lesson flow has been reported working by the user on iPhone; the revised visuals and native release gate still require device checks.
 
 Continuous free-table practice keeps the current hand, rotates blinds and lets you play after chip loss. Seats at or below the 2-chip big blind are refilled to 200 virtual chips between hands; refill credits are not winnings. Table recovery validates saved metadata by replaying legal actions, rather than trusting stored deck state.
+
+Coached hands starts each hand at 100 BB, rotates UTG/HJ/CO/BTN/SB, and presets earlier folds so the authored first-in baseline applies. It flags action/sizing deviations without interrupting play. Postflop, facing action and unsupported stacks are explicitly ungraded. This is not GTO/PTO solver evaluation. Saved table sessions migrate from v1 to v2; feedback is recomputed from legal actions on restore. Actual Poker Trainer research is pending environment web access; see `docs/POKER_TRAINER_RESEARCH.md`.

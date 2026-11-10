@@ -50,8 +50,8 @@ export function useSimulatorSession() {
     },
     [],
   );
-  const reset = useCallback(() => {
-    const next = newSession();
+  const reset = useCallback((mode: "free" | "coached" = "free") => {
+    const next = newSession(mode);
     current.current = next;
     setSession(next);
     queue.current = queue.current

@@ -17,7 +17,7 @@ Each milestone: implement, test, fix, run regression checks, update these docume
 
 ## Evidence and limitations
 
-Milestones 1–9 are implemented and verified. M10 local checks passed: 36 unit tests, TypeScript, formatting, web and iOS JavaScript exports, seven browser suites, offline reload/persistence, and responsive/accessibility scans. CI is configured but remote results are not claimed.
+Milestones 1–9 are implemented and verified. M10 local checks passed: 45 unit tests, TypeScript, formatting, web and iOS JavaScript exports, ten browser suites, offline reload/persistence, and responsive/accessibility scans. CI is configured but remote results are not claimed.
 
 Remaining external gate: actual iPhone/Expo Go and native release build/signing tests. This Linux host has no Xcode, iOS simulator or connected iPhone. Follow docs/RELEASE.md in a device/macOS environment; do not mark M10 complete from JavaScript exports. No accounts, remote APIs or credentials are needed for training.
 
@@ -44,8 +44,10 @@ User confirmed https://pokertrainer.se/. Public research is currently blocked by
 
 - [ ] M14 Competitor research: inspect public Poker Trainer site/listing/screenshots and any public demo, record verified useful interface/learning patterns and original implementation choices. Blocked by research-domain access; no claims of hands-on inspection yet.
 - [x] M15 Continuous play: retain the table across tabs and reload, offer one-tap next hands even after busting with explicit virtual refills, optional rules/history, test persistence, replay restoration and chip accounting.
-- [ ] M16 Scoped simulator coaching: nonblocking match/deviation/ungraded feedback from the existing authored first-in baseline, a clearly labeled 100-BB first-in practice mode for meaningful coverage, no GTO/solver or exploit-optimality claims; test coverage boundaries, hidden-information independence and continuous sessions.
+- [x] M16 Scoped simulator coaching: nonblocking match/deviation/ungraded feedback from the existing authored first-in baseline, a clearly labeled 100-BB first-in practice mode for meaningful coverage, no GTO/solver or exploit-optimality claims; test coverage boundaries, hidden-information independence and continuous sessions.
 - [ ] M17 Table interface iteration: use verified research plus the user's feedback to improve table layout and action controls, one reviewed feature at a time. Preserve the focused lesson path.
 - [ ] M18 Verified strategy data: integrate properly licensed, documented solver/reference data only if available. Until then, never claim arbitrary simulator decisions are graded against GTO/PTO.
 
 M15 evidence: 39 unit tests and nine browser suites pass, including 100 consecutive hands, exact replay restoration, virtual refill accounting, three browser hands and tab/reload persistence. TypeScript, formatting, web and iOS JavaScript exports pass. Table settings/history are optional details. Research remains blocked, not claimed complete.
+
+M16 evidence: 45 unit tests and ten browser suites pass; TypeScript, formatting, web and iOS JavaScript exports pass. Coached mode rotates all five supported first-in positions, uses explicit 100-BB preset setups, and shows match/deviation/ungraded feedback without blocking play. Saved table v1 migrates to v2 and feedback is recomputed. Ranges and sizing are authored conventions, not solver outputs. M14 actual competitor inspection and M18 verified-solver coverage remain blocked by access/data prerequisites.

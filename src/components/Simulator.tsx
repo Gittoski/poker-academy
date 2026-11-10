@@ -13,6 +13,7 @@ import {
   sessionAction,
   continueSession,
 } from "../simulatorSession";
+import { heroPosition } from "../baselineCoach";
 import { botNames } from "../bots";
 import { ui } from "./ui";
 export function Simulator({
@@ -23,10 +24,11 @@ export function Simulator({
 }: {
   session: SimulatorSession | null;
   change: (update: (s: SimulatorSession) => SimulatorSession) => void;
-  reset: () => void;
+  reset: (mode?: "free" | "coached") => void;
   persistenceError: string;
 }) {
   const { width } = useWindowDimensions();
+  const [showCoachDetails, setShowCoachDetails] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const [target, setTarget] = useState("");
@@ -43,7 +45,11 @@ export function Simulator({
           </Text>
         )}
         {confirmReset ? (
-          <Touch accessibilityRole="button" style={ui.danger} onPress={reset}>
+          <Touch
+            accessibilityRole="button"
+            style={ui.danger}
+            onPress={() => reset()}
+          >
             <Text style={ui.text}>Confirm reset virtual table</Text>
           </Touch>
         ) : persistenceError ? (
@@ -58,6 +64,7 @@ export function Simulator({
       </View>
     );
   const table = session.table;
+  const feedback = session.coaching.at(-1);
   const l = legal(table);
   const p = table.players[0];
   function move(action: Action) {
@@ -80,9 +87,44 @@ export function Simulator({
   return (
     <>
       <Text style={ui.heading}>Table lab · virtual chips</Text>
+      <View style={ui.row}>
+        {[
+          { mode: "free" as const, label: "Free table" },
+          { mode: "coached" as const, label: "Coached hands" },
+        ].map((v) => (
+          <Touch
+            key={v.mode}
+            accessibilityRole="button"
+            accessibilityState={{ selected: session.mode === v.mode }}
+            style={[
+              ui.button,
+              session.mode === v.mode && { borderColor: "#83E2BC" },
+            ]}
+            onPress={() => {
+              if (v.mode !== session.mode) {
+                reset(v.mode);
+                setTarget("");
+                setError("");
+              }
+            }}
+          >
+            <Text style={ui.text}>{v.label}</Text>
+          </Touch>
+        ))}
+      </View>
+      <Text style={ui.muted}>
+        {session.mode === "coached"
+          ? "100-BB first-in practice. Earlier seats are preset folded. After your choice, toy opponents play normally. This is an authored teaching baseline, not GTO. Switching modes starts a new session."
+          : "Continuous free play. Choose Coached hands for scoped first-in feedback. Changing mode starts a fresh virtual session."}
+      </Text>
       <Text style={ui.label}>
         HAND {session.hand} · BLINDS 1/2 · VIRTUAL CHIPS
       </Text>
+      {session.mode === "coached" && (
+        <Text style={ui.label}>
+          YOUR POSITION · {heroPosition(table.button)}
+        </Text>
+      )}
       {persistenceError && (
         <Text accessibilityRole="alert" style={ui.text}>
           {persistenceError}
@@ -151,6 +193,54 @@ export function Simulator({
           {error}
         </Text>
       ) : null}
+      {feedback && (
+        <View
+          testID="simulator-coach-feedback"
+          accessibilityRole="alert"
+          style={[
+            ui.card,
+            {
+              backgroundColor:
+                feedback.status === "match"
+                  ? "#153C2B"
+                  : feedback.status === "deviation"
+                    ? "#3D222D"
+                    : "#172534",
+              borderColor:
+                feedback.status === "match"
+                  ? "#83E2BC"
+                  : feedback.status === "deviation"
+                    ? "#F2A0B1"
+                    : "#7D99AE",
+            },
+          ]}
+        >
+          <Text style={ui.heading}>{feedback.title}</Text>
+          <Text style={ui.muted}>
+            {feedback.status === "ungraded"
+              ? "Outside current strategy coverage. You can keep playing."
+              : "Authored first-in baseline · not a GTO verdict"}
+          </Text>
+          <Touch
+            accessibilityRole="button"
+            accessibilityState={{ expanded: showCoachDetails }}
+            style={ui.button}
+            onPress={() => setShowCoachDetails(!showCoachDetails)}
+          >
+            <Text style={ui.text}>
+              {showCoachDetails
+                ? "Hide coaching explanation"
+                : "Why this feedback?"}
+            </Text>
+          </Touch>
+          {showCoachDetails && (
+            <>
+              <Text style={ui.muted}>{feedback.context}</Text>
+              <Text style={ui.text}>{feedback.explanation}</Text>
+            </>
+          )}
+        </View>
+      )}
       {!table.done && (
         <View style={ui.card}>
           <Text style={ui.heading}>Your decision</Text>
@@ -231,8 +321,9 @@ export function Simulator({
             <Text style={ui.text}>Next hand</Text>
           </Touch>
           <Text style={ui.muted}>
-            Seats at or below 2 chips are refilled to 200 virtual chips before
-            the next hand. Refills are practice credits, not winnings.
+            {session.mode === "coached"
+              ? "Each coached hand starts fresh with 200 chips (100 BB) per seat. Practice results are not a persistent bankroll."
+              : "Seats at or below 2 chips are refilled to 200 virtual chips before the next hand. Refills are practice credits, not winnings."}
           </Text>
           <Touch
             accessibilityRole="button"
@@ -275,10 +366,24 @@ export function Simulator({
             stays saved across tabs and reloads.
           </Text>
           <Text style={ui.muted}>
-            Seats at or below the 2-chip big blind are refilled to 200 virtual
-            chips between hands. {session.refills} seat refills so far. Refills
-            change the available virtual chips; they are not poker winnings.
+            {session.mode === "coached"
+              ? "Every coached hand resets all seats to 200 chips (100 BB). Earlier seats are preset folded to create an unopened decision. No persistent bankroll is claimed."
+              : `Seats at or below the 2-chip big blind are refilled to 200 virtual chips between hands. ${session.refills} seat refills so far. Refills are practice credits, not winnings.`}
           </Text>
+          {session.coaching.length > 0 && (
+            <>
+              <Text style={ui.heading}>Decision review</Text>
+              {session.coaching.map((f, i) => (
+                <View key={i} style={{ gap: 8 }}>
+                  <Text style={ui.text}>
+                    Decision {i + 1}: {f.title}
+                  </Text>
+                  <Text style={ui.muted}>{f.context}</Text>
+                  <Text style={ui.muted}>{f.explanation}</Text>
+                </View>
+              ))}
+            </>
+          )}
           <Text style={ui.heading}>Action history</Text>
           {table.log.map((v, i) => (
             <Text key={i} style={ui.muted}>
@@ -302,7 +407,7 @@ export function Simulator({
                 accessibilityRole="button"
                 style={ui.danger}
                 onPress={() => {
-                  reset();
+                  reset(session.mode);
                   setConfirmReset(false);
                 }}
               >

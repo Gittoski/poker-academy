@@ -4,9 +4,9 @@ M10 remains incomplete until these checks are executed, failures corrected, and 
 
 ## Available checks completed
 
-- Strict TypeScript, all 36 unit tests and formatting.
+- Strict TypeScript, all 45 unit tests and formatting.
 - Exhaustive five-card category frequencies and 100 seeded complete-game conservation/replay tests.
-- Seven browser suites: curriculum, arithmetic, preflop/postflop/exploits, full table hand, migration/backup/reset, offline/responsive/accessibility checks, and guided visuals with reduced-motion tests.
+- Ten browser suites: curriculum, arithmetic, preflop/postflop/exploits, full table hand, migration/backup/reset, offline/responsive/accessibility checks, and guided visuals with reduced-motion tests.
 - Web offline reload with saved XP and additional scoring while offline.
 - 320/390/768px layouts without horizontal overflow; automated WCAG A/AA scans have no violations across the four main tabs. This is not a manual accessibility certification.
 - iOS JavaScript/Hermes export and installed-SDK dependency compatibility check.
@@ -29,3 +29,7 @@ A real iPhone with compatible Expo Go or a macOS runner with Xcode/iOS simulator
 ## User-reported iPhone session
 
 The user reports that the app opens in Expo Go on their iPhone, the first lesson and worked-example cards are readable, and wrong-answer retry, correct answer and Apply this concept navigation work. They report visual overload. The focused-lesson refinement addresses this feedback and must be checked again on their phone. These observations cover only that flow; remaining offline cold-start, broader native/accessibility/share-sheet and release-build checks stay open.
+
+## Continuous/coached table additions
+
+Browser checks now cover session persistence across tabs/reload, repeated hands and virtual refills, baseline match/deviation feedback, explicit ungraded coverage, restored feedback and position rotation. The user’s earlier iPhone report does not validate these new features; repeat the device checklist after updating the Windows/iPhone project. Public Poker Trainer inspection remains blocked by environment web access, and no arbitrary GTO grading or native performance claim is made.

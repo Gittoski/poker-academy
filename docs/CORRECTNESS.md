@@ -47,3 +47,9 @@ All twelve lessons now include an authored connection, worked example and distin
 ## Continuous sessions
 
 A 100-hand continuous regression checks legal completion and exact replay restoration. Seats at or below the big blind receive an explicit practice refill between hands so blind posting cannot strand a player. Per-hand chip conservation remains mandatory; refill credits are accounted separately from poker awards. The browser verifies hands continue and table state survives both tab changes and reload.
+
+## Scoped simulator coach
+
+Academy first-in baseline v1 is the existing authored preflop range. Grading requires six seats initially at 100 BB, no ante/rake, preflop and only preset/prior folds before the hero decision. The raise reference is 2.5 BB, or 3 BB from SB. Exact action/size agreement is a baseline match, not optimality. Other action/size choices are deviations, not solver errors or EV-loss estimates. Later streets, limps/raises, unsupported stacks, BB walks and non-hero decisions are ungraded. A deliberate exploit can differ from a baseline. No hidden opponent cards or future deck cards enter the checker; invariance tests verify this.
+
+The coached setup presets earlier folds and resets all stacks each hand; it does not estimate live-player behavior or track a cash bankroll. The free table keeps stacks with separately disclosed practice refills. Version-2 table recovery recomputes feedback by replay, migrating prior v1 sessions as free tables. Tests cover all five supported position setups, canonical hands, baseline action/size choices, unsupported coverage, hidden-information independence, migration and 25 repeated coached hands. The browser verifies actual deviation/match feedback, ongoing play, explanations, reload, and next-hand rotation.

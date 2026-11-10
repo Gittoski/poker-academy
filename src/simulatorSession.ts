@@ -1,22 +1,52 @@
-import { Action, Table, act, createTable, replay } from "./table";
+import { Action, Table, act, createTable } from "./table";
+import {
+  BaselineFeedback,
+  evaluateBaseline,
+  trainingTable,
+} from "./baselineCoach";
 import { toHero } from "./bots";
 export type SimulatorSession = {
-  version: 1;
+  version: 2;
+  mode: "free" | "coached";
+  coaching: BaselineFeedback[];
   hand: number;
   refills: number;
   table: Table;
 };
-export function newSession(): SimulatorSession {
-  return { version: 1, hand: 1, refills: 0, table: toHero(createTable(42)) };
+export function newSession(
+  mode: "free" | "coached" = "free",
+): SimulatorSession {
+  return {
+    version: 2,
+    mode,
+    coaching: [],
+    hand: 1,
+    refills: 0,
+    table: mode === "coached" ? trainingTable(42, 0) : toHero(createTable(42)),
+  };
 }
 export function sessionAction(
   s: SimulatorSession,
   a: Action,
 ): SimulatorSession {
-  return { ...s, table: toHero(act(s.table, a)) };
+  const table = toHero(act(s.table, a));
+  return {
+    ...s,
+    table,
+    coaching: [...s.coaching, evaluateBaseline(s.table, a)],
+  };
 }
 export function continueSession(s: SimulatorSession): SimulatorSession {
   if (!s.table.done) throw new Error("Finish this hand first");
+  if (!Number.isSafeInteger(s.hand + 1))
+    throw new Error("Session counter limit");
+  if (s.mode === "coached")
+    return {
+      ...s,
+      hand: s.hand + 1,
+      coaching: [],
+      table: trainingTable((s.table.seed + 1) >>> 0, s.hand),
+    };
   const refill = s.table.players.filter((p) => p.stack <= 2).length;
   const stacks = s.table.players.map((p) => (p.stack <= 2 ? 200 : p.stack));
   if (
@@ -27,6 +57,7 @@ export function continueSession(s: SimulatorSession): SimulatorSession {
   return {
     ...s,
     hand: s.hand + 1,
+    coaching: [],
     refills: s.refills + refill,
     table: toHero(
       createTable((s.table.seed + 1) >>> 0, stacks, (s.table.button + 1) % 6),
@@ -35,7 +66,8 @@ export function continueSession(s: SimulatorSession): SimulatorSession {
 }
 export function encodeSession(s: SimulatorSession): string {
   return JSON.stringify({
-    version: 1,
+    version: 2,
+    mode: s.mode,
     hand: s.hand,
     refills: s.refills,
     seed: s.table.seed,
@@ -51,7 +83,8 @@ export function decodeSession(raw: string | null): SimulatorSession {
   const p = JSON.parse(raw);
   if (
     !p ||
-    p.version !== 1 ||
+    (p.version !== 1 && p.version !== 2) ||
+    (p.version === 2 && p.mode !== "free" && p.mode !== "coached") ||
     !Number.isSafeInteger(p.hand) ||
     p.hand < 1 ||
     !Number.isSafeInteger(p.refills) ||
@@ -85,8 +118,31 @@ export function decodeSession(raw: string | null): SimulatorSession {
       return { type: "raise", to: v.to! };
     throw new Error("Invalid action");
   });
-  const table = replay(p.seed, p.stacks, p.button, actions);
+  let table = createTable(p.seed, p.stacks, p.button);
+  const coaching: BaselineFeedback[] = [];
+  for (const a of actions) {
+    if (table.actor === 0) coaching.push(evaluateBaseline(table, a));
+    table = act(table, a);
+  }
+  const mode = p.version === 1 ? "free" : p.mode;
+  if (mode === "coached") {
+    const expected = trainingTable(p.seed, p.hand - 1);
+    if (
+      p.button !== expected.button ||
+      p.stacks.some((n: number) => n !== 200) ||
+      JSON.stringify(actions.slice(0, expected.actions.length)) !==
+        JSON.stringify(expected.actions)
+    )
+      throw new Error("Inconsistent coached setup");
+  }
   if (!table.done && table.actor !== 0)
     throw new Error("Session is not at a player decision");
-  return { version: 1, hand: p.hand, refills: p.refills, table };
+  return {
+    version: 2,
+    mode,
+    coaching,
+    hand: p.hand,
+    refills: p.refills,
+    table,
+  };
 }
