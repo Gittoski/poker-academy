@@ -20,3 +20,5 @@ M4: 12 original beginner/intermediate/advanced lessons, gated quizzes, repeat-sa
 M5: first-in preflop training (845 authored position/hand cases), 169-hand reference chart, explicit 100-BB six-max assumptions and no solver claims. Fifteen unit tests, web build, typecheck and all three browser regressions passed. SB uses the documented simplified button range; BB is a walk in this unopened-pot scope.
 
 M6: eight postflop scenarios cover texture, value, draws, sizing, multiway and bluff catching. Supplied-model EV is distinguished from range estimates. Eighteen tests, web build/typecheck and browser regressions passed.
+
+M7: five opponent profiles plus six exploit exercises; assumed observations, conditional adjustment and failure risks are visible. No numerical frequencies are assigned to real players. Twenty unit tests, typecheck, web export and browser regressions passed.
