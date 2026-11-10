@@ -1,5 +1,5 @@
 import { FadeIn, LessonArt, Touch } from "./Visuals";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text } from "react-native";
 import { lessons, unlocked } from "../curriculum";
 import { Progress, completeLesson } from "../progress";
@@ -15,16 +15,27 @@ export function Curriculum({
   progress,
   save,
   ready,
+  onFocusChange,
+  onStepChange,
 }: {
   progress: Progress;
   save: (p: Progress) => void;
   ready: boolean;
+  onFocusChange?: (focused: boolean) => void;
+  onStepChange?: () => void;
 }) {
   const next = nextLesson(progress.completed);
   const [stage, setStage] = useState(() => Math.floor(Math.max(0, next) / 4));
   const [open, setOpen] = useState<number | null>(null);
   const [phase, setPhase] = useState(0);
   const [answer, setAnswer] = useState<number | null>(null);
+  useEffect(() => {
+    onFocusChange?.(open !== null);
+    return () => onFocusChange?.(false);
+  }, [open, onFocusChange]);
+  useEffect(() => {
+    onStepChange?.();
+  }, [open, phase, onStepChange]);
   function start(i: number) {
     if (!ready || !unlocked(i, progress.completed)) return;
     setOpen(i);
@@ -44,7 +55,11 @@ export function Curriculum({
       <>
         <Touch
           accessibilityRole="button"
-          style={ui.button}
+          style={{
+            alignSelf: "flex-start",
+            paddingVertical: 10,
+            paddingRight: 16,
+          }}
           onPress={() => setOpen(null)}
         >
           <Text style={ui.text}>← Learning path</Text>
@@ -53,26 +68,34 @@ export function Curriculum({
           {stageFor(open).name} · LESSON {open + 1} OF {lessons.length}
         </Text>
         <Text style={ui.heading}>{l.title}</Text>
-        <View style={ui.row}>
-          {["Learn", "Example", "Check", "Apply"].map((name, i) => (
-            <View
-              key={name}
-              style={{
-                flex: 1,
-                borderTopWidth: 3,
-                borderColor: phase >= i ? "#57D9B0" : "#30424C",
-                paddingTop: 8,
-              }}
-            >
-              <Text style={ui.muted}>{name}</Text>
-            </View>
-          ))}
+        <View style={{ gap: 10 }}>
+          <Text style={ui.muted}>
+            {phase < 4
+              ? `Step ${phase + 1} of 4 · ${["Learn", "Example", "Check", "Apply"][phase]}`
+              : "Lesson finished"}
+          </Text>
+          <View
+            accessibilityRole="progressbar"
+            accessibilityLabel="Lesson steps"
+            accessibilityValue={{ min: 0, max: 4, now: Math.min(phase + 1, 4) }}
+            style={{ flexDirection: "row", gap: 6 }}
+          >
+            {[0, 1, 2, 3].map((i) => (
+              <View
+                key={i}
+                style={{
+                  flex: 1,
+                  height: 4,
+                  borderRadius: 2,
+                  backgroundColor: phase >= i ? "#83E2BC" : "#30424C",
+                }}
+              />
+            ))}
+          </View>
         </View>
         <FadeIn key={`${open}-${phase}`} style={ui.card}>
           {phase === 0 ? (
             <>
-              <Text style={ui.label}>CONNECT THE DOTS</Text>
-              <Text style={ui.muted}>{bridge.connection}</Text>
               <Text style={ui.heading}>One idea to learn</Text>
               <Text style={ui.text}>{l.body}</Text>
               <Touch
@@ -85,7 +108,6 @@ export function Curriculum({
             </>
           ) : phase === 1 ? (
             <>
-              <Text style={ui.label}>SEE IT IN CONTEXT</Text>
               <Text style={ui.heading}>A worked example</Text>
               <LessonArt lesson={l.id} />
               <Text style={ui.text}>{bridge.example}</Text>
@@ -109,26 +131,60 @@ export function Curriculum({
                   key={c}
                   accessibilityRole="button"
                   disabled={answer !== null}
-                  style={ui.button}
+                  accessibilityState={{ selected: answer === i }}
+                  style={[
+                    ui.button,
+                    { backgroundColor: "#192736", borderColor: "#3B4C5C" },
+                    answer === i && {
+                      backgroundColor:
+                        i === question.answer ? "#17442F" : "#522C36",
+                      borderColor:
+                        i === question.answer ? "#83E2BC" : "#F2A0B1",
+                      borderWidth: 2,
+                    },
+                  ]}
                   onPress={() => {
                     setAnswer(i);
                     if (phase === 3 && i === question.answer) {
                       save(completeLesson(progress, l.id));
-                      setPhase(4);
                     }
                   }}
                 >
-                  <Text style={ui.text}>{c}</Text>
+                  <Text style={ui.text}>
+                    {answer === i ? (i === question.answer ? "✓ " : "✕ ") : ""}
+                    {c}
+                  </Text>
                 </Touch>
               ))}
               {answer !== null && (
                 <>
-                  <Text accessibilityRole="alert" style={ui.text}>
-                    {answer === question.answer
-                      ? "You’ve got it."
-                      : "Not quite. Let’s work through it."}{" "}
-                    {question.explanation}
-                  </Text>
+                  <View
+                    testID="lesson-answer-feedback"
+                    accessibilityRole="alert"
+                    style={{
+                      backgroundColor:
+                        answer === question.answer ? "#153C2B" : "#3D222D",
+                      borderColor:
+                        answer === question.answer ? "#83E2BC" : "#F2A0B1",
+                      borderWidth: 1,
+                      borderRadius: 16,
+                      padding: 18,
+                      gap: 10,
+                    }}
+                  >
+                    <Text
+                      style={[
+                        ui.heading,
+                        {
+                          color:
+                            answer === question.answer ? "#B3F2CF" : "#FFD5DE",
+                        },
+                      ]}
+                    >
+                      {answer === question.answer ? "✓ Correct" : "✕ Not quite"}
+                    </Text>
+                    <Text style={ui.text}>{question.explanation}</Text>
+                  </View>
                   <Touch
                     accessibilityRole="button"
                     style={ui.button}
@@ -139,7 +195,9 @@ export function Curriculum({
                   >
                     <Text style={ui.text}>
                       {answer === question.answer
-                        ? "Apply this concept →"
+                        ? phase === 3
+                          ? "Finish lesson →"
+                          : "Apply this concept →"
                         : "Try this check again"}
                     </Text>
                   </Touch>

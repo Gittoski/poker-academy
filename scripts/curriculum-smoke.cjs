@@ -54,6 +54,10 @@ const { bridges } = load("../src/journey.ts", __filename);
           exact: true,
         })
         .click();
+      await p.getByText("✓ Correct", { exact: true }).waitFor();
+      await p
+        .getByRole("button", { name: "Finish lesson →", exact: true })
+        .click();
       await p
         .getByText("Lesson complete. Keep building.", { exact: true })
         .waitFor();

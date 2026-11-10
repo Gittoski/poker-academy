@@ -29,3 +29,11 @@ Remaining external gate: actual iPhone/Expo Go and native release build/signing 
 M11 evidence: 35 unit tests, cumulative-prerequisite fixtures, all six browser suites (including all 12 full guided lessons with retries and cross-stage continuation), TypeScript, web and iOS JavaScript exports passed. Existing v1/v2 learning progress is preserved; lesson completion still earns 20 XP once.
 
 M12 evidence: shared visual theme, persistent navigation, playing-card graphics, 220 ms entrances, spring press feedback and live reduced-motion behavior implemented. Seven browser suites and 36 unit tests pass, including full guided-path completion, offline regressions, worked-example accessibility, card concealment and responsive layouts. Web and iOS JavaScript exports pass. Native graphics, animation performance and iPhone release validation remain unverified under M10.
+
+## First iPhone feedback
+
+The user reports Expo Go opens on their iPhone and the first lesson's read/example/check/retry/apply flow works, with clear text and cards. This is user-reported evidence of that limited flow, not completion of the native release gate. They find the interface overwhelming and want to improve one thing at a time.
+
+- [x] M13 Focused lessons: remove dashboard/navigation clutter during an active lesson, keep one clear forward action and a way back, provide red incorrect / green correct answer feedback with text and icons, and allow time to read final-check feedback before completion. Preserve progress and test the full curriculum and existing features. Simulator redesign is deferred for a separate iteration.
+
+M13 evidence: focused lesson hides dashboard and tab navigation, shows a compact step count and back action, colors selected answers and textual feedback red/green, and pauses at final-answer feedback until Finish lesson. Progress and the simulator are preserved. All 36 unit tests, eight browser suites, TypeScript, formatting, web and iOS JavaScript exports pass. The revised design still needs the user’s next iPhone check.

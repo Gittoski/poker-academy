@@ -25,3 +25,7 @@ A real iPhone with compatible Expo Go or a macOS runner with Xcode/iOS simulator
 6. Enable VoiceOver and large Dynamic Type. Check all controls, range chart descriptions, focus order, feedback announcements, contrast and safe areas; check small and large iPhones.
 7. Choose signing identity/bundle identifier in the release environment, build the native target through Xcode or the chosen Expo build workflow, install and repeat smoke/offline tests. Do not claim App Store readiness from a JavaScript export.
 8. Record outcomes, fix failures, rerun regressions, then check off M10 and commit.
+
+## User-reported iPhone session
+
+The user reports that the app opens in Expo Go on their iPhone, the first lesson and worked-example cards are readable, and wrong-answer retry, correct answer and Apply this concept navigation work. They report visual overload. The focused-lesson refinement addresses this feedback and must be checked again on their phone. These observations cover only that flow; remaining offline cold-start, broader native/accessibility/share-sheet and release-build checks stay open.

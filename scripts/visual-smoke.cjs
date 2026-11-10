@@ -58,6 +58,9 @@ const AxeBuilder = require("@axe-core/playwright").default;
           })),
         ),
       );
+    await p
+      .getByRole("button", { name: "← Learning path", exact: true })
+      .click();
     await p.getByRole("button", { name: "Table", exact: true }).click();
     if (
       (await p

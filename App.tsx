@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { ScrollView, View, Text, StyleSheet } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
@@ -26,6 +26,11 @@ import { drills } from "./src/math";
 const KEY = "poker-academy.progress.v1";
 function Academy() {
   const scroll = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  const [lessonFocused, setLessonFocused] = useState(false);
+  const resetLessonScroll = useCallback(
+    () => scroll.current?.scrollTo({ y: 0, animated: false }),
+    [],
+  );
   const [tab, setTab] = useState("Learn");
   const [progress, setProgress] = useState<Progress>(freshProgress);
   const [reviewSet, setReviewSet] = useState(drills);
@@ -37,7 +42,7 @@ function Academy() {
   const drill = drills[index];
   useEffect(() => {
     scroll.current?.scrollTo({ y: 0, animated: false });
-  }, [tab]);
+  }, [tab, lessonFocused]);
   function answer(choice: number) {
     if (!ready || selected !== null) return;
     setSelected(choice);
@@ -76,70 +81,74 @@ function Academy() {
       <SafeAreaView style={s.root}>
         <StatusBar style="light" />
         <ScrollView ref={scroll} contentContainerStyle={s.body}>
-          <View style={s.brandRow}>
-            <View style={s.brandMark}>
-              <Text style={{ color: palette.mint, fontSize: 22 }}>♠</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={s.eyebrow}>PTO / ACADEMY</Text>
-              <Text style={s.small}>THE LIVE POKER LEARNING ROOM</Text>
-            </View>
-            <View style={s.offline}>
-              <Text style={s.small}>LOCAL</Text>
-            </View>
-          </View>
-          <View style={{ gap: 8 }}>
-            <Text style={s.title}>
-              {tab === "Learn"
-                ? "Build your edge.\nOne step at a time."
-                : tab === "Practice"
-                  ? "Practice with purpose."
-                  : tab === "Table"
-                    ? "Take a seat."
-                    : "See how far you’ve come."}
-            </Text>
-            <Text style={s.sub}>
-              {tab === "Learn"
-                ? "A clear path from first principles to thoughtful play."
-                : tab === "Practice"
-                  ? "Focused exercises. Clear reasoning. No guesswork."
-                  : tab === "Table"
-                    ? "Apply your thinking with virtual chips."
-                    : "Your progress belongs to you. Keep building on it."}
-            </Text>
-          </View>
-          {tab !== "Table" && (
-            <View style={s.hero}>
+          {!lessonFocused && (
+            <>
               <View style={s.brandRow}>
-                <Text style={[s.eyebrow, { flex: 1 }]}>YOUR JOURNEY</Text>
-                <Text style={s.small}>
-                  {
-                    lessons.filter((l) => progress.completed.includes(l.id))
-                      .length
-                  }
-                  /12 LESSONS
+                <View style={s.brandMark}>
+                  <Text style={{ color: palette.mint, fontSize: 22 }}>♠</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.eyebrow}>PTO / ACADEMY</Text>
+                  <Text style={s.small}>THE LIVE POKER LEARNING ROOM</Text>
+                </View>
+                <View style={s.offline}>
+                  <Text style={s.small}>LOCAL</Text>
+                </View>
+              </View>
+              <View style={{ gap: 8 }}>
+                <Text style={s.title}>
+                  {tab === "Learn"
+                    ? "Build your edge.\nOne step at a time."
+                    : tab === "Practice"
+                      ? "Practice with purpose."
+                      : tab === "Table"
+                        ? "Take a seat."
+                        : "See how far you’ve come."}
+                </Text>
+                <Text style={s.sub}>
+                  {tab === "Learn"
+                    ? "A clear path from first principles to thoughtful play."
+                    : tab === "Practice"
+                      ? "Focused exercises. Clear reasoning. No guesswork."
+                      : tab === "Table"
+                        ? "Apply your thinking with virtual chips."
+                        : "Your progress belongs to you. Keep building on it."}
                 </Text>
               </View>
-              <Text style={s.heading}>
-                Level {level(progress.xp)} · {progress.xp} XP
-              </Text>
-              <View style={{ flexDirection: "row", gap: 4 }}>
-                {lessons.map((l) => (
-                  <View
-                    key={l.id}
-                    style={{
-                      flex: 1,
-                      height: 4,
-                      borderRadius: 2,
-                      backgroundColor: progress.completed.includes(l.id)
-                        ? palette.mint
-                        : "#344B48",
-                    }}
-                  />
-                ))}
-              </View>
-              {!ready && <Text style={s.sub}>Loading local progress…</Text>}
-            </View>
+              {tab !== "Table" && (
+                <View style={s.hero}>
+                  <View style={s.brandRow}>
+                    <Text style={[s.eyebrow, { flex: 1 }]}>YOUR JOURNEY</Text>
+                    <Text style={s.small}>
+                      {
+                        lessons.filter((l) => progress.completed.includes(l.id))
+                          .length
+                      }
+                      /12 LESSONS
+                    </Text>
+                  </View>
+                  <Text style={s.heading}>
+                    Level {level(progress.xp)} · {progress.xp} XP
+                  </Text>
+                  <View style={{ flexDirection: "row", gap: 4 }}>
+                    {lessons.map((l) => (
+                      <View
+                        key={l.id}
+                        style={{
+                          flex: 1,
+                          height: 4,
+                          borderRadius: 2,
+                          backgroundColor: progress.completed.includes(l.id)
+                            ? palette.mint
+                            : "#344B48",
+                        }}
+                      />
+                    ))}
+                  </View>
+                  {!ready && <Text style={s.sub}>Loading local progress…</Text>}
+                </View>
+              )}
+            </>
           )}
           {error ? (
             <Text accessibilityRole="alert" style={s.error}>
@@ -150,7 +159,13 @@ function Academy() {
             {tab === "Table" ? (
               <Simulator />
             ) : tab === "Learn" ? (
-              <Curriculum progress={progress} save={save} ready={ready} />
+              <Curriculum
+                progress={progress}
+                save={save}
+                ready={ready}
+                onFocusChange={setLessonFocused}
+                onStepChange={resetLessonScroll}
+              />
             ) : tab === "Practice" ? (
               <>
                 <Text style={s.sub}>
@@ -271,48 +286,52 @@ function Academy() {
               />
             )}
           </FadeIn>
-          <Text style={s.foot}>
-            Original educational heuristics, with explicit assumptions. No
-            solver outputs or affiliation with a commercial training product are
-            claimed. Virtual chips only.
-          </Text>
+          {!lessonFocused && (
+            <Text style={s.foot}>
+              Original educational heuristics, with explicit assumptions. No
+              solver outputs or affiliation with a commercial training product
+              are claimed. Virtual chips only.
+            </Text>
+          )}
         </ScrollView>
-        <View style={s.navbar}>
-          {[
-            { name: "Learn", icon: "◇" },
-            { name: "Practice", icon: "◎" },
-            { name: "Table", icon: "♠" },
-            { name: "Progress", icon: "▥" },
-          ].map((t) => (
-            <Touch
-              key={t.name}
-              accessibilityRole="button"
-              accessibilityLabel={t.name}
-              accessibilityState={{ selected: tab === t.name }}
-              onPress={() => setTab(t.name)}
-              style={[s.navItem, tab === t.name && s.navActive]}
-            >
-              <Text
-                aria-hidden
-                style={{
-                  fontSize: 22,
-                  color: tab === t.name ? palette.mint : palette.muted,
-                }}
+        {!lessonFocused && (
+          <View style={s.navbar}>
+            {[
+              { name: "Learn", icon: "◇" },
+              { name: "Practice", icon: "◎" },
+              { name: "Table", icon: "♠" },
+              { name: "Progress", icon: "▥" },
+            ].map((t) => (
+              <Touch
+                key={t.name}
+                accessibilityRole="button"
+                accessibilityLabel={t.name}
+                accessibilityState={{ selected: tab === t.name }}
+                onPress={() => setTab(t.name)}
+                style={[s.navItem, tab === t.name && s.navActive]}
               >
-                {t.icon}
-              </Text>
-              <Text
-                style={{
-                  fontSize: 11,
-                  fontWeight: "700",
-                  color: tab === t.name ? palette.mint : palette.muted,
-                }}
-              >
-                {t.name}
-              </Text>
-            </Touch>
-          ))}
-        </View>
+                <Text
+                  aria-hidden
+                  style={{
+                    fontSize: 22,
+                    color: tab === t.name ? palette.mint : palette.muted,
+                  }}
+                >
+                  {t.icon}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 11,
+                    fontWeight: "700",
+                    color: tab === t.name ? palette.mint : palette.muted,
+                  }}
+                >
+                  {t.name}
+                </Text>
+              </Touch>
+            ))}
+          </View>
+        )}
       </SafeAreaView>
     </SafeAreaProvider>
   );
