@@ -37,3 +37,15 @@ The user reports Expo Go opens on their iPhone and the first lesson's read/examp
 - [x] M13 Focused lessons: remove dashboard/navigation clutter during an active lesson, keep one clear forward action and a way back, provide red incorrect / green correct answer feedback with text and icons, and allow time to read final-check feedback before completion. Preserve progress and test the full curriculum and existing features. Simulator redesign is deferred for a separate iteration.
 
 M13 evidence: focused lesson hides dashboard and tab navigation, shows a compact step count and back action, colors selected answers and textual feedback red/green, and pauses at final-answer feedback until Finish lesson. Progress and the simulator are preserved. All 36 unit tests, eight browser suites, TypeScript, formatting, web and iOS JavaScript exports pass. The revised design still needs the user’s next iPhone check.
+
+## Continuous coached simulator, informed by Poker Trainer research
+
+User confirmed https://pokertrainer.se/. Public research is currently blocked by the environment web allowlist; see docs/POKER_TRAINER_RESEARCH.md. Recommendations are distinguished from unverified competitor findings.
+
+- [ ] M14 Competitor research: inspect public Poker Trainer site/listing/screenshots and any public demo, record verified useful interface/learning patterns and original implementation choices. Blocked by research-domain access; no claims of hands-on inspection yet.
+- [x] M15 Continuous play: retain the table across tabs and reload, offer one-tap next hands even after busting with explicit virtual refills, optional rules/history, test persistence, replay restoration and chip accounting.
+- [ ] M16 Scoped simulator coaching: nonblocking match/deviation/ungraded feedback from the existing authored first-in baseline, a clearly labeled 100-BB first-in practice mode for meaningful coverage, no GTO/solver or exploit-optimality claims; test coverage boundaries, hidden-information independence and continuous sessions.
+- [ ] M17 Table interface iteration: use verified research plus the user's feedback to improve table layout and action controls, one reviewed feature at a time. Preserve the focused lesson path.
+- [ ] M18 Verified strategy data: integrate properly licensed, documented solver/reference data only if available. Until then, never claim arbitrary simulator decisions are graded against GTO/PTO.
+
+M15 evidence: 39 unit tests and nine browser suites pass, including 100 consecutive hands, exact replay restoration, virtual refill accounting, three browser hands and tab/reload persistence. TypeScript, formatting, web and iOS JavaScript exports pass. Table settings/history are optional details. Research remains blocked, not claimed complete.

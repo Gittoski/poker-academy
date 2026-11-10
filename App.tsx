@@ -16,6 +16,7 @@ import { lessons } from "./src/curriculum";
 import { Boundary } from "./src/components/Boundary";
 import { ProgressPanel } from "./src/components/ProgressPanel";
 import { reviewQueue } from "./src/review";
+import { useSimulatorSession } from "./src/useSimulatorSession";
 import { Simulator } from "./src/components/Simulator";
 import { Opponents } from "./src/components/Opponents";
 import { postflop } from "./src/postflop";
@@ -25,6 +26,7 @@ import { Curriculum } from "./src/components/Curriculum";
 import { drills } from "./src/math";
 const KEY = "poker-academy.progress.v1";
 function Academy() {
+  const tableSession = useSimulatorSession();
   const scroll = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const [lessonFocused, setLessonFocused] = useState(false);
   const resetLessonScroll = useCallback(
@@ -157,7 +159,12 @@ function Academy() {
           ) : null}
           <FadeIn key={tab} testID="screen-transition" style={{ gap: 20 }}>
             {tab === "Table" ? (
-              <Simulator />
+              <Simulator
+                session={tableSession.session}
+                change={tableSession.change}
+                reset={tableSession.reset}
+                persistenceError={tableSession.error}
+              />
             ) : tab === "Learn" ? (
               <Curriculum
                 progress={progress}

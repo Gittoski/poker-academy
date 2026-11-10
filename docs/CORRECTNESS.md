@@ -34,7 +34,7 @@ Twelve original lessons cover rules through exploit hypothesis review. Hand-rank
 
 ## Simulator model
 
-Six initial seats, blinds 1/2, no rake, no ante. Integer chips; BB=2. Folded money stays in tiered pots; unmatched excess is refunded; tied odd chips go clockwise after the button. Full raises update the minimum increment; short all-ins only reopen an already-acted player after the cumulative increase reaches a full increment. All-in runouts skip dry-side-pot betting. Blind and button order handles heads-up. Test fixtures cover these cases; 100 seeded hands check conservation, unique cards, termination and exact replay. Toy policies are explicitly authored demonstrations; their behavior and seed-based selection are not opponent-model results. A deterministic LCG shuffle is not intended for gambling security. In-progress table sessions are intentionally ephemeral; only learning progress persists.
+Six initial seats, blinds 1/2, no rake, no ante. Integer chips; BB=2. Folded money stays in tiered pots; unmatched excess is refunded; tied odd chips go clockwise after the button. Full raises update the minimum increment; short all-ins only reopen an already-acted player after the cumulative increase reaches a full increment. All-in runouts skip dry-side-pot betting. Blind and button order handles heads-up. Test fixtures cover these cases; 100 seeded hands check conservation, unique cards, termination and exact replay. Toy policies are explicitly authored demonstrations; their behavior and seed-based selection are not opponent-model results. A deterministic LCG shuffle is not intended for gambling security. In-progress table sessions now persist through validated action replay; learning progress remains separate.
 
 ## Release hardening
 
@@ -43,3 +43,7 @@ All seven browser suites pass, including an offline reload and scoring test, and
 ## Guided path and presentation
 
 All twelve lessons now include an authored connection, worked example and distinct application check. Check and Apply must both pass to complete a lesson. Existing saved completions remain valid, while new unlocks require every prior prerequisite. Stage labels are Basics, Deeper strategy and Mastery practice; the latter is not a certification of poker mastery. The visual regression verifies motion and its suppression with a live OS reduced-motion preference change, a worked-example accessibility scan, hidden-card labels and persistent navigation. See `DESIGN.md`.
+
+## Continuous sessions
+
+A 100-hand continuous regression checks legal completion and exact replay restoration. Seats at or below the big blind receive an explicit practice refill between hands so blind posting cannot strand a player. Per-hand chip conservation remains mandatory; refill credits are accounted separately from poker awards. The browser verifies hands continue and table state survives both tab changes and reload.

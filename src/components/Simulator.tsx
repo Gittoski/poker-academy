@@ -7,19 +7,62 @@ import {
   Share,
   useWindowDimensions,
 } from "react-native";
-import { Action, Table, act, createTable, nextHand, legal } from "../table";
-import { botNames, toHero } from "../bots";
+import { Action, legal } from "../table";
+import {
+  SimulatorSession,
+  sessionAction,
+  continueSession,
+} from "../simulatorSession";
+import { botNames } from "../bots";
 import { ui } from "./ui";
-export function Simulator() {
+export function Simulator({
+  session,
+  change,
+  reset,
+  persistenceError,
+}: {
+  session: SimulatorSession | null;
+  change: (update: (s: SimulatorSession) => SimulatorSession) => void;
+  reset: () => void;
+  persistenceError: string;
+}) {
   const { width } = useWindowDimensions();
-  const [table, setTable] = useState<Table>(() => toHero(createTable(42)));
+  const [showDetails, setShowDetails] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
   const [target, setTarget] = useState("");
   const [error, setError] = useState("");
+  if (!session)
+    return (
+      <View style={ui.card}>
+        <Text style={ui.heading}>
+          {persistenceError ? "Table needs attention" : "Loading your table…"}
+        </Text>
+        {persistenceError && (
+          <Text accessibilityRole="alert" style={ui.text}>
+            {persistenceError}
+          </Text>
+        )}
+        {confirmReset ? (
+          <Touch accessibilityRole="button" style={ui.danger} onPress={reset}>
+            <Text style={ui.text}>Confirm reset virtual table</Text>
+          </Touch>
+        ) : persistenceError ? (
+          <Touch
+            accessibilityRole="button"
+            style={ui.button}
+            onPress={() => setConfirmReset(true)}
+          >
+            <Text style={ui.text}>Reset virtual table</Text>
+          </Touch>
+        ) : null}
+      </View>
+    );
+  const table = session.table;
   const l = legal(table);
   const p = table.players[0];
   function move(action: Action) {
     try {
-      setTable(toHero(act(table, action)));
+      change((s) => sessionAction(s, action));
       setTarget("");
       setError("");
     } catch (e) {
@@ -28,7 +71,7 @@ export function Simulator() {
   }
   function next() {
     try {
-      setTable(toHero(nextHand(table)));
+      change(continueSession);
       setError("");
     } catch (e) {
       setError((e as Error).message);
@@ -37,11 +80,14 @@ export function Simulator() {
   return (
     <>
       <Text style={ui.heading}>Table lab · virtual chips</Text>
-      <Text style={ui.muted}>
-        Blinds 1/2 chips. 200 chips = 100 BB at start. Five toy opponents
-        illustrate tendencies; they are not calibrated models or optimal
-        players. No rake. Leaving the Table tab starts a fresh virtual session.
+      <Text style={ui.label}>
+        HAND {session.hand} · BLINDS 1/2 · VIRTUAL CHIPS
       </Text>
+      {persistenceError && (
+        <Text accessibilityRole="alert" style={ui.text}>
+          {persistenceError}
+        </Text>
+      )}
       <View
         style={[
           ui.card,
@@ -181,16 +227,13 @@ export function Simulator() {
             Awards include pot wins and returned unmatched chips. A result is
             not a strategic grade.
           </Text>
-          {table.players.filter((p) => p.stack > 0).length >= 2 &&
-          p.stack > 0 ? (
-            <Touch accessibilityRole="button" style={ui.button} onPress={next}>
-              <Text style={ui.text}>Next hand</Text>
-            </Touch>
-          ) : (
-            <Text style={ui.text}>
-              Session complete. Reset the table to play again.
-            </Text>
-          )}
+          <Touch accessibilityRole="button" style={ui.button} onPress={next}>
+            <Text style={ui.text}>Next hand</Text>
+          </Touch>
+          <Text style={ui.muted}>
+            Seats at or below 2 chips are refilled to 200 virtual chips before
+            the next hand. Refills are practice credits, not winnings.
+          </Text>
           <Touch
             accessibilityRole="button"
             style={ui.button}
@@ -211,26 +254,71 @@ export function Simulator() {
           >
             <Text style={ui.text}>Export hand replay</Text>
           </Touch>
+        </View>
+      )}
+      <Touch
+        accessibilityRole="button"
+        accessibilityState={{ expanded: showDetails }}
+        style={ui.button}
+        onPress={() => setShowDetails(!showDetails)}
+      >
+        <Text style={ui.text}>
+          {showDetails ? "Hide table details" : "Table details & history"}
+        </Text>
+      </Touch>
+      {showDetails && (
+        <View style={ui.card}>
+          <Text style={ui.heading}>Table details</Text>
+          <Text style={ui.muted}>
+            Six seats, blinds 1/2 chips, no ante or rake. Initial 200 chips =
+            100 BB. Toy opponents are not calibrated player models. Your table
+            stays saved across tabs and reloads.
+          </Text>
+          <Text style={ui.muted}>
+            Seats at or below the 2-chip big blind are refilled to 200 virtual
+            chips between hands. {session.refills} seat refills so far. Refills
+            change the available virtual chips; they are not poker winnings.
+          </Text>
+          <Text style={ui.heading}>Action history</Text>
+          {table.log.map((v, i) => (
+            <Text key={i} style={ui.muted}>
+              {v}
+            </Text>
+          ))}
           <Touch
             accessibilityRole="button"
-            style={ui.button}
-            onPress={() => {
-              setTable(toHero(createTable(42)));
-              setError("");
-            }}
+            style={ui.danger}
+            onPress={() => setConfirmReset(true)}
           >
             <Text style={ui.text}>Reset virtual table</Text>
           </Touch>
+          {confirmReset && (
+            <>
+              <Text style={ui.text}>
+                Discard this table and start from hand 1? Learning progress will
+                be kept.
+              </Text>
+              <Touch
+                accessibilityRole="button"
+                style={ui.danger}
+                onPress={() => {
+                  reset();
+                  setConfirmReset(false);
+                }}
+              >
+                <Text style={ui.text}>Confirm reset virtual table</Text>
+              </Touch>
+              <Touch
+                accessibilityRole="button"
+                style={ui.button}
+                onPress={() => setConfirmReset(false)}
+              >
+                <Text style={ui.text}>Cancel table reset</Text>
+              </Touch>
+            </>
+          )}
         </View>
       )}
-      <View style={ui.card}>
-        <Text style={ui.heading}>Action history</Text>
-        {table.log.map((v, i) => (
-          <Text style={ui.muted} key={i}>
-            {v}
-          </Text>
-        ))}
-      </View>
     </>
   );
 }
