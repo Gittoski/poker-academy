@@ -12,7 +12,7 @@ Each milestone: implement, test, fix, run regression checks, update these docume
 - [x] M6 Postflop trainer: board texture, value, draws and sizing; independently checked math and scoped heuristic feedback; regression scenarios.
 - [x] M7 Opponent profiles and exploits: loose, tight, passive, aggressive, calling station; visible assumed tendencies, uncertainty and counter-exploit risks; scenario tests.
 - [x] M8 Full virtual-chip simulator: legal six-seat betting, blinds, streets, all-ins, side pots, showdown, chip conservation and deterministic replays; engine/property tests before UI.
-- [ ] M9 Progression: learning paths, levels, weakness-directed practice, progress export/reset; migration and persistence tests.
+- [x] M9 Progression: learning paths, levels, weakness-directed practice, progress export/reset; migration and persistence tests.
 - [ ] M10 Release hardening: offline restart, accessibility, responsive layouts, full regression; actual iPhone/Expo Go testing and native release build when device/signing access is available.
 
 ## Evidence and limitations
