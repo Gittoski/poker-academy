@@ -10,3 +10,7 @@ Checks: `npm run typecheck`, `npm test`, `EXPO_NO_TELEMETRY=1 EXPO_OFFLINE=1 npx
 M1: dark responsive shell and local progress schema implemented. Three progress tests and web export passed. iPhone not tested. Lessons/trainers remain explicitly marked as planned.
 
 M2: four repeatable drills with explicit mathematical assumptions; XP and per-topic accuracy persist through AsyncStorage. Failed answers award 2 XP; correct answers award 10 XP. These are practice rewards, not a skill rating. Seven unit tests pass. `node scripts/smoke.cjs` exercises the exported app served with `python3 -m http.server 8765 --directory dist`; set CHROMIUM_PATH when Chromium is elsewhere. Web reload persistence is tested separately from native device storage.
+
+M3: pure five-to-seven-card evaluator with exhaustive five-card category-frequency validation (2,598,960 combinations), invalid-card rejection and tie-break fixtures. All ten unit tests and TypeScript pass. See [correctness contract](docs/CORRECTNESS.md) for formulas, analytical test oracles and validation limits. The simulator, curriculum lessons, decision trainers and opponent models are still pending; the evaluator is an internal foundation.
+
+The iOS JavaScript/Hermes export also passed; this is not device verification. Local Git commits are created per milestone; nothing has been pushed to GitHub.
