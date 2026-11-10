@@ -16,3 +16,5 @@ M3: pure five-to-seven-card evaluator with exhaustive five-card category-frequen
 The iOS JavaScript/Hermes export also passed; this is not device verification. Local Git commits are created per milestone; nothing has been pushed to GitHub.
 
 M4: 12 original beginner/intermediate/advanced lessons, gated quizzes, repeat-safe completion XP and persisted unlocks. Twelve unit tests, TypeScript, web export, curriculum browser test and prior practice smoke test passed. Curriculum sources and review scope are documented in `docs/CORRECTNESS.md`.
+
+M5: first-in preflop training (845 authored position/hand cases), 169-hand reference chart, explicit 100-BB six-max assumptions and no solver claims. Fifteen unit tests, web build, typecheck and all three browser regressions passed. SB uses the documented simplified button range; BB is a walk in this unopened-pot scope.
