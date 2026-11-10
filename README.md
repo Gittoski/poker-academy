@@ -18,3 +18,5 @@ The iOS JavaScript/Hermes export also passed; this is not device verification. L
 M4: 12 original beginner/intermediate/advanced lessons, gated quizzes, repeat-safe completion XP and persisted unlocks. Twelve unit tests, TypeScript, web export, curriculum browser test and prior practice smoke test passed. Curriculum sources and review scope are documented in `docs/CORRECTNESS.md`.
 
 M5: first-in preflop training (845 authored position/hand cases), 169-hand reference chart, explicit 100-BB six-max assumptions and no solver claims. Fifteen unit tests, web build, typecheck and all three browser regressions passed. SB uses the documented simplified button range; BB is a walk in this unopened-pot scope.
+
+M6: eight postflop scenarios cover texture, value, draws, sizing, multiway and bluff catching. Supplied-model EV is distinguished from range estimates. Eighteen tests, web build/typecheck and browser regressions passed.
