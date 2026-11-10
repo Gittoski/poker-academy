@@ -20,3 +20,8 @@ Each milestone: implement, test, fix, run regression checks, update these docume
 Milestones 1–9 are implemented and verified. M10 local checks passed: 32 unit tests, TypeScript, formatting, web and iOS JavaScript exports, six browser suites, offline reload/persistence, and responsive/accessibility scans. CI is configured but remote results are not claimed.
 
 Remaining external gate: actual iPhone/Expo Go and native release build/signing tests. This Linux host has no Xcode, iOS simulator or connected iPhone. Follow docs/RELEASE.md in a device/macOS environment; do not mark M10 complete from JavaScript exports. No accounts, remote APIs or credentials are needed for training.
+
+## Guided learning and visual refinement
+
+- [ ] M11 Guided path: Basics → Deeper strategy → Mastery practice; one lesson at a time with learn/example/check/apply phases, cumulative prerequisites, contextual bridges and a clear next step. Preserve existing progress; mastery is practice, not a claim of expert ability. Verify checkpoints, gating, retry, reload and prior features.
+- [ ] M12 Visual system: coherent midnight/emerald/ivory theme, persistent navigation, tactile buttons, playing-card graphics, subtle screen/card transitions, completion feedback, and reduced-motion support. Verify layouts, accessibility, browser flows and both JavaScript exports. Native visual/device validation remains in M10.
