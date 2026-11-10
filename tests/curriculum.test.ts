@@ -25,3 +25,14 @@ test("prerequisites, one-time XP and completion survive reload", () => {
   assert.deepEqual(decodeProgress(JSON.stringify(next)), next);
   assert.deepEqual(p.completed, []);
 });
+test("every prior prerequisite is required, including imported gaps", () => {
+  assert.equal(unlocked(2, ["position"]), false);
+  assert.equal(unlocked(-1, []), false);
+  assert.equal(
+    unlocked(
+      12,
+      lessons.map((l) => l.id),
+    ),
+    false,
+  );
+});

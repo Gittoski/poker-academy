@@ -176,5 +176,10 @@ export const lessons: Lesson[] = [
   },
 ];
 export function unlocked(index: number, completed: string[]) {
-  return index === 0 || completed.includes(lessons[index - 1]?.id);
+  return (
+    Number.isInteger(index) &&
+    index >= 0 &&
+    index < lessons.length &&
+    lessons.slice(0, index).every((l) => completed.includes(l.id))
+  );
 }

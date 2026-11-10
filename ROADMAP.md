@@ -23,5 +23,7 @@ Remaining external gate: actual iPhone/Expo Go and native release build/signing 
 
 ## Guided learning and visual refinement
 
-- [ ] M11 Guided path: Basics → Deeper strategy → Mastery practice; one lesson at a time with learn/example/check/apply phases, cumulative prerequisites, contextual bridges and a clear next step. Preserve existing progress; mastery is practice, not a claim of expert ability. Verify checkpoints, gating, retry, reload and prior features.
+- [x] M11 Guided path: Basics → Deeper strategy → Mastery practice; one lesson at a time with learn/example/check/apply phases, cumulative prerequisites, contextual bridges and a clear next step. Preserve existing progress; mastery is practice, not a claim of expert ability. Verify checkpoints, gating, retry, reload and prior features.
 - [ ] M12 Visual system: coherent midnight/emerald/ivory theme, persistent navigation, tactile buttons, playing-card graphics, subtle screen/card transitions, completion feedback, and reduced-motion support. Verify layouts, accessibility, browser flows and both JavaScript exports. Native visual/device validation remains in M10.
+
+M11 evidence: 35 unit tests, cumulative-prerequisite fixtures, all six browser suites (including all 12 full guided lessons with retries and cross-stage continuation), TypeScript, web and iOS JavaScript exports passed. Existing v1/v2 learning progress is preserved; lesson completion still earns 20 XP once.

@@ -4,7 +4,7 @@ English, offline-first Expo/React Native training for six-max no-limit Texas Hol
 
 Implemented features:
 
-- Dark mobile layout, twelve beginner-to-advanced lessons, prerequisite quizzes and saved completion.
+- Guided Basics → Deeper strategy → Mastery practice path. Twelve lessons each use Learn → Example → Check → Apply, with two required checks and cumulative prerequisites. Existing completion is preserved; the course is not a guarantee of expertise.
 - Poker math and ranking drills, preflop first-in trainer with 169-hand reference charts, eight postflop scenarios, five opponent profiles and six exploit exercises.
 - Playable six-seat virtual-chip table: betting, all-ins, side pots, showdown, rotating blinds, action history and deterministic replay export. Table sessions reset on leaving the Table tab; learning progress persists.
 - Local XP, levels, accuracy, weakest-topic review, progress backup/restore and confirmed reset. Version-1 progress migrates to version 2.
