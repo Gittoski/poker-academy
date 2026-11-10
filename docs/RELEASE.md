@@ -4,9 +4,9 @@ M10 remains incomplete until these checks are executed, failures corrected, and 
 
 ## Available checks completed
 
-- Strict TypeScript, all 32 unit tests and formatting.
+- Strict TypeScript, all 36 unit tests and formatting.
 - Exhaustive five-card category frequencies and 100 seeded complete-game conservation/replay tests.
-- Six browser suites: curriculum, arithmetic, preflop/postflop/exploits, full table hand, migration/backup/reset, and offline/responsive/accessibility checks.
+- Seven browser suites: curriculum, arithmetic, preflop/postflop/exploits, full table hand, migration/backup/reset, offline/responsive/accessibility checks, and guided visuals with reduced-motion tests.
 - Web offline reload with saved XP and additional scoring while offline.
 - 320/390/768px layouts without horizontal overflow; automated WCAG A/AA scans have no violations across the four main tabs. This is not a manual accessibility certification.
 - iOS JavaScript/Hermes export and installed-SDK dependency compatibility check.

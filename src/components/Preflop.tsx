@@ -1,5 +1,6 @@
+import { Touch } from "./Visuals";
 import React, { useState } from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text } from "react-native";
 import {
   positions,
   Position,
@@ -32,7 +33,7 @@ export function Preflop({
         <Text style={ui.heading}>First-in range reference</Text>
         <View style={ui.row}>
           {positions.map((p) => (
-            <Pressable
+            <Touch
               accessibilityRole="button"
               accessibilityState={{ selected: p === position }}
               key={p}
@@ -40,7 +41,7 @@ export function Preflop({
               onPress={() => setPosition(p)}
             >
               <Text style={ui.text}>{p}</Text>
-            </Pressable>
+            </Touch>
           ))}
         </View>
         <Text style={ui.muted}>

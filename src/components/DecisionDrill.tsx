@@ -1,5 +1,6 @@
+import { FadeIn, Touch } from "./Visuals";
 import React, { useState } from "react";
-import { Text, View, Pressable } from "react-native";
+import { Text, View } from "react-native";
 import { Drill } from "../math";
 import { ui } from "./ui";
 export function DecisionDrill({
@@ -23,11 +24,18 @@ export function DecisionDrill({
       </Text>
       <Text style={ui.heading}>{drill.question}</Text>
       {drill.choices.map((c, i) => (
-        <Pressable
+        <Touch
           accessibilityRole="button"
           key={c}
           disabled={!ready || answer !== null}
-          style={ui.button}
+          accessibilityState={{ selected: answer === i }}
+          style={[
+            ui.button,
+            answer === i && {
+              borderColor: i === drill.answer ? "#83E2BC" : "#F1A3AE",
+              backgroundColor: i === drill.answer ? "#1E4436" : "#4B2933",
+            },
+          ]}
           onPress={() => {
             setAnswer(i);
             onAnswer(drill.topic, i === drill.answer);
@@ -37,17 +45,17 @@ export function DecisionDrill({
             {answer === i ? "● " : ""}
             {c}
           </Text>
-        </Pressable>
+        </Touch>
       ))}
       {answer !== null && (
-        <>
+        <FadeIn style={{ gap: 16 }}>
           <Text accessibilityRole="alert" style={ui.heading}>
             {answer === drill.answer
               ? "Matches this exercise · +10 XP"
               : "Review the assumptions · +2 XP"}
           </Text>
           <Text style={ui.muted}>{drill.explanation}</Text>
-          <Pressable
+          <Touch
             accessibilityRole="button"
             style={ui.button}
             onPress={() => {
@@ -56,8 +64,8 @@ export function DecisionDrill({
             }}
           >
             <Text style={ui.text}>Next scenario →</Text>
-          </Pressable>
-        </>
+          </Touch>
+        </FadeIn>
       )}
     </View>
   );

@@ -17,13 +17,15 @@ Each milestone: implement, test, fix, run regression checks, update these docume
 
 ## Evidence and limitations
 
-Milestones 1–9 are implemented and verified. M10 local checks passed: 32 unit tests, TypeScript, formatting, web and iOS JavaScript exports, six browser suites, offline reload/persistence, and responsive/accessibility scans. CI is configured but remote results are not claimed.
+Milestones 1–9 are implemented and verified. M10 local checks passed: 36 unit tests, TypeScript, formatting, web and iOS JavaScript exports, seven browser suites, offline reload/persistence, and responsive/accessibility scans. CI is configured but remote results are not claimed.
 
 Remaining external gate: actual iPhone/Expo Go and native release build/signing tests. This Linux host has no Xcode, iOS simulator or connected iPhone. Follow docs/RELEASE.md in a device/macOS environment; do not mark M10 complete from JavaScript exports. No accounts, remote APIs or credentials are needed for training.
 
 ## Guided learning and visual refinement
 
 - [x] M11 Guided path: Basics → Deeper strategy → Mastery practice; one lesson at a time with learn/example/check/apply phases, cumulative prerequisites, contextual bridges and a clear next step. Preserve existing progress; mastery is practice, not a claim of expert ability. Verify checkpoints, gating, retry, reload and prior features.
-- [ ] M12 Visual system: coherent midnight/emerald/ivory theme, persistent navigation, tactile buttons, playing-card graphics, subtle screen/card transitions, completion feedback, and reduced-motion support. Verify layouts, accessibility, browser flows and both JavaScript exports. Native visual/device validation remains in M10.
+- [x] M12 Visual system: coherent midnight/emerald/ivory theme, persistent navigation, tactile buttons, playing-card graphics, subtle screen/card transitions, completion feedback, and reduced-motion support. Verify layouts, accessibility, browser flows and both JavaScript exports. Native visual/device validation remains in M10.
 
 M11 evidence: 35 unit tests, cumulative-prerequisite fixtures, all six browser suites (including all 12 full guided lessons with retries and cross-stage continuation), TypeScript, web and iOS JavaScript exports passed. Existing v1/v2 learning progress is preserved; lesson completion still earns 20 XP once.
+
+M12 evidence: shared visual theme, persistent navigation, playing-card graphics, 220 ms entrances, spring press feedback and live reduced-motion behavior implemented. Seven browser suites and 36 unit tests pass, including full guided-path completion, offline regressions, worked-example accessibility, card concealment and responsive layouts. Web and iOS JavaScript exports pass. Native graphics, animation performance and iPhone release validation remain unverified under M10.

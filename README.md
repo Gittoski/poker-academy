@@ -31,10 +31,12 @@ npm run test:web
 npm run build:ios
 ```
 
-`check` runs strict TypeScript, unit tests and Prettier. Tests include all 2,598,960 five-card combinations, side-pot/short-raise fixtures and 100 seeded conservation/replay games. The web runner starts and stops its own isolated Python server, then tests learning, trainers, simulator, backup/reset, offline reload and accessibility at 320/390/768px. Python 3 and Chromium are required: `npx playwright install chromium`, or set `CHROMIUM_PATH` to a system browser. CI configuration runs these same commands; remote CI results have not been verified here.
+`check` runs strict TypeScript, unit tests and Prettier. Tests include all 2,598,960 five-card combinations, side-pot/short-raise fixtures and 100 seeded conservation/replay games. The seven-suite web runner starts and stops its own isolated Python server, then tests learning, trainers, simulator, backup/reset, offline reload and accessibility at 320/390/768px. Python 3 and Chromium are required: `npx playwright install chromium`, or set `CHROMIUM_PATH` to a system browser. CI configuration runs these same commands; remote CI results have not been verified here.
 
 `build:web` creates a service worker for static hosting over HTTPS. The first visit must be online; subsequent cached reloads and practice work offline. Native bundles include content locally, but native offline cold-start has not been tested. `build:ios` exports JavaScript/Hermes only; **it does not compile or test a native iPhone app**.
 
 ## Release status
 
-Milestones 1–9 are verified and committed. Available release-hardening checks pass. Milestone 10 remains open for actual iPhone/Expo Go, VoiceOver/Dynamic Type, native offline cold-start, native share sheet, and native release build/signing. This Linux host has no Xcode, iOS simulator or connected iPhone. Follow [the device checklist](docs/RELEASE.md) on an iPhone/macOS environment before claiming iPhone readiness. No app-store deployment or environment publication was performed.
+Milestones 1–9 and guided-learning/visual milestones 11–12 are verified and committed. Available release-hardening checks pass. Milestone 10 remains open for actual iPhone/Expo Go, VoiceOver/Dynamic Type, native offline cold-start, native share sheet, and native release build/signing. This Linux host has no Xcode, iOS simulator or connected iPhone. Follow [the device checklist](docs/RELEASE.md) on an iPhone/macOS environment before claiming iPhone readiness. No app-store deployment or environment publication was performed.
+
+The refined interface uses a midnight/emerald/ivory theme, persistent bottom navigation, accessible playing cards, spring press feedback and subtle transitions that respect reduced motion. See [design and learning flow](docs/DESIGN.md). All 12 lessons are exercised end to end, including both required checks, retries and persisted completion.

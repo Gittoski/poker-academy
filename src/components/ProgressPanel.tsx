@@ -1,5 +1,6 @@
+import { Touch } from "./Visuals";
 import React, { useState } from "react";
-import { Text, View, Pressable, TextInput, Share } from "react-native";
+import { Text, View, TextInput, Share } from "react-native";
 import {
   Progress,
   weaknesses,
@@ -63,14 +64,14 @@ export function ProgressPanel({
         ) : (
           <Text style={ui.muted}>No attempts yet. Try a practice drill.</Text>
         )}
-        <Pressable
+        <Touch
           accessibilityRole="button"
           disabled={!ready}
           style={ui.button}
           onPress={review}
         >
           <Text style={ui.text}>Practice weakest topic</Text>
-        </Pressable>
+        </Touch>
       </View>
       <View style={ui.card}>
         <Text style={ui.heading}>Your data, on your device</Text>
@@ -79,7 +80,7 @@ export function ProgressPanel({
           current progress; invalid backups are rejected. Virtual table chips
           are not learning progress.
         </Text>
-        <Pressable
+        <Touch
           accessibilityRole="button"
           disabled={!ready}
           style={ui.button}
@@ -92,7 +93,7 @@ export function ProgressPanel({
           }}
         >
           <Text style={ui.text}>Export progress backup</Text>
-        </Pressable>
+        </Touch>
         {backup ? (
           <TextInput
             accessibilityLabel="Progress backup JSON"
@@ -112,7 +113,7 @@ export function ProgressPanel({
           placeholder="Paste a backup to restore"
           placeholderTextColor="#AEBCC6"
         />
-        <Pressable
+        <Touch
           accessibilityRole="button"
           style={ui.button}
           onPress={() => {
@@ -130,21 +131,21 @@ export function ProgressPanel({
           }}
         >
           <Text style={ui.text}>Replace progress from backup</Text>
-        </Pressable>
-        <Pressable
+        </Touch>
+        <Touch
           accessibilityRole="button"
           style={ui.danger}
           onPress={() => setConfirm(true)}
         >
           <Text style={ui.text}>Reset learning progress</Text>
-        </Pressable>
+        </Touch>
         {confirm && (
           <>
             <Text style={ui.text}>
               Erase all XP, quiz completion and attempts on this device? This
               cannot be undone without a backup.
             </Text>
-            <Pressable
+            <Touch
               accessibilityRole="button"
               style={ui.danger}
               onPress={() => {
@@ -154,14 +155,14 @@ export function ProgressPanel({
               }}
             >
               <Text style={ui.text}>Confirm erase progress</Text>
-            </Pressable>
-            <Pressable
+            </Touch>
+            <Touch
               accessibilityRole="button"
               style={ui.button}
               onPress={() => setConfirm(false)}
             >
               <Text style={ui.text}>Cancel reset</Text>
-            </Pressable>
+            </Touch>
           </>
         )}
         {message ? (

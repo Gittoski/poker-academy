@@ -29,6 +29,8 @@ const AxeBuilder = require("@axe-core/playwright").default;
       await p.setViewportSize({ width, height: 900 });
       for (const tab of ["Learn", "Practice", "Table", "Progress"]) {
         await p.getByRole("button", { name: tab, exact: true }).click();
+        // Scan the resting screen, after its 220 ms entrance transition.
+        await p.waitForTimeout(350);
         const overflow = await p.evaluate(
           () => document.documentElement.scrollWidth > window.innerWidth,
         );

@@ -38,4 +38,8 @@ Six initial seats, blinds 1/2, no rake, no ante. Integer chips; BB=2. Folded mon
 
 ## Release hardening
 
-All six browser suites pass, including an offline reload and scoring test, and automated WCAG A/AA scans at 320/390/768px. The unnamed XP progress bar found by the scan was fixed and rescanned. The native device gate remains open; see `RELEASE.md`.
+All seven browser suites pass, including an offline reload and scoring test, and automated WCAG A/AA scans at 320/390/768px. The unnamed XP progress bar found by the scan was fixed and rescanned. The native device gate remains open; see `RELEASE.md`.
+
+## Guided path and presentation
+
+All twelve lessons now include an authored connection, worked example and distinct application check. Check and Apply must both pass to complete a lesson. Existing saved completions remain valid, while new unlocks require every prior prerequisite. Stage labels are Basics, Deeper strategy and Mastery practice; the latter is not a certification of poker mastery. The visual regression verifies motion and its suppression with a live OS reduced-motion preference change, a worked-example accessibility scan, hidden-card labels and persistent navigation. See `DESIGN.md`.

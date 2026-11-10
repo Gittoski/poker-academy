@@ -1,17 +1,17 @@
+import { CardRow, Touch } from "./Visuals";
 import React, { useState } from "react";
-import { View, Text, Pressable, TextInput, Share } from "react-native";
 import {
-  Action,
-  Table,
-  act,
-  createTable,
-  nextHand,
-  legal,
-  cardName,
-} from "../table";
+  View,
+  Text,
+  TextInput,
+  Share,
+  useWindowDimensions,
+} from "react-native";
+import { Action, Table, act, createTable, nextHand, legal } from "../table";
 import { botNames, toHero } from "../bots";
 import { ui } from "./ui";
 export function Simulator() {
+  const { width } = useWindowDimensions();
   const [table, setTable] = useState<Table>(() => toHero(createTable(42)));
   const [target, setTarget] = useState("");
   const [error, setError] = useState("");
@@ -40,7 +40,7 @@ export function Simulator() {
       <Text style={ui.muted}>
         Blinds 1/2 chips. 200 chips = 100 BB at start. Five toy opponents
         illustrate tendencies; they are not calibrated models or optimal
-        players. No rake. Session lasts while this table stays mounted.
+        players. No rake. Leaving the Table tab starts a fresh virtual session.
       </Text>
       <View
         style={[
@@ -59,12 +59,11 @@ export function Simulator() {
         <Text style={ui.heading}>
           Pot {table.players.reduce((n, p) => n + p.total, 0)} chips
         </Text>
-        <Text
-          accessibilityLabel="Community cards"
-          style={[ui.heading, { fontSize: 28 }]}
-        >
-          {table.board.map(cardName).join("  ") || "Board not dealt"}
-        </Text>
+        <CardRow
+          cards={table.board.length ? table.board : [0, 1, 2, 3, 4]}
+          hidden={!table.board.length}
+          compact={width < 360}
+        />
         <View style={ui.row}>
           {table.players.map((v, i) => (
             <View
@@ -83,14 +82,20 @@ export function Simulator() {
               <Text style={ui.muted}>
                 {v.stack} behind · {v.street} in street
               </Text>
-              <Text style={ui.text}>
-                {v.folded
-                  ? "Folded"
-                  : i === 0 || table.done
-                    ? v.hole.map(cardName).join(" ")
-                    : "▧ ▧"}
-                {!v.folded && !v.stack && !table.done ? " · All-in" : ""}
-              </Text>
+              {v.folded ? (
+                <Text style={ui.muted}>Folded</Text>
+              ) : (
+                <View style={{ gap: 8, paddingTop: 8 }}>
+                  <CardRow
+                    cards={v.hole}
+                    hidden={i !== 0 && !table.done}
+                    compact
+                  />
+                  {!v.stack && !table.done && (
+                    <Text style={ui.label}>ALL-IN</Text>
+                  )}
+                </View>
+              )}
             </View>
           ))}
         </View>
@@ -102,30 +107,29 @@ export function Simulator() {
       ) : null}
       {!table.done && (
         <View style={ui.card}>
-          <Text style={ui.heading}>
-            Your hand: {p.hole.map(cardName).join(" ")}
-          </Text>
+          <Text style={ui.heading}>Your decision</Text>
+          <CardRow cards={p.hole} />
           <Text style={ui.muted}>
             Facing {Math.max(0, table.bet - p.street)} · Call costs {l.call} ·
             Stack {p.stack}
           </Text>
           <View style={ui.row}>
             {l.call > 0 && (
-              <Pressable
+              <Touch
                 accessibilityRole="button"
                 style={ui.button}
                 onPress={() => move({ type: "fold" })}
               >
                 <Text style={ui.text}>Fold</Text>
-              </Pressable>
+              </Touch>
             )}
-            <Pressable
+            <Touch
               accessibilityRole="button"
               style={ui.button}
               onPress={() => move({ type: l.call ? "call" : "check" })}
             >
               <Text style={ui.text}>{l.call ? "Call " + l.call : "Check"}</Text>
-            </Pressable>
+            </Touch>
           </View>
           {l.canRaise && (
             <>
@@ -143,20 +147,20 @@ export function Simulator() {
                 placeholderTextColor="#AEBCC6"
               />
               <View style={ui.row}>
-                <Pressable
+                <Touch
                   accessibilityRole="button"
                   style={ui.button}
                   onPress={() => move({ type: "raise", to: Number(target) })}
                 >
                   <Text style={ui.text}>Raise to amount</Text>
-                </Pressable>
-                <Pressable
+                </Touch>
+                <Touch
                   accessibilityRole="button"
                   style={ui.button}
                   onPress={() => move({ type: "raise", to: l.maxTo })}
                 >
                   <Text style={ui.text}>All-in {l.maxTo}</Text>
-                </Pressable>
+                </Touch>
               </View>
             </>
           )}
@@ -179,19 +183,15 @@ export function Simulator() {
           </Text>
           {table.players.filter((p) => p.stack > 0).length >= 2 &&
           p.stack > 0 ? (
-            <Pressable
-              accessibilityRole="button"
-              style={ui.button}
-              onPress={next}
-            >
+            <Touch accessibilityRole="button" style={ui.button} onPress={next}>
               <Text style={ui.text}>Next hand</Text>
-            </Pressable>
+            </Touch>
           ) : (
             <Text style={ui.text}>
               Session complete. Reset the table to play again.
             </Text>
           )}
-          <Pressable
+          <Touch
             accessibilityRole="button"
             style={ui.button}
             onPress={() =>
@@ -210,8 +210,8 @@ export function Simulator() {
             }
           >
             <Text style={ui.text}>Export hand replay</Text>
-          </Pressable>
-          <Pressable
+          </Touch>
+          <Touch
             accessibilityRole="button"
             style={ui.button}
             onPress={() => {
@@ -220,7 +220,7 @@ export function Simulator() {
             }}
           >
             <Text style={ui.text}>Reset virtual table</Text>
-          </Pressable>
+          </Touch>
         </View>
       )}
       <View style={ui.card}>

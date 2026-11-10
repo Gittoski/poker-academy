@@ -1,5 +1,6 @@
+import { FadeIn, LessonArt, Touch } from "./Visuals";
 import React, { useState } from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text } from "react-native";
 import { lessons, unlocked } from "../curriculum";
 import { Progress, completeLesson } from "../progress";
 import {
@@ -41,13 +42,13 @@ export function Curriculum({
     const question = phase === 2 ? l : bridge;
     return (
       <>
-        <Pressable
+        <Touch
           accessibilityRole="button"
           style={ui.button}
           onPress={() => setOpen(null)}
         >
           <Text style={ui.text}>← Learning path</Text>
-        </Pressable>
+        </Touch>
         <Text style={ui.label}>
           {stageFor(open).name} · LESSON {open + 1} OF {lessons.length}
         </Text>
@@ -67,34 +68,35 @@ export function Curriculum({
             </View>
           ))}
         </View>
-        <View style={ui.card}>
+        <FadeIn key={`${open}-${phase}`} style={ui.card}>
           {phase === 0 ? (
             <>
               <Text style={ui.label}>CONNECT THE DOTS</Text>
               <Text style={ui.muted}>{bridge.connection}</Text>
               <Text style={ui.heading}>One idea to learn</Text>
               <Text style={ui.text}>{l.body}</Text>
-              <Pressable
+              <Touch
                 accessibilityRole="button"
                 style={ui.button}
                 onPress={advance}
               >
                 <Text style={ui.text}>See a worked example →</Text>
-              </Pressable>
+              </Touch>
             </>
           ) : phase === 1 ? (
             <>
               <Text style={ui.label}>SEE IT IN CONTEXT</Text>
               <Text style={ui.heading}>A worked example</Text>
+              <LessonArt lesson={l.id} />
               <Text style={ui.text}>{bridge.example}</Text>
               <Text style={ui.muted}>{l.basis}</Text>
-              <Pressable
+              <Touch
                 accessibilityRole="button"
                 style={ui.button}
                 onPress={advance}
               >
                 <Text style={ui.text}>Check my understanding →</Text>
-              </Pressable>
+              </Touch>
             </>
           ) : phase < 4 ? (
             <>
@@ -103,7 +105,7 @@ export function Curriculum({
               </Text>
               <Text style={ui.heading}>{question.question}</Text>
               {question.choices.map((c, i) => (
-                <Pressable
+                <Touch
                   key={c}
                   accessibilityRole="button"
                   disabled={answer !== null}
@@ -117,7 +119,7 @@ export function Curriculum({
                   }}
                 >
                   <Text style={ui.text}>{c}</Text>
-                </Pressable>
+                </Touch>
               ))}
               {answer !== null && (
                 <>
@@ -127,7 +129,7 @@ export function Curriculum({
                       : "Not quite. Let’s work through it."}{" "}
                     {question.explanation}
                   </Text>
-                  <Pressable
+                  <Touch
                     accessibilityRole="button"
                     style={ui.button}
                     onPress={() => {
@@ -140,13 +142,25 @@ export function Curriculum({
                         ? "Apply this concept →"
                         : "Try this check again"}
                     </Text>
-                  </Pressable>
+                  </Touch>
                 </>
               )}
             </>
           ) : (
             <>
-              <Text style={ui.label}>✓ TWO CHECKS PASSED</Text>
+              <View
+                style={{
+                  width: 54,
+                  height: 54,
+                  borderRadius: 27,
+                  backgroundColor: "#295841",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text style={{ color: "#B3F2CF", fontSize: 28 }}>✓</Text>
+              </View>
+              <Text style={ui.label}>TWO CHECKS PASSED</Text>
               <Text accessibilityRole="alert" style={ui.heading}>
                 Lesson complete. Keep building.
               </Text>
@@ -160,13 +174,13 @@ export function Curriculum({
                   <Text style={ui.muted}>
                     {bridges[lessons[next].id].connection}
                   </Text>
-                  <Pressable
+                  <Touch
                     accessibilityRole="button"
                     style={ui.button}
                     onPress={() => start(next)}
                   >
                     <Text style={ui.text}>Continue to lesson {next + 1} →</Text>
-                  </Pressable>
+                  </Touch>
                 </>
               ) : (
                 <Text style={ui.text}>
@@ -175,16 +189,16 @@ export function Curriculum({
                   proof of poker mastery.
                 </Text>
               )}
-              <Pressable
+              <Touch
                 accessibilityRole="button"
                 style={ui.button}
                 onPress={() => setOpen(null)}
               >
                 <Text style={ui.text}>Back to my path</Text>
-              </Pressable>
+              </Touch>
             </>
           )}
-        </View>
+        </FadeIn>
       </>
     );
   }
@@ -196,7 +210,12 @@ export function Curriculum({
         One idea, a worked example, then two checks. Each lesson builds on the
         last. Take it at your own pace.
       </Text>
-      <View style={ui.card}>
+      <View
+        style={[
+          ui.card,
+          { backgroundColor: "#173D33", borderColor: "#426D58" },
+        ]}
+      >
         <Text style={ui.label}>
           {next < 0 ? "PATH COMPLETE" : stageFor(next).name.toUpperCase()}
         </Text>
@@ -209,7 +228,7 @@ export function Curriculum({
             : bridges[lessons[next].id].connection}
         </Text>
         {next >= 0 && (
-          <Pressable
+          <Touch
             accessibilityRole="button"
             disabled={!ready}
             style={ui.button}
@@ -220,7 +239,7 @@ export function Curriculum({
                 ? "Start lesson 1 →"
                 : `Continue lesson ${next + 1} →`}
             </Text>
-          </Pressable>
+          </Touch>
         )}
         <Text style={ui.muted}>
           {lessons.filter((v) => progress.completed.includes(v.id)).length} of
@@ -232,7 +251,7 @@ export function Curriculum({
         const selected = stage === i;
         return (
           <View style={ui.card} key={group.name}>
-            <Pressable
+            <Touch
               accessibilityRole="button"
               disabled={!allowed}
               accessibilityState={{ disabled: !allowed, expanded: selected }}
@@ -244,7 +263,7 @@ export function Curriculum({
               </Text>
               <Text style={ui.heading}>{group.name}</Text>
               <Text style={ui.muted}>{group.subtitle}</Text>
-            </Pressable>
+            </Touch>
             {selected && allowed && (
               <>
                 <Text style={ui.muted}>{group.goal}</Text>
@@ -253,7 +272,7 @@ export function Curriculum({
                   const available = ready && unlocked(n, progress.completed);
                   const done = progress.completed.includes(item.id);
                   return (
-                    <Pressable
+                    <Touch
                       accessibilityRole="button"
                       key={item.id}
                       accessibilityState={{ disabled: !available }}
@@ -274,7 +293,7 @@ export function Curriculum({
                       {!available && (
                         <Text style={ui.muted}>Complete lesson {n} first</Text>
                       )}
-                    </Pressable>
+                    </Touch>
                   );
                 })}
               </>

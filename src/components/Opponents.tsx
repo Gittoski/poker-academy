@@ -1,5 +1,6 @@
+import { Touch } from "./Visuals";
 import React, { useState } from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text } from "react-native";
 import { profiles, exploits } from "../opponents";
 import { DecisionDrill } from "./DecisionDrill";
 import { ui } from "./ui";
@@ -21,7 +22,7 @@ export function Opponents({
       </Text>
       <View style={ui.row}>
         {profiles.map((v, i) => (
-          <Pressable
+          <Touch
             accessibilityRole="button"
             accessibilityState={{ selected: i === index }}
             style={ui.button}
@@ -29,7 +30,7 @@ export function Opponents({
             onPress={() => setIndex(i)}
           >
             <Text style={ui.text}>{v.name}</Text>
-          </Pressable>
+          </Touch>
         ))}
       </View>
       <View style={ui.card}>

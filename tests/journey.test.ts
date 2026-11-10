@@ -29,3 +29,17 @@ test("each lesson has a contextual bridge, worked example and distinct applicati
     assert.ok(b.explanation.length > 70);
   }
 });
+
+test("worked-example prices and supplied-model calculations agree with independent arithmetic", async () => {
+  const { potOdds, bluffThreshold } = await import("../src/math");
+  const { nextCardProbability } = await import("../src/postflop");
+  assert.equal(potOdds(80, 20), 0.2);
+  assert.equal(potOdds(75, 25), 0.25);
+  assert.equal(bluffThreshold(60, 30), 1 / 3);
+  assert.equal(bluffThreshold(80, 20), 0.2);
+  assert.equal(0.5 * 60 - 0.5 * 30, 15);
+  assert.ok(nextCardProbability(9, 46) < potOdds(80, 40));
+  assert.equal(Math.min(180, 60) / 30, 2);
+  assert.equal(Math.min(200, 80) / 40, 2);
+  assert.equal(0.3 * 60 - 0.7 * 20, 4);
+});

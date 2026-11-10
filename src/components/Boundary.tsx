@@ -1,5 +1,6 @@
+import { Touch } from "./Visuals";
 import React from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text } from "react-native";
 import { ui } from "./ui";
 export class Boundary extends React.Component<
   { children: React.ReactNode },
@@ -17,13 +18,13 @@ export class Boundary extends React.Component<
           Your saved learning progress is preserved. Retrying restarts the
           current screen and any virtual table session.
         </Text>
-        <Pressable
+        <Touch
           accessibilityRole="button"
           style={ui.button}
           onPress={() => this.setState({ failed: false })}
         >
           <Text style={ui.text}>Retry application</Text>
-        </Pressable>
+        </Touch>
       </View>
     ) : (
       this.props.children
