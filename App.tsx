@@ -4,9 +4,9 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { decodeProgress, freshProgress, level, Progress, record } from './src/progress';
+import { Curriculum } from './src/components/Curriculum';
 import { drills } from './src/math';
 const KEY = 'poker-academy.progress.v1';
-const curriculum = ['01 · Foundations — rules, positions & hand strength', '02 · Mathematics — odds, equity & expected value', '03 · Preflop — disciplined six-max decisions', '04 · Postflop — texture, value & pressure', '05 · Exploits — adapt to observed mistakes', '06 · Table lab — practice with virtual chips'];
 export default function App() {
   const [tab, setTab] = useState('Learn');
   const [progress, setProgress] = useState<Progress>(freshProgress);
@@ -18,6 +18,9 @@ export default function App() {
     if (!ready || selected !== null) return;
     setSelected(choice);
     const next = record(progress, drill.topic, choice === drill.answer);
+    save(next);
+  }
+  function save(next: Progress) {
     setProgress(next);
     writes.current = writes.current.catch(() => {}).then(() => AsyncStorage.setItem(KEY, JSON.stringify(next))).catch(() => { setError('Progress could not be saved. Keep the app open and answer another drill to retry.'); });
   }
@@ -30,7 +33,7 @@ export default function App() {
     <View style={s.hero}><Text style={s.eyebrow}>YOUR JOURNEY</Text><Text style={s.heading}>Level {level(progress.xp)} · {progress.xp} XP</Text><Text style={s.sub}>{ready ? 'Progress stays on this device. No account required.' : 'Loading local progress…'}</Text></View>
     {error ? <Text accessibilityRole="alert" style={s.error}>{error}</Text> : null}
     <View style={s.tabs}>{['Learn', 'Practice', 'Progress'].map(t => <Pressable accessibilityRole="button" accessibilityState={{ selected: tab === t }} key={t} onPress={() => setTab(t)} style={[s.tab, tab === t && s.active]}><Text style={s.text}>{t}</Text></Pressable>)}</View>
-    {tab === 'Learn' ? <><Text style={s.heading}>Your learning path</Text>{curriculum.map((c, i) => <View key={c} style={s.card}><Text style={s.text}>{c}</Text><Text style={s.sub}>{i === 0 ? 'Start with strong fundamentals.' : 'Build on the concepts before it.'} · Content planned</Text></View>)}</> : tab === 'Practice' ? <View style={s.card}><Text style={s.eyebrow}>DRILL {index + 1} / {drills.length} · {drill.topic}</Text><Text style={s.heading}>{drill.question}</Text>{drill.choices.map((c,i)=><Pressable key={c} accessibilityRole="button" disabled={!ready || selected !== null} style={s.tab} onPress={()=>answer(i)}><Text style={s.text}>{selected === i ? '● ' : ''}{c}</Text></Pressable>)}{selected !== null && <><Text accessibilityRole="alert" style={s.text}>{selected === drill.answer ? 'Correct · +10 XP' : 'Review · +2 XP'}</Text><Text style={s.sub}>{drill.explanation}</Text><Pressable accessibilityRole="button" style={s.active} onPress={()=>{setIndex((index+1)%drills.length);setSelected(null);}}><Text style={[s.text,{padding:16}]}>Next drill →</Text></Pressable></>}</View> : <View style={s.card}><Text style={s.heading}>Session history</Text>{Object.keys(progress.attempts).length === 0 ? <Text style={s.sub}>No attempts yet. Try a practice drill.</Text> : Object.entries(progress.attempts).sort((a,b)=>a[1].correct/a[1].total-b[1].correct/b[1].total).map(([topic,a])=><Text key={topic} style={s.sub}>{topic}: {a.correct}/{a.total} correct{a.correct/a.total < .7 ? ' · Revisit this topic' : ''}</Text>)}</View>}
+    {tab === 'Learn' ? <Curriculum progress={progress} save={save} ready={ready}/> : tab === 'Practice' ? <View style={s.card}><Text style={s.eyebrow}>DRILL {index + 1} / {drills.length} · {drill.topic}</Text><Text style={s.heading}>{drill.question}</Text>{drill.choices.map((c,i)=><Pressable key={c} accessibilityRole="button" disabled={!ready || selected !== null} style={s.tab} onPress={()=>answer(i)}><Text style={s.text}>{selected === i ? '● ' : ''}{c}</Text></Pressable>)}{selected !== null && <><Text accessibilityRole="alert" style={s.text}>{selected === drill.answer ? 'Correct · +10 XP' : 'Review · +2 XP'}</Text><Text style={s.sub}>{drill.explanation}</Text><Pressable accessibilityRole="button" style={s.active} onPress={()=>{setIndex((index+1)%drills.length);setSelected(null);}}><Text style={[s.text,{padding:16}]}>Next drill →</Text></Pressable></>}</View> : <View style={s.card}><Text style={s.heading}>Session history</Text>{Object.keys(progress.attempts).length === 0 ? <Text style={s.sub}>No attempts yet. Try a practice drill.</Text> : Object.entries(progress.attempts).sort((a,b)=>a[1].correct/a[1].total-b[1].correct/b[1].total).map(([topic,a])=><Text key={topic} style={s.sub}>{topic}: {a.correct}/{a.total} correct{a.correct/a.total < .7 ? ' · Revisit this topic' : ''}</Text>)}</View>}
     <Text style={s.foot}>Simplified strategies will be labeled educational heuristics, with explicit assumptions. No solver outputs are claimed.</Text>
   </ScrollView></SafeAreaView></SafeAreaProvider>;
 }

@@ -14,3 +14,5 @@ M2: four repeatable drills with explicit mathematical assumptions; XP and per-to
 M3: pure five-to-seven-card evaluator with exhaustive five-card category-frequency validation (2,598,960 combinations), invalid-card rejection and tie-break fixtures. All ten unit tests and TypeScript pass. See [correctness contract](docs/CORRECTNESS.md) for formulas, analytical test oracles and validation limits. The simulator, curriculum lessons, decision trainers and opponent models are still pending; the evaluator is an internal foundation.
 
 The iOS JavaScript/Hermes export also passed; this is not device verification. Local Git commits are created per milestone; nothing has been pushed to GitHub.
+
+M4: 12 original beginner/intermediate/advanced lessons, gated quizzes, repeat-safe completion XP and persisted unlocks. Twelve unit tests, TypeScript, web export, curriculum browser test and prior practice smoke test passed. Curriculum sources and review scope are documented in `docs/CORRECTNESS.md`.

@@ -24,3 +24,6 @@ Frequency agreement tests category classification; it does not prove every kicke
 
 ## Platform evidence
 Web export and a 390×844 Chromium interaction test passed, including local progress after reload. An iOS JavaScript export checks bundling only, not native runtime compatibility. Actual iPhone, offline native cold-start, screen-reader and native release checks remain unverified.
+
+## Curriculum review
+Twelve original lessons cover rules through exploit hypothesis review. Hand-ranking statements were cross-checked against PokerKit's `StandardHighHand` examples (https://github.com/uoftcprg/pokerkit/blob/main/pokerkit/hands.py) and the betting examples in its README (https://github.com/uoftcprg/pokerkit). Both were fetched and read during implementation. No source text or proprietary charts are reproduced. Arithmetic examples are independently checked against the tested formulas. Strategy paragraphs are authored educational heuristics; they have not been reviewed by a professional coach or solved for equilibrium. Lesson IDs and prerequisite order are tested; a browser test verifies completion, unlocks and reload persistence.
