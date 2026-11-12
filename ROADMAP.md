@@ -51,3 +51,15 @@ User confirmed https://pokertrainer.se/. Public research is currently blocked by
 M15 evidence: 39 unit tests and nine browser suites pass, including 100 consecutive hands, exact replay restoration, virtual refill accounting, three browser hands and tab/reload persistence. TypeScript, formatting, web and iOS JavaScript exports pass. Table settings/history are optional details. Research remains blocked, not claimed complete.
 
 M16 evidence: 45 unit tests and ten browser suites pass; TypeScript, formatting, web and iOS JavaScript exports pass. Coached mode rotates all five supported first-in positions, uses explicit 100-BB preset setups, and shows match/deviation/ungraded feedback without blocking play. Saved table v1 migrates to v2 and feedback is recomputed. Ranges and sizing are authored conventions, not solver outputs. M14 actual competitor inspection and M18 verified-solver coverage remain blocked by access/data prerequisites.
+
+## Simulator-only focus and deliberate practice
+
+The user now prioritizes the simulator; preserve previous learning features without expanding them.
+
+- [ ] M19 Retry and contextual charts: restore the exact pre-decision state without redealing, show the supported position/hand baseline chart and reasoning, distinguish retry attempts, and preserve existing data.
+- [ ] M20 Saved reviews and troublesome spots: retain bounded local hand/decision history across sessions, replay decisions with the information available then, automatically remember baseline deviations, allow manual marking of ungraded spots, and repeat those exact spots without changing the live table. Keep first tries separate from retries.
+- [ ] M21 Table-first interface: clear LJ/HJ/CO/BTN/SB/BB labels, readable table/actions, and a direct play → feedback → retry/continue → review loop. Preserve all prior functionality and verify responsive/accessibility behavior.
+
+Verified strategy coverage remains M18's prerequisite for calling arbitrary simulator choices correct or incorrect; do not fabricate solver results to close this goal.
+
+M19 foundation: deterministic decision checkpoints, branch-aware retry metadata, v1/v2→v3 replay migration and bounded local review history are implemented. Pure tests verify exact retries/runouts, immutable live-table restoration, original branch preservation, retention limits and malformed-record rejection. UI verification follows with the contextual-chart and library increments.

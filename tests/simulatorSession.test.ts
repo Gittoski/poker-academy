@@ -30,9 +30,7 @@ test("continuous practice refills busted seats without losing accounting", () =>
   let table = createTable(1, [1, 1, 0, 0, 0, 0]);
   assert.ok(table.done);
   const s = {
-    version: 2 as const,
-    mode: "free" as const,
-    coaching: [],
+    ...newSession(),
     hand: 7,
     refills: 0,
     table,
