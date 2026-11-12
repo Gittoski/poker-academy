@@ -11,3 +11,7 @@ Shared components and palette live in `src/components/Visuals.tsx` and `ui.ts`. 
 ## Focused lesson refinement
 
 Following the first user-reported iPhone session, active lessons hide the dashboard, main tabs and general footer. A single Learning path exit remains. One compact step count replaces the four simultaneous stage labels. Answer options are neutral until selected: incorrect selections and explanations turn red; correct ones turn green. Text and icons reinforce color. Final application feedback remains visible until Finish lesson. The focused-lesson browser suite checks these colors, incorrect-state accessibility, restored navigation and persistent XP; eight browser suites now run. This change deliberately leaves the simulator for a separate iteration.
+
+## Simulator-first table
+
+Simulator is the landing screen. The dashboard branding/XP panels are omitted from this view, while Learn/Practice/Progress remain available from the main navigation. An original compact oval table places six physically distinct seats with rotating positions, dealer marker, stacks, public board and pot. Current action is highlighted; private opponents’ cards are not shown before showdown. LJ is the six-max UTG alias used by the underlying authored range. Core fold/call/check controls are grouped with expandable bet/raise options. Saved hands & practice leads to a notebook instead of expanding all history into the live table. Responsive geometry and accessibility tests cover the table, with device validation still pending.

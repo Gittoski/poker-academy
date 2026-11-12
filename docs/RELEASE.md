@@ -4,9 +4,9 @@ M10 remains incomplete until these checks are executed, failures corrected, and 
 
 ## Available checks completed
 
-- Strict TypeScript, all 45 unit tests and formatting.
+- Strict TypeScript, all 54 unit tests and formatting.
 - Exhaustive five-card category frequencies and 100 seeded complete-game conservation/replay tests.
-- Ten browser suites: curriculum, arithmetic, preflop/postflop/exploits, full table hand, migration/backup/reset, offline/responsive/accessibility checks, and guided visuals with reduced-motion tests.
+- Thirteen browser suites: curriculum, arithmetic, preflop/postflop/exploits, full table hand, migration/backup/reset, offline/responsive/accessibility checks, and guided visuals with reduced-motion tests.
 - Web offline reload with saved XP and additional scoring while offline.
 - 320/390/768px layouts without horizontal overflow; automated WCAG A/AA scans have no violations across the four main tabs. This is not a manual accessibility certification.
 - iOS JavaScript/Hermes export and installed-SDK dependency compatibility check.
@@ -33,3 +33,7 @@ The user reports that the app opens in Expo Go on their iPhone, the first lesson
 ## Continuous/coached table additions
 
 Browser checks now cover session persistence across tabs/reload, repeated hands and virtual refills, baseline match/deviation feedback, explicit ungraded coverage, restored feedback and position rotation. The user’s earlier iPhone report does not validate these new features; repeat the device checklist after updating the Windows/iPhone project. Public Poker Trainer inspection remains blocked by environment web access, and no arbitrary GTO grading or native performance claim is made.
+
+## Retry/review release gate
+
+Automated tests cover exact checkpoint restoration including future-deck identity, deterministic replay after a retry, bounded v3 history migration, live-table preservation during saved-spot practice, separate first-try/practice statistics, weak-spot prioritization, stepwise reviews without future-card disclosure, contextual chart coverage and simulator-first responsive geometry. The revised native simulator still requires real-device checks; follow WINDOWS_UPDATE.md for updating the local Expo project. No verified all-street GTO/reference dataset has been provided, so uncovered decisions remain ungraded and the full strategy-coverage objective is not complete.

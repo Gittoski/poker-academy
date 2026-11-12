@@ -38,6 +38,7 @@ export function Curriculum({
   }, [open, phase, onStepChange]);
   function start(i: number) {
     if (!ready || !unlocked(i, progress.completed)) return;
+    onFocusChange?.(true);
     setOpen(i);
     setPhase(0);
     setAnswer(null);

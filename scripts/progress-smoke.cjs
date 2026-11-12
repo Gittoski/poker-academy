@@ -48,6 +48,7 @@ const { chromium, options } = require("./browser.cjs");
       .getByRole("button", { name: "Confirm erase progress", exact: true })
       .click();
     await p.reload();
+    await p.getByRole("button", { name: "Learn", exact: true }).click();
     await p.getByText("Level 1 · 0 XP", { exact: true }).waitFor();
     console.log(
       "PASS legacy restore, targeted review, invalid backup, export, reset cancel/confirm/reload",

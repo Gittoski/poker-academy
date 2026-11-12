@@ -18,6 +18,7 @@ import {
   markDecision,
   returnToLive,
 } from "../simulatorSession";
+import { TableSurface } from "./TableSurface";
 import { HandLibrary } from "./HandLibrary";
 import { DecisionChart } from "./DecisionChart";
 import { heroPosition } from "../baselineCoach";
@@ -37,6 +38,7 @@ export function Simulator({
   onNavigate?: () => void;
 }) {
   const { width } = useWindowDimensions();
+  const [showBetOptions, setShowBetOptions] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
   const [showChart, setShowChart] = useState(false);
   const [showCoachDetails, setShowCoachDetails] = useState(false);
@@ -101,6 +103,7 @@ export function Simulator({
     try {
       change((s) => sessionAction(s, action));
       setTarget("");
+      setShowBetOptions(false);
       setError("");
     } catch (e) {
       setError((e as Error).message);
@@ -138,17 +141,26 @@ export function Simulator({
           <Text style={ui.text}>Return to live table</Text>
         </Touch>
       )}
-      <Text style={ui.heading}>Table lab · virtual chips</Text>
-      <Touch
-        accessibilityRole="button"
-        style={ui.button}
-        onPress={() => {
-          setShowLibrary(true);
-          onNavigate?.();
-        }}
+      <View
+        style={[
+          ui.row,
+          { alignItems: "center", justifyContent: "space-between" },
+        ]}
       >
-        <Text style={ui.text}>Saved hands & practice</Text>
-      </Touch>
+        <Text style={ui.heading}>Simulator</Text>
+        <Touch
+          accessibilityRole="button"
+          style={[ui.button, { paddingHorizontal: 10 }]}
+          onPress={() => {
+            setShowLibrary(true);
+            onNavigate?.();
+          }}
+        >
+          <Text style={[ui.text, { fontSize: 13 }]}>
+            Saved hands & practice
+          </Text>
+        </Touch>
+      </View>
       <View style={ui.row}>
         {[
           { mode: "free" as const, label: "Free table" },
@@ -176,15 +188,18 @@ export function Simulator({
       </View>
       <Text style={ui.muted}>
         {session.mode === "coached"
-          ? "100-BB first-in practice. Earlier seats are preset folded. After your choice, toy opponents play normally. This is an authored teaching baseline, not GTO. Switching modes starts a new session."
-          : "Continuous free play. Choose Coached hands for scoped first-in feedback. Changing mode starts a fresh virtual session."}
+          ? "100 BB · Earlier seats preset folded · Teaching baseline, not GTO"
+          : "Virtual chips · Free play. Switching mode starts a new table."}
       </Text>
       <Text style={ui.label}>
         HAND {session.hand} · BLINDS 1/2 · VIRTUAL CHIPS
       </Text>
       {session.mode === "coached" && (
         <Text style={ui.label}>
-          YOUR POSITION · {heroPosition(table.button)}
+          YOUR POSITION ·{" "}
+          {heroPosition(table.button) === "UTG"
+            ? "LJ (UTG)"
+            : heroPosition(table.button)}
         </Text>
       )}
       {persistenceError && (
@@ -192,64 +207,7 @@ export function Simulator({
           {persistenceError}
         </Text>
       )}
-      <View
-        style={[
-          ui.card,
-          {
-            backgroundColor: "#103D32",
-            borderWidth: 1,
-            borderColor: "#377B66",
-          },
-        ]}
-      >
-        <Text style={ui.label}>
-          {["PREFLOP", "FLOP", "TURN", "RIVER"][table.stage]} ·{" "}
-          {table.done ? "HAND COMPLETE" : "YOUR DECISION"}
-        </Text>
-        <Text style={ui.heading}>
-          Pot {table.players.reduce((n, p) => n + p.total, 0)} chips
-        </Text>
-        <CardRow
-          cards={table.board.length ? table.board : [0, 1, 2, 3, 4]}
-          hidden={!table.board.length}
-          compact={width < 360}
-        />
-        <View style={ui.row}>
-          {table.players.map((v, i) => (
-            <View
-              key={i}
-              style={{
-                width: "47%",
-                padding: 10,
-                backgroundColor: "#0D2924",
-                borderRadius: 10,
-              }}
-            >
-              <Text style={ui.text}>
-                {i === table.button ? "ⓓ " : ""}
-                {botNames[i]}
-              </Text>
-              <Text style={ui.muted}>
-                {v.stack} behind · {v.street} in street
-              </Text>
-              {v.folded ? (
-                <Text style={ui.muted}>Folded</Text>
-              ) : (
-                <View style={{ gap: 8, paddingTop: 8 }}>
-                  <CardRow
-                    cards={v.hole}
-                    hidden={i !== 0 && !table.done}
-                    compact
-                  />
-                  {!v.stack && !table.done && (
-                    <Text style={ui.label}>ALL-IN</Text>
-                  )}
-                </View>
-              )}
-            </View>
-          ))}
-        </View>
-      </View>
+      <TableSurface table={table} />
       {error ? (
         <Text accessibilityRole="alert" style={ui.text}>
           {error}
@@ -344,17 +302,23 @@ export function Simulator({
       )}
       {!table.done && (
         <View style={ui.card}>
-          <Text style={ui.heading}>Your decision</Text>
-          <CardRow cards={p.hole} />
-          <Text style={ui.muted}>
-            Facing {Math.max(0, table.bet - p.street)} · Call costs {l.call} ·
-            Stack {p.stack}
-          </Text>
+          <View style={[ui.row, { alignItems: "center" }]}>
+            <CardRow cards={p.hole} compact />
+            <View style={{ flex: 1 }}>
+              <Text style={ui.heading}>Your decision</Text>
+              <Text style={ui.muted}>
+                Call {l.call} · {p.stack} behind
+              </Text>
+            </View>
+          </View>
           <View style={ui.row}>
             {l.call > 0 && (
               <Touch
                 accessibilityRole="button"
-                style={ui.button}
+                style={[
+                  ui.button,
+                  { flex: 1, paddingHorizontal: 8, alignItems: "center" },
+                ]}
                 onPress={() => move({ type: "fold" })}
               >
                 <Text style={ui.text}>Fold</Text>
@@ -362,13 +326,32 @@ export function Simulator({
             )}
             <Touch
               accessibilityRole="button"
-              style={ui.button}
+              style={[
+                ui.button,
+                { flex: 1, paddingHorizontal: 8, alignItems: "center" },
+              ]}
               onPress={() => move({ type: l.call ? "call" : "check" })}
             >
               <Text style={ui.text}>{l.call ? "Call " + l.call : "Check"}</Text>
             </Touch>
+            {l.canRaise && (
+              <Touch
+                accessibilityRole="button"
+                accessibilityLabel="Bet / raise options"
+                accessibilityState={{ expanded: showBetOptions }}
+                style={[
+                  ui.button,
+                  { flex: 1, paddingHorizontal: 8, alignItems: "center" },
+                ]}
+                onPress={() => setShowBetOptions(!showBetOptions)}
+              >
+                <Text style={ui.text}>
+                  {showBetOptions ? "Close" : table.bet ? "Raise…" : "Bet…"}
+                </Text>
+              </Touch>
+            )}
           </View>
-          {l.canRaise && (
+          {l.canRaise && showBetOptions && (
             <>
               <Text style={ui.muted}>
                 Raise TO a total this street. Minimum {l.minTo}, maximum{" "}

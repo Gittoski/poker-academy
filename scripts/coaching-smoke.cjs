@@ -15,7 +15,7 @@ const { handClass, heroPosition } = load("../src/baselineCoach.ts", __filename);
     await p.goto(process.env.POKER_TEST_URL || "http://127.0.0.1:8765");
     await p.getByRole("button", { name: "Table", exact: true }).click();
     await p.getByRole("button", { name: "Coached hands", exact: true }).click();
-    await p.getByText("YOUR POSITION · UTG", { exact: true }).waitFor();
+    await p.getByText("YOUR POSITION · LJ (UTG)", { exact: true }).waitFor();
     await p.getByRole("button", { name: "Call 2", exact: true }).click();
     await p.getByText("Outside teaching baseline", { exact: true }).waitFor();
     await p
@@ -43,6 +43,9 @@ const { handClass, heroPosition } = load("../src/baselineCoach.ts", __filename);
     if (expected === "Fold")
       await p.getByRole("button", { name: "Fold", exact: true }).click();
     else {
+      await p
+        .getByRole("button", { name: "Bet / raise options", exact: true })
+        .click();
       await p.getByLabel("Raise total in chips").fill("5");
       await p
         .getByRole("button", { name: "Raise to amount", exact: true })

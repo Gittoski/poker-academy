@@ -263,6 +263,12 @@ export function troublesomeSpots(s: SimulatorSession) {
     .map((g) => ({
       ...g,
       latest: g.attempts.at(-1)!,
+      deviations: g.attempts.filter((d) => d.feedback.status === "deviation")
+        .length,
+      needsReview:
+        g.attempts.at(-1)!.feedback.status === "deviation" ||
+        (g.attempts.at(-1)!.feedback.status === "ungraded" &&
+          g.attempts.some((d) => d.marked)),
       target: [...g.attempts]
         .reverse()
         .find((d) => d.marked || d.feedback.status === "deviation")!,
@@ -276,8 +282,8 @@ export function troublesomeSpots(s: SimulatorSession) {
     }))
     .sort(
       (a, b) =>
-        Number(b.latest.feedback.status === "deviation") -
-          Number(a.latest.feedback.status === "deviation") ||
+        Number(b.needsReview) - Number(a.needsReview) ||
+        b.deviations - a.deviations ||
         b.latest.id - a.latest.id,
     );
 }

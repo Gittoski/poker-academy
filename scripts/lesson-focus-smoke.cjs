@@ -9,9 +9,13 @@ const AxeBuilder = require("@axe-core/playwright").default;
     });
     const p = await context.newPage();
     await p.goto(process.env.POKER_TEST_URL || "http://127.0.0.1:8765");
+    await p.getByRole("button", { name: "Learn", exact: true }).click();
     await p
       .getByRole("button", { name: "Start lesson 1 →", exact: true })
       .click();
+    await p
+      .getByText("YOUR JOURNEY", { exact: true })
+      .waitFor({ state: "hidden" });
     if (await p.getByText("YOUR JOURNEY", { exact: true }).count())
       throw Error("Dashboard distracts from active lesson");
     if (await p.getByRole("button", { name: "Table", exact: true }).count())
@@ -77,6 +81,7 @@ const AxeBuilder = require("@axe-core/playwright").default;
       .click();
     await p.getByRole("button", { name: "Table", exact: true }).waitFor();
     await p.reload();
+    await p.getByRole("button", { name: "Learn", exact: true }).click();
     await p.getByText("Level 1 · 20 XP", { exact: true }).waitFor();
     console.log(
       "PASS focused lesson, red/green feedback with text/icons, accessible error state, explicit finish, navigation restoration and saved XP",

@@ -199,6 +199,10 @@ export function HandLibrary({
                   · Practice tries: {g.retries}. Retrying does not inflate
                   first-try results.
                 </Text>
+                <Text style={ui.muted}>
+                  Baseline deviations in retained history: {g.deviations}.
+                  Unresolved and repeatedly troublesome spots appear first.
+                </Text>
                 <Text style={ui.text}>{g.target.feedback.explanation}</Text>
                 <Touch
                   accessibilityRole="button"

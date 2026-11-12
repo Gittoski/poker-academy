@@ -27,6 +27,9 @@ const { heroPosition, handClass } = load("../src/baselineCoach.ts", __filename);
     if (expected === "Fold")
       await p.getByRole("button", { name: "Fold", exact: true }).click();
     else {
+      await p
+        .getByRole("button", { name: "Bet / raise options", exact: true })
+        .click();
       await p.getByLabel("Raise total in chips").fill("5");
       await p
         .getByRole("button", { name: "Raise to amount", exact: true })

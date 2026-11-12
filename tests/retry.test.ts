@@ -137,3 +137,22 @@ test("archived decision practice restores the original moment and then returns t
   assert.deepEqual(returnToLive(decodeSession(encodeSession(s))).table, live);
   assert.throws(() => practiceReviewedDecision(s, archiveId, -1));
 });
+
+test("unresolved repeated deviations take priority over a newer single deviation", async () => {
+  const { troublesomeSpots } = await import("../src/simulatorSession");
+  let s = sessionAction(newSession("coached"), { type: "call" });
+  s = retryDecision(s, s.attempts[0].id);
+  s = sessionAction(s, { type: "call" });
+  while (!s.table.done)
+    s = sessionAction(
+      s,
+      legal(s.table).call ? { type: "call" } : { type: "check" },
+    );
+  s = continueSession(s);
+  s = sessionAction(s, { type: "call" });
+  const groups = troublesomeSpots(s);
+  assert.ok(groups.length >= 2);
+  assert.equal(groups[0].deviations, 2);
+  assert.ok(groups[0].label.includes("UTG"));
+  assert.ok(groups[1].label.includes("HJ"));
+});

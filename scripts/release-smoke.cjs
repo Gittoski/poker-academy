@@ -10,11 +10,13 @@ const AxeBuilder = require("@axe-core/playwright").default;
     await p.goto(process.env.POKER_TEST_URL || "http://127.0.0.1:8765");
     await p.evaluate(() => navigator.serviceWorker.ready);
     await p.reload();
+    await p.getByRole("button", { name: "Learn", exact: true }).click();
     await p.waitForFunction(() => !!navigator.serviceWorker.controller);
     await p.getByRole("button", { name: "Practice", exact: true }).click();
     await p.getByRole("button", { name: "25%", exact: true }).click();
     await context.setOffline(true);
     await p.reload();
+    await p.getByRole("button", { name: "Learn", exact: true }).click();
     await p.getByText("Level 1 · 10 XP", { exact: true }).waitFor();
     await p.getByRole("button", { name: "Practice", exact: true }).click();
     await p.getByRole("button", { name: "Preflop", exact: true }).click();
@@ -23,6 +25,7 @@ const AxeBuilder = require("@axe-core/playwright").default;
       .getByText("Matches this exercise · +10 XP", { exact: true })
       .waitFor();
     await p.reload();
+    await p.getByRole("button", { name: "Learn", exact: true }).click();
     await p.getByText("Level 1 · 20 XP", { exact: true }).waitFor();
     await context.setOffline(false);
     for (const width of [320, 390, 768]) {

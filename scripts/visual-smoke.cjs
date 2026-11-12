@@ -11,6 +11,7 @@ const AxeBuilder = require("@axe-core/playwright").default;
     p.on("pageerror", (e) => errors.push(e.message));
     await p.emulateMedia({ reducedMotion: "no-preference" });
     await p.goto(process.env.POKER_TEST_URL || "http://127.0.0.1:8765");
+    await p.getByRole("button", { name: "Learn", exact: true }).click();
     await p.waitForTimeout(350);
     await p.screenshot({ path: "/tmp/poker-guided-home.png" });
     async function measure(tab) {

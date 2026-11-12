@@ -7,6 +7,7 @@ const { bridges } = load("../src/journey.ts", __filename);
   try {
     const p = await b.newPage({ viewport: { width: 390, height: 844 } });
     await p.goto(process.env.POKER_TEST_URL || "http://127.0.0.1:8765");
+    await p.getByRole("button", { name: "Learn", exact: true }).click();
     await p
       .getByRole("button", { name: "Start lesson 1 →", exact: true })
       .click();
@@ -71,6 +72,7 @@ const { bridges } = load("../src/journey.ts", __filename);
       }
     }
     await p.reload();
+    await p.getByRole("button", { name: "Learn", exact: true }).click();
     await p.getByText("PATH COMPLETE", { exact: true }).waitFor();
     await p.getByText("Level 3 · 240 XP", { exact: true }).waitFor();
     console.log(

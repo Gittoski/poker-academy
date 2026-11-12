@@ -9,6 +9,7 @@ const { chromium, options } = require("./browser.cjs");
   await page.getByRole("button", { name: "25%", exact: true }).click();
   await page.getByText("Correct · +10 XP", { exact: true }).waitFor();
   await page.reload();
+  await page.getByRole("button", { name: "Learn", exact: true }).click();
   await page.getByText("Level 1 · 10 XP", { exact: true }).waitFor();
   await page.getByRole("button", { name: "Progress", exact: true }).click();
   await page.getByText(/^Pot odds: 1\/1 correct/).waitFor();

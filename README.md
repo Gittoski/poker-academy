@@ -48,3 +48,9 @@ Continuous free-table practice keeps the current hand, rotates blinds and lets y
 Coached hands starts each hand at 100 BB, rotates UTG/HJ/CO/BTN/SB, and presets earlier folds so the authored first-in baseline applies. It flags action/sizing deviations without interrupting play. Postflop, facing action and unsupported stacks are explicitly ungraded. This is not GTO/PTO solver evaluation. Saved table sessions migrate from v1 to v2; feedback is recomputed from legal actions on restore. Actual Poker Trainer research is pending environment web access; see `docs/POKER_TRAINER_RESEARCH.md`.
 
 The simulator notebook now saves up to 30 completed hand branches and 200 decision attempts. Use **Retry this decision**, **Show decision chart**, or **Saved hands & practice**. Baseline deviations enter troublesome spots automatically; ungraded decisions can be marked manually. Saved-spot practice pauses the live table and restores it on return. Retries are separate from retained first-try results. Current validation: 52 unit tests, twelve browser suites, web and iOS JavaScript exports. Strategy coverage remains the authored first-in baseline; no arbitrary GTO verdict is supplied.
+
+## Simulator-first update
+
+The app now opens at an original six-seat table, with rotating LJ/HJ/CO/BTN/SB/BB positions. LJ corresponds to UTG in the existing six-max teaching data. Main actions stay compact; bet/raise details are expandable. Learning features remain available in navigation. The notebook prioritizes unresolved and repeatedly troublesome baseline deviations; statistics cover retained attempts only. Current validation: **54 unit tests, thirteen browser suites, TypeScript, formatting and both JavaScript exports pass**. New native-device checks remain pending.
+
+See [Windows/Expo Go update steps](docs/WINDOWS_UPDATE.md). Universal strategy grading is still blocked on verified, licensed reference data: the app explicitly leaves uncovered situations ungraded.

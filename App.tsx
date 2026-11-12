@@ -33,7 +33,7 @@ function Academy() {
     () => scroll.current?.scrollTo({ y: 0, animated: false }),
     [],
   );
-  const [tab, setTab] = useState("Learn");
+  const [tab, setTab] = useState("Table");
   const [progress, setProgress] = useState<Progress>(freshProgress);
   const [reviewSet, setReviewSet] = useState(drills);
   const [reviewKey, setReviewKey] = useState(0);
@@ -82,8 +82,14 @@ function Academy() {
     <SafeAreaProvider>
       <SafeAreaView style={s.root}>
         <StatusBar style="light" />
-        <ScrollView ref={scroll} contentContainerStyle={s.body}>
-          {!lessonFocused && (
+        <ScrollView
+          ref={scroll}
+          contentContainerStyle={[
+            s.body,
+            tab === "Table" && { padding: 16, paddingTop: 12, gap: 12 },
+          ]}
+        >
+          {!lessonFocused && tab !== "Table" && (
             <>
               <View style={s.brandRow}>
                 <View style={s.brandMark}>
@@ -157,7 +163,11 @@ function Academy() {
               {error}
             </Text>
           ) : null}
-          <FadeIn key={tab} testID="screen-transition" style={{ gap: 20 }}>
+          <FadeIn
+            key={tab}
+            testID="screen-transition"
+            style={{ gap: tab === "Table" ? 12 : 20 }}
+          >
             {tab === "Table" ? (
               <Simulator
                 session={tableSession.session}

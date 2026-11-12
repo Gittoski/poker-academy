@@ -17,7 +17,7 @@ Each milestone: implement, test, fix, run regression checks, update these docume
 
 ## Evidence and limitations
 
-Milestones 1–9 are implemented and verified. M10 local checks passed: 45 unit tests, TypeScript, formatting, web and iOS JavaScript exports, ten browser suites, offline reload/persistence, and responsive/accessibility scans. CI is configured but remote results are not claimed.
+Milestones 1–9 are implemented and verified. M10 local checks passed: 54 unit tests, TypeScript, formatting, web and iOS JavaScript exports, thirteen browser suites, offline reload/persistence, and responsive/accessibility scans. CI is configured but remote results are not claimed.
 
 Remaining external gate: actual iPhone/Expo Go and native release build/signing tests. This Linux host has no Xcode, iOS simulator or connected iPhone. Follow docs/RELEASE.md in a device/macOS environment; do not mark M10 complete from JavaScript exports. No accounts, remote APIs or credentials are needed for training.
 
@@ -58,10 +58,14 @@ The user now prioritizes the simulator; preserve previous learning features with
 
 - [x] M19 Retry and contextual charts: restore the exact pre-decision state without redealing, show the supported position/hand baseline chart and reasoning, distinguish retry attempts, and preserve existing data.
 - [x] M20 Saved reviews and troublesome spots: retain bounded local hand/decision history across sessions, replay decisions with the information available then, automatically remember baseline deviations, allow manual marking of ungraded spots, and repeat those exact spots without changing the live table. Keep first tries separate from retries.
-- [ ] M21 Table-first interface: clear LJ/HJ/CO/BTN/SB/BB labels, readable table/actions, and a direct play → feedback → retry/continue → review loop. Preserve all prior functionality and verify responsive/accessibility behavior.
+- [x] M21 Table-first interface: clear LJ/HJ/CO/BTN/SB/BB labels, readable table/actions, and a direct play → feedback → retry/continue → review loop. Preserve all prior functionality and verify responsive/accessibility behavior.
 
 Verified strategy coverage remains M18's prerequisite for calling arbitrary simulator choices correct or incorrect; do not fabricate solver results to close this goal.
 
 M19 foundation: deterministic decision checkpoints, branch-aware retry metadata, v1/v2→v3 replay migration and bounded local review history are implemented. Pure tests verify exact retries/runouts, immutable live-table restoration, original branch preservation, retention limits and malformed-record rejection. UI verification follows with the contextual-chart and library increments.
 
 M19/M20 UI evidence: 52 unit tests and twelve browser suites pass. Exact retries survive reload, contextual 169-hand charts use the decision snapshot and refuse unsupported spots, original/practice branches remain distinct, saved hands step through public information, and troublesome spots can be repeated without altering the live hand. First-try counts exclude practice; retention is explicitly 30 hands / 200 attempts. TypeScript, formatting and web/iOS JavaScript exports pass; new native-device checks remain pending.
+
+M21 evidence: simulator is now the landing screen, with an original six-seat table surface, rotating LJ/HJ/CO/BTN/SB/BB labels and compact action controls. The first six-max seat is shown as LJ, equivalent to UTG in the existing teaching dataset. Tests verify distinct position mapping for every button, nonoverlapping seats at 320/390/768px, retained lesson access, and all prior flows. 54 unit tests and thirteen browser suites pass, with TypeScript, formatting and web/iOS JavaScript exports. Native device validation is still pending.
+
+Goal boundary: exact retries, hand reviews and retained troublesome-spot practice are implemented. Universal correct/incorrect grading remains blocked by M18: no verified, licensed strategy data has been supplied for facing action, varying stack/rake/size configurations or postflop. These situations remain explicitly ungraded. Competitor web research also remains unverified while web-domain access is blocked.
