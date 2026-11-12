@@ -164,6 +164,7 @@ function Academy() {
                 change={tableSession.change}
                 reset={tableSession.reset}
                 persistenceError={tableSession.error}
+                onNavigate={resetLessonScroll}
               />
             ) : tab === "Learn" ? (
               <Curriculum

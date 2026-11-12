@@ -44,6 +44,8 @@ const { spawn, spawnSync } = require("node:child_process");
       "lesson-focus-smoke",
       "session-smoke",
       "coaching-smoke",
+      "retry-smoke",
+      "library-smoke",
     ]) {
       const r = spawnSync(process.execPath, [`scripts/${script}.cjs`], {
         stdio: "inherit",

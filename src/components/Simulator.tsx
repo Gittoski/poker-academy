@@ -12,7 +12,14 @@ import {
   SimulatorSession,
   sessionAction,
   continueSession,
+  currentDecision,
+  retryDecision,
+  decisionTable,
+  markDecision,
+  returnToLive,
 } from "../simulatorSession";
+import { HandLibrary } from "./HandLibrary";
+import { DecisionChart } from "./DecisionChart";
 import { heroPosition } from "../baselineCoach";
 import { botNames } from "../bots";
 import { ui } from "./ui";
@@ -21,13 +28,17 @@ export function Simulator({
   change,
   reset,
   persistenceError,
+  onNavigate,
 }: {
   session: SimulatorSession | null;
   change: (update: (s: SimulatorSession) => SimulatorSession) => void;
   reset: (mode?: "free" | "coached") => void;
   persistenceError: string;
+  onNavigate?: () => void;
 }) {
   const { width } = useWindowDimensions();
+  const [showLibrary, setShowLibrary] = useState(false);
+  const [showChart, setShowChart] = useState(false);
   const [showCoachDetails, setShowCoachDetails] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -63,8 +74,27 @@ export function Simulator({
         ) : null}
       </View>
     );
+  if (showLibrary)
+    return (
+      <HandLibrary
+        session={session}
+        change={change}
+        close={() => {
+          setShowLibrary(false);
+          onNavigate?.();
+        }}
+        play={() => {
+          setShowLibrary(false);
+          setTarget("");
+          setError("");
+          onNavigate?.();
+        }}
+      />
+    );
   const table = session.table;
-  const feedback = session.coaching.at(-1);
+  const feedback =
+    session.retryOf === null ? session.coaching.at(-1) : undefined;
+  const decision = currentDecision(session);
   const l = legal(table);
   const p = table.players[0];
   function move(action: Action) {
@@ -79,6 +109,7 @@ export function Simulator({
   function next() {
     try {
       change(continueSession);
+      onNavigate?.();
       setError("");
     } catch (e) {
       setError((e as Error).message);
@@ -86,7 +117,38 @@ export function Simulator({
   }
   return (
     <>
+      {session.retryOf !== null && (
+        <View style={ui.card}>
+          <Text style={ui.heading}>Retrying the same decision</Text>
+          <Text style={ui.muted}>
+            The cards, stacks, board and prior actions are restored. This is a
+            practice attempt, not a new first try.
+          </Text>
+        </View>
+      )}
+      {session.resume && (
+        <Touch
+          accessibilityRole="button"
+          style={ui.button}
+          onPress={() => {
+            change(returnToLive);
+            onNavigate?.();
+          }}
+        >
+          <Text style={ui.text}>Return to live table</Text>
+        </Touch>
+      )}
       <Text style={ui.heading}>Table lab · virtual chips</Text>
+      <Touch
+        accessibilityRole="button"
+        style={ui.button}
+        onPress={() => {
+          setShowLibrary(true);
+          onNavigate?.();
+        }}
+      >
+        <Text style={ui.text}>Saved hands & practice</Text>
+      </Touch>
       <View style={ui.row}>
         {[
           { mode: "free" as const, label: "Free table" },
@@ -233,6 +295,45 @@ export function Simulator({
                 : "Why this feedback?"}
             </Text>
           </Touch>
+          {decision && (
+            <View style={ui.row}>
+              <Touch
+                accessibilityRole="button"
+                style={ui.button}
+                onPress={() => {
+                  change((s) => retryDecision(s, decision.id));
+                  setTarget("");
+                  setError("");
+                  onNavigate?.();
+                  onNavigate?.();
+                }}
+              >
+                <Text style={ui.text}>Retry this decision</Text>
+              </Touch>
+              <Touch
+                accessibilityRole="button"
+                style={ui.button}
+                onPress={() => change((s) => markDecision(s, decision.id))}
+              >
+                <Text style={ui.text}>
+                  {decision.marked ? "Unmark troublesome" : "Mark troublesome"}
+                </Text>
+              </Touch>
+            </View>
+          )}
+          <Touch
+            accessibilityRole="button"
+            style={ui.button}
+            accessibilityState={{ expanded: showChart }}
+            onPress={() => setShowChart(!showChart)}
+          >
+            <Text style={ui.text}>
+              {showChart ? "Hide decision chart" : "Show decision chart"}
+            </Text>
+          </Touch>
+          {showChart && (
+            <DecisionChart table={decision ? decisionTable(decision) : table} />
+          )}
           {showCoachDetails && (
             <>
               <Text style={ui.muted}>{feedback.context}</Text>
@@ -318,7 +419,9 @@ export function Simulator({
             not a strategic grade.
           </Text>
           <Touch accessibilityRole="button" style={ui.button} onPress={next}>
-            <Text style={ui.text}>Next hand</Text>
+            <Text style={ui.text}>
+              {session.resume ? "Return to live hand" : "Next hand"}
+            </Text>
           </Touch>
           <Text style={ui.muted}>
             {session.mode === "coached"

@@ -56,10 +56,12 @@ M16 evidence: 45 unit tests and ten browser suites pass; TypeScript, formatting,
 
 The user now prioritizes the simulator; preserve previous learning features without expanding them.
 
-- [ ] M19 Retry and contextual charts: restore the exact pre-decision state without redealing, show the supported position/hand baseline chart and reasoning, distinguish retry attempts, and preserve existing data.
-- [ ] M20 Saved reviews and troublesome spots: retain bounded local hand/decision history across sessions, replay decisions with the information available then, automatically remember baseline deviations, allow manual marking of ungraded spots, and repeat those exact spots without changing the live table. Keep first tries separate from retries.
+- [x] M19 Retry and contextual charts: restore the exact pre-decision state without redealing, show the supported position/hand baseline chart and reasoning, distinguish retry attempts, and preserve existing data.
+- [x] M20 Saved reviews and troublesome spots: retain bounded local hand/decision history across sessions, replay decisions with the information available then, automatically remember baseline deviations, allow manual marking of ungraded spots, and repeat those exact spots without changing the live table. Keep first tries separate from retries.
 - [ ] M21 Table-first interface: clear LJ/HJ/CO/BTN/SB/BB labels, readable table/actions, and a direct play → feedback → retry/continue → review loop. Preserve all prior functionality and verify responsive/accessibility behavior.
 
 Verified strategy coverage remains M18's prerequisite for calling arbitrary simulator choices correct or incorrect; do not fabricate solver results to close this goal.
 
 M19 foundation: deterministic decision checkpoints, branch-aware retry metadata, v1/v2→v3 replay migration and bounded local review history are implemented. Pure tests verify exact retries/runouts, immutable live-table restoration, original branch preservation, retention limits and malformed-record rejection. UI verification follows with the contextual-chart and library increments.
+
+M19/M20 UI evidence: 52 unit tests and twelve browser suites pass. Exact retries survive reload, contextual 169-hand charts use the decision snapshot and refuse unsupported spots, original/practice branches remain distinct, saved hands step through public information, and troublesome spots can be repeated without altering the live hand. First-try counts exclude practice; retention is explicitly 30 hands / 200 attempts. TypeScript, formatting and web/iOS JavaScript exports pass; new native-device checks remain pending.
