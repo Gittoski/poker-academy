@@ -1,6 +1,6 @@
 # Correctness contract
 
-No PTO charts or proprietary content are included. PTO-style means the requested simplified learning experience, not affiliation or a claim of equilibrium accuracy. Drills combine verified arithmetic and hand rules with explicitly conditional, authored strategic heuristics. No live opponent frequencies are inferred.
+No PTO charts or proprietary content are included. PTO-style means the requested simplified learning experience, not affiliation or a claim of equilibrium accuracy. Drills combine verified arithmetic and hand rules with explicitly conditional, authored strategic heuristics. The separate Solved river simulator mode additionally uses actual, narrowly scoped solver output with original assumed ranges; its [inputs, numeric checks and limitations](SOLVED_RIVER.md) are documented. No live opponent frequencies are inferred.
 
 ## Mathematics
 

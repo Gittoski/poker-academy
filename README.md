@@ -7,9 +7,10 @@ Implemented features:
 - Guided Basics → Deeper strategy → Mastery practice path. Twelve lessons each use Learn → Example → Check → Apply, with two required checks and cumulative prerequisites. Existing completion is preserved; the course is not a guarantee of expertise.
 - Poker math and ranking drills, preflop first-in trainer with 169-hand reference charts, eight postflop scenarios, five opponent profiles and six exploit exercises.
 - Playable six-seat virtual-chip table: betting, all-ins, side pots, showdown, rotating blinds, action history and deterministic replay export. Table sessions and learning progress persist across tabs and reload.
+- Solved river simulator practice: 22 calculated conditional nodes, changing 169-class charts, exact-combo frequencies/EV feedback, covered bet sizes, exact retries and saved reviews. [Inputs and limits](docs/SOLVED_RIVER.md).
 - Local XP, levels, accuracy, weakest-topic review, progress backup/restore and confirmed reset. Version-1 progress migrates to version 2.
 
-Ranges and exploit recommendations are **authored heuristics**, not GTO solutions. Every scenario explains the relevant assumptions. Numerical examples distinguish calculated results from hypothetical inputs. Bot policies are toy demonstrations, not calibrated opponents. See [correctness evidence](docs/CORRECTNESS.md) and the persistent [roadmap](ROADMAP.md).
+Preflop ranges and exploit recommendations are **authored heuristics**, not GTO solutions. The separate solved-river pack uses actual solver output with explicitly assumed ranges and narrow coverage. Every scenario explains the relevant assumptions. Numerical examples distinguish calculated results from hypothetical inputs. Bot policies are toy demonstrations, not calibrated opponents. See [correctness evidence](docs/CORRECTNESS.md) and the persistent [roadmap](ROADMAP.md).
 
 ## Develop
 
@@ -31,7 +32,7 @@ npm run test:web
 npm run build:ios
 ```
 
-`check` runs strict TypeScript, unit tests and Prettier. Tests include all 2,598,960 five-card combinations, side-pot/short-raise fixtures and 100 seeded conservation/replay games. The ten-suite web runner starts and stops its own isolated Python server, then tests learning, trainers, simulator, backup/reset, offline reload and accessibility at 320/390/768px. Python 3 and Chromium are required: `npx playwright install chromium`, or set `CHROMIUM_PATH` to a system browser. CI configuration runs these same commands; remote CI results have not been verified here.
+`check` runs strict TypeScript, unit tests and Prettier. Tests include all 2,598,960 five-card combinations, side-pot/short-raise fixtures and 100 seeded conservation/replay games. The fourteen-suite web runner starts and stops its own isolated Python server, then tests learning, trainers, simulator, backup/reset, offline reload and accessibility at 320/390/768px. Python 3 and Chromium are required: `npx playwright install chromium`, or set `CHROMIUM_PATH` to a system browser. CI configuration runs these same commands; remote CI results have not been verified here.
 
 `build:web` creates a service worker for static hosting over HTTPS. The first visit must be online; subsequent cached reloads and practice work offline. Native bundles include content locally, but native offline cold-start has not been tested. `build:ios` exports JavaScript/Hermes only; **it does not compile or test a native iPhone app**.
 

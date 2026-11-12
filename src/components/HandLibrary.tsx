@@ -1,3 +1,4 @@
+import { RIVER_PRESET_ACTIONS } from "../solvedStrategy";
 import React, { useMemo, useState } from "react";
 import { View, Text } from "react-native";
 import { Touch, CardRow } from "./Visuals";
@@ -43,7 +44,11 @@ export function HandLibrary({
   );
   if (hand && table) {
     const action = hand.record.actions[step];
-    const hero = table.actor === 0 && !table.done && !!action;
+    const hero =
+      table.actor === 0 &&
+      !table.done &&
+      !!action &&
+      (hand.record.mode !== "river" || step >= RIVER_PRESET_ACTIONS);
     const feedback = hero ? evaluateBaseline(table, action) : null;
     return (
       <>
@@ -240,7 +245,11 @@ export function HandLibrary({
                   {h.practice ? "practice" : "original"} · #{h.id}
                 </Text>
                 <Text style={ui.muted}>
-                  {h.record.mode === "coached" ? "Coached hands" : "Free table"}{" "}
+                  {h.record.mode === "river"
+                    ? "Solved river"
+                    : h.record.mode === "coached"
+                      ? "Coached hands"
+                      : "Free table"}{" "}
                   · {h.record.actions.length} actions
                 </Text>
               </Touch>

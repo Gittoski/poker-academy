@@ -1,3 +1,6 @@
+import { gradeSolved } from "./solvedStrategy";
+import { handClass } from "./handClass";
+export { handClass } from "./handClass";
 import { Action, Table, act, createTable } from "./table";
 import { Position, firstIn } from "./preflop";
 export type BaselineFeedback = {
@@ -5,6 +8,8 @@ export type BaselineFeedback = {
   title: string;
   explanation: string;
   context: string;
+  reference?: "solver";
+  strategyKey?: string;
 };
 export const baselineName = "Academy first-in baseline v1";
 const buttons = [3, 2, 1, 0, 5];
@@ -23,23 +28,10 @@ export function heroPosition(button: number): Position | "BB" {
   const names = ["BTN", "SB", "BB", "UTG", "HJ", "CO"] as const;
   return names[(6 - button) % 6];
 }
-export function handClass(cards: number[]): string {
-  if (
-    cards.length !== 2 ||
-    cards.some((c) => !Number.isInteger(c) || c < 0 || c > 51) ||
-    cards[0] === cards[1]
-  )
-    throw new Error("Invalid hole cards");
-  const sorted = [...cards].sort((a, b) => b - a);
-  const ranks = sorted.map((c) => "23456789TJQKA"[Math.floor(c / 4)]);
-  return (
-    ranks[0] +
-    ranks[1] +
-    (ranks[0] === ranks[1] ? "" : sorted[0] % 4 === sorted[1] % 4 ? "s" : "o")
-  );
-}
-/** Grades only a named authored exercise. Never reads opponents' hole cards or the future deck. */
+/** Grades a covered conditional solve or named authored exercise. Never reads opponents' hole cards or the future deck. */
 export function evaluateBaseline(s: Table, action: Action): BaselineFeedback {
+  const solved = gradeSolved(s, action);
+  if (solved) return solved;
   const ungraded = (reason: string): BaselineFeedback => ({
     status: "ungraded",
     title: "Not graded",

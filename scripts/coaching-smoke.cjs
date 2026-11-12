@@ -19,8 +19,8 @@ const { handClass, heroPosition } = load("../src/baselineCoach.ts", __filename);
     await p.getByRole("button", { name: "Call 2", exact: true }).click();
     await p.getByText("Outside teaching baseline", { exact: true }).waitFor();
     await p
-      .getByRole("button", { name: "Why this feedback?", exact: true })
-      .click();
+      .getByRole("button", { name: "Hide coaching explanation", exact: true })
+      .waitFor();
     await p.getByText(/not a GTO error or an EV-loss calculation/).waitFor();
     await p.reload();
     await p.getByRole("button", { name: "Table", exact: true }).click();

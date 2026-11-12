@@ -1,3 +1,4 @@
+import { solvedSpot, actionLabel } from "../solvedStrategy";
 import { CardRow, Touch } from "./Visuals";
 import React, { useState } from "react";
 import {
@@ -17,6 +18,7 @@ import {
   decisionTable,
   markDecision,
   returnToLive,
+  recordCursor,
 } from "../simulatorSession";
 import { TableSurface } from "./TableSurface";
 import { HandLibrary } from "./HandLibrary";
@@ -33,7 +35,7 @@ export function Simulator({
 }: {
   session: SimulatorSession | null;
   change: (update: (s: SimulatorSession) => SimulatorSession) => void;
-  reset: (mode?: "free" | "coached") => void;
+  reset: (mode?: "free" | "coached" | "river") => void;
   persistenceError: string;
   onNavigate?: () => void;
 }) {
@@ -41,6 +43,7 @@ export function Simulator({
   const [showBetOptions, setShowBetOptions] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
   const [showChart, setShowChart] = useState(false);
+  const [showLiveChart, setShowLiveChart] = useState(false);
   const [showCoachDetails, setShowCoachDetails] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -101,7 +104,13 @@ export function Simulator({
   const p = table.players[0];
   function move(action: Action) {
     try {
-      change((s) => sessionAction(s, action));
+      let deviation = false;
+      change((s) => {
+        const next = sessionAction(s, action);
+        deviation = next.coaching.at(-1)?.status === "deviation";
+        return next;
+      });
+      setShowCoachDetails(deviation);
       setTarget("");
       setShowBetOptions(false);
       setError("");
@@ -165,6 +174,7 @@ export function Simulator({
         {[
           { mode: "free" as const, label: "Free table" },
           { mode: "coached" as const, label: "Coached hands" },
+          { mode: "river" as const, label: "Solved river" },
         ].map((v) => (
           <Touch
             key={v.mode}
@@ -187,9 +197,11 @@ export function Simulator({
         ))}
       </View>
       <Text style={ui.muted}>
-        {session.mode === "coached"
-          ? "100 BB · Earlier seats preset folded · Teaching baseline, not GTO"
-          : "Virtual chips · Free play. Switching mode starts a new table."}
+        {session.mode === "river"
+          ? "Preset river · BTN vs BB · Assumed ranges, calculated strategy. Varied cards on this board; check / half-pot / pot openings."
+          : session.mode === "coached"
+            ? "100 BB · Earlier seats preset folded · Teaching baseline, not GTO"
+            : "Virtual chips · Free play. Switching mode starts a new table."}
       </Text>
       <Text style={ui.label}>
         HAND {session.hand} · BLINDS 1/2 · VIRTUAL CHIPS
@@ -207,7 +219,10 @@ export function Simulator({
           {persistenceError}
         </Text>
       )}
-      <TableSurface table={table} />
+      <TableSurface
+        table={table}
+        referenceOpponent={session.mode === "river"}
+      />
       {error ? (
         <Text accessibilityRole="alert" style={ui.text}>
           {error}
@@ -239,7 +254,9 @@ export function Simulator({
           <Text style={ui.muted}>
             {feedback.status === "ungraded"
               ? "Outside current strategy coverage. You can keep playing."
-              : "Authored first-in baseline · not a GTO verdict"}
+              : feedback.reference === "solver"
+                ? "Conditional river solve · assumed ranges"
+                : "Authored first-in baseline · not a GTO verdict"}
           </Text>
           <Touch
             accessibilityRole="button"
@@ -262,7 +279,6 @@ export function Simulator({
                   change((s) => retryDecision(s, decision.id));
                   setTarget("");
                   setError("");
-                  onNavigate?.();
                   onNavigate?.();
                 }}
               >
@@ -299,6 +315,25 @@ export function Simulator({
             </>
           )}
         </View>
+      )}
+      {!table.done && session.mode === "river" && (
+        <>
+          <Touch
+            accessibilityRole="button"
+            accessibilityState={{ expanded: showLiveChart }}
+            style={ui.button}
+            onPress={() => setShowLiveChart(!showLiveChart)}
+          >
+            <Text style={ui.text}>
+              {showLiveChart
+                ? "Hide live strategy chart"
+                : "Show live strategy chart"}
+            </Text>
+          </Touch>
+          {showLiveChart && (
+            <DecisionChart key={table.actions.length} table={table} />
+          )}
+        </>
       )}
       {!table.done && (
         <View style={ui.card}>
@@ -357,6 +392,22 @@ export function Simulator({
                 Raise TO a total this street. Minimum {l.minTo}, maximum{" "}
                 {l.maxTo}; a smaller all-in is legal.
               </Text>
+              {session.mode === "river" && solvedSpot(table) && (
+                <View style={ui.row}>
+                  {solvedSpot(table)!
+                    .node.actions.filter((a) => a.type === "raise")
+                    .map((a, i) => (
+                      <Touch
+                        key={i}
+                        accessibilityRole="button"
+                        style={ui.button}
+                        onPress={() => move(a)}
+                      >
+                        <Text style={ui.text}>{actionLabel(a, table)}</Text>
+                      </Touch>
+                    ))}
+                </View>
+              )}
               <TextInput
                 accessibilityLabel="Raise total in chips"
                 style={ui.input}
@@ -393,7 +444,11 @@ export function Simulator({
           </Text>
           <Text style={ui.text}>
             {table.awards
-              .map((n, i) => (n ? `${botNames[i]} receives ${n}` : ""))
+              .map((n, i) =>
+                n
+                  ? `${session.mode === "river" && i === 2 ? "Reference" : botNames[i]} receives ${n}`
+                  : "",
+              )
               .filter(Boolean)
               .join("\n")}
           </Text>
@@ -407,25 +462,18 @@ export function Simulator({
             </Text>
           </Touch>
           <Text style={ui.muted}>
-            {session.mode === "coached"
-              ? "Each coached hand starts fresh with 200 chips (100 BB) per seat. Practice results are not a persistent bankroll."
-              : "Seats at or below 2 chips are refilled to 200 virtual chips before the next hand. Refills are practice credits, not winnings."}
+            {session.mode === "river"
+              ? "Repeats this preset board with varied exact cards, rotating the BB opening action. Stacks reset; this is focused strategy practice, not a bankroll game."
+              : session.mode === "coached"
+                ? "Each coached hand starts fresh with 200 chips (100 BB) per seat. Practice results are not a persistent bankroll."
+                : "Seats at or below 2 chips are refilled to 200 virtual chips before the next hand. Refills are practice credits, not winnings."}
           </Text>
           <Touch
             accessibilityRole="button"
             style={ui.button}
             onPress={() =>
               Share.share({
-                message: JSON.stringify(
-                  {
-                    seed: table.seed,
-                    stacks: table.initial,
-                    button: table.button,
-                    actions: table.actions,
-                  },
-                  null,
-                  2,
-                ),
+                message: JSON.stringify(recordCursor(session), null, 2),
               }).catch(() => setError("Replay could not be shared."))
             }
           >
@@ -448,13 +496,18 @@ export function Simulator({
           <Text style={ui.heading}>Table details</Text>
           <Text style={ui.muted}>
             Six seats, blinds 1/2 chips, no ante or rake. Initial 200 chips =
-            100 BB. Toy opponents are not calibrated player models. Your table
-            stays saved across tabs and reloads.
+            100 BB. Free/coached modes use toy opponents. Solved river mode uses
+            the opponent’s exact-combination reference frequencies on covered
+            nodes, with toy fallback off-tree. These are not calibrated
+            recreational-player models. Your table stays saved across tabs and
+            reloads.
           </Text>
           <Text style={ui.muted}>
-            {session.mode === "coached"
-              ? "Every coached hand resets all seats to 200 chips (100 BB). Earlier seats are preset folded to create an unopened decision. No persistent bankroll is claimed."
-              : `Seats at or below the 2-chip big blind are refilled to 200 virtual chips between hands. ${session.refills} seat refills so far. Refills are practice credits, not winnings.`}
+            {session.mode === "river"
+              ? "Earlier streets are preset, not graded. One board, varied range combinations, assumed ranges and a limited betting tree. Next hand rotates check / 6-chip bet / 11-chip bet by BB. Full-game coverage is still incomplete."
+              : session.mode === "coached"
+                ? "Every coached hand resets all seats to 200 chips (100 BB). Earlier seats are preset folded to create an unopened decision. No persistent bankroll is claimed."
+                : `Seats at or below the 2-chip big blind are refilled to 200 virtual chips between hands. ${session.refills} seat refills so far. Refills are practice credits, not winnings.`}
           </Text>
           {session.coaching.length > 0 && (
             <>

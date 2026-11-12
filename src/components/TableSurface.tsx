@@ -13,7 +13,13 @@ const places = [
   { top: 44, right: 0 },
   { top: 195, right: 0 },
 ];
-export function TableSurface({ table }: { table: Table }) {
+export function TableSurface({
+  table,
+  referenceOpponent = false,
+}: {
+  table: Table;
+  referenceOpponent?: boolean;
+}) {
   return (
     <View
       style={[
@@ -94,7 +100,7 @@ export function TableSurface({ table }: { table: Table }) {
             <View
               testID={`table-seat-${i}`}
               accessible
-              accessibilityLabel={`${botNames[i]}, ${position}, ${p.stack} chips, ${p.folded ? "folded" : "in hand"}${i === table.button ? ", dealer" : ""}`}
+              accessibilityLabel={`${referenceOpponent && i === 2 ? "Reference" : botNames[i]}, ${position}, ${p.stack} chips, ${p.folded ? "folded" : "in hand"}${i === table.button ? ", dealer" : ""}`}
               key={i}
               style={[
                 {
@@ -123,7 +129,11 @@ export function TableSurface({ table }: { table: Table }) {
                 }}
               >
                 {i === table.button ? "D · " : ""}
-                {i === 5 ? "Caller" : botNames[i]}
+                {referenceOpponent && i === 2
+                  ? "Reference"
+                  : i === 5
+                    ? "Caller"
+                    : botNames[i]}
               </Text>
               <Text
                 style={{

@@ -41,3 +41,7 @@ yarn-error.*
 /android
 
 dist-ios/
+
+# Optional standalone strategy generator (never bundled into Expo)
+/scripts/solver/engine/
+/scripts/solver/target/

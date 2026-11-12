@@ -4,9 +4,9 @@ M10 remains incomplete until these checks are executed, failures corrected, and 
 
 ## Available checks completed
 
-- Strict TypeScript, all 54 unit tests and formatting.
+- Strict TypeScript, all 62 unit tests and formatting.
 - Exhaustive five-card category frequencies and 100 seeded complete-game conservation/replay tests.
-- Thirteen browser suites: curriculum, arithmetic, preflop/postflop/exploits, full table hand, migration/backup/reset, offline/responsive/accessibility checks, and guided visuals with reduced-motion tests.
+- Fourteen browser suites: curriculum, arithmetic, preflop/postflop/exploits, full table hand, migration/backup/reset, offline/responsive/accessibility checks, and guided visuals with reduced-motion tests.
 - Web offline reload with saved XP and additional scoring while offline.
 - 320/390/768px layouts without horizontal overflow; automated WCAG A/AA scans have no violations across the four main tabs. This is not a manual accessibility certification.
 - iOS JavaScript/Hermes export and installed-SDK dependency compatibility check.
@@ -20,7 +20,7 @@ A real iPhone with compatible Expo Go or a macOS runner with Xcode/iOS simulator
 1. Install with `npm ci`, start `npm start`, open on the iPhone. Record iOS, device, Expo Go and SDK versions.
 2. Complete a lesson, fail and retry its quiz, verify prerequisites, answer each trainer, check feedback and progress. Restart and verify local completion/XP.
 3. Enable airplane mode after the application is installed/bundled. Fully terminate, cold-start, learn and practice, then restart again. Confirm persistence. Expo Go's development server itself may require connectivity; also test an installed release build for true offline cold-start.
-4. Play multiple simulator hands including folds, calls, custom raises and all-ins. Confirm action order and results. Confirm the documented table reset on leaving the screen.
+4. Play multiple simulator hands including folds, calls, custom raises and all-ins. Confirm action order and results. Confirm that the table persists across tabs/reload and that explicit reset requires confirmation.
 5. Test native progress/replay share sheets, restore legacy/current JSON, invalid backups, cancel reset, then confirmed reset. Back up valuable progress first.
 6. Enable VoiceOver and large Dynamic Type. Check all controls, range chart descriptions, focus order, feedback announcements, contrast and safe areas; check small and large iPhones.
 7. Choose signing identity/bundle identifier in the release environment, build the native target through Xcode or the chosen Expo build workflow, install and repeat smoke/offline tests. Do not claim App Store readiness from a JavaScript export.
@@ -37,3 +37,7 @@ Browser checks now cover session persistence across tabs/reload, repeated hands 
 ## Retry/review release gate
 
 Automated tests cover exact checkpoint restoration including future-deck identity, deterministic replay after a retry, bounded v3 history migration, live-table preservation during saved-spot practice, separate first-try/practice statistics, weak-spot prioritization, stepwise reviews without future-card disclosure, contextual chart coverage and simulator-first responsive geometry. The revised native simulator still requires real-device checks; follow WINDOWS_UPDATE.md for updating the local Expo project. No verified all-street GTO/reference dataset has been provided, so uncovered decisions remain ungraded and the full strategy-coverage objective is not complete.
+
+## Calculated river charts
+
+The new Solved river mode has automated coverage for generated node selection, exact-combination frequencies/EVs, mixed actions, local confidence limits, covered size controls, off-tree rejection, varied deterministic deals, reference-policy sampling, retries/persistence and saved reviews. See SOLVED_RIVER.md for the actual solved inputs and numerical checks. The full browser regression suite passes, including chart layouts at 320/390/768px and automated WCAG A/AA checks. iOS JavaScript export passes; these new charts, native touch targets, screen-reader behavior and performance still need device validation under M10. No native-device result is inferred from the browser suites.

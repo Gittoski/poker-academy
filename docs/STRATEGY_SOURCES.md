@@ -1,6 +1,6 @@
 # Strategy sources and state-dependent charts
 
-Research recorded 2026-11-11 (America/Guatemala). This records source review, not integration or independently validated solver results.
+Initial research recorded 2026-11-11 (America/Guatemala). Implementation update 2026-11-12: the first real conditional river pack has now been generated and integrated; see [inputs, provenance, accuracy and coverage](SOLVED_RIVER.md). The source-review notes below distinguish that narrow integration from broader unverified data.
 
 ## What "official charts" means
 
@@ -19,7 +19,7 @@ Commercial research candidates include GTO Wizard, PioSOLVER and GTO+. Their cur
 
 Verified from these sources: a Rust postflop engine with OOP/IP ranges, explicit board, pot, effective stack, rake and permitted sizing tree. The example retrieves available actions, per-combination strategy, equity/EV, follows a bet/call branch, deals a river card and returns to the root. It configures iteration and exploitability targets. This directly demonstrates how a chart can change along a hand's action tree. The documentation announces suspension of open-source development since October 2023 and warns of breaking changes without version bumps: pin a commit if evaluating it.
 
-Scope: two active players in the example; the README documents optional bunching from up to four folded players. This is not a ready-made full six-player preflop/postflop strategy library. Its benchmark/performance statements are author claims, not benchmarks run in our environment. The Rust toolchain is not installed here, so the example has not been compiled, solved or independently verified during this review.
+Scope: two active players in the example; the README documents optional bunching from up to four folded players. This is not a ready-made full six-player preflop/postflop strategy library. Its benchmark/performance statements are author claims, not benchmarks run in our environment. At the initial source review the toolchain was absent. A subsequent implementation installed a compatible toolchain and generated the documented river pack; this does not validate the README’s benchmark claims.
 
 ### TexasSolver (bupticybee)
 
@@ -29,7 +29,7 @@ Scope: two active players in the example; the README documents optional bunching
 
 Verified from these sources: explicit OOP/IP ranges, pot/effective-stack/board settings, street-specific sizes, iteration/accuracy settings, and `dump_result` JSON export. The README describes Windows/macOS/Linux support and a newer GPU project. Benchmark alignment/speed relative to PioSOLVER is an author claim, not an independent validation by this project.
 
-The README also makes integration/distribution statements alongside the AGPL license. Resolve applicable terms before distributing an integration; this review does not adopt a legal conclusion or change our app's licensing. No third-party solver code/binary has been embedded, and no generated strategy pack is claimed usable yet.
+The README also makes integration/distribution statements alongside the AGPL license. Resolve applicable terms before distributing an integration; this review does not adopt a legal conclusion or change our app's licensing. No third-party solver code/binary has been embedded, and no TexasSolver-generated pack is used.
 
 ## Practical routes for this app
 
@@ -55,4 +55,4 @@ The player is graded using their exact card combination and the matching node's 
 - A transition for each covered action/deal; coverage errors must return ungraded.
 - Node-specific 169-class chart aggregation must use appropriate combination/reach weights, respect blockers and retain the hero's exact combination view. A class average must not replace the hero's actual strategy.
 
-The current simulator still uses Academy first-in baseline v1. This research establishes concrete alternatives to asking the user to find charts, but does not turn that teaching baseline into GTO data.
+The simulator retains Academy first-in baseline v1 and now additionally selects the narrowly scoped, generated river pack on exact matching states. Broader free-table situations remain ungraded. See SOLVED_RIVER.md; the authored first-in baseline has not become GTO data.

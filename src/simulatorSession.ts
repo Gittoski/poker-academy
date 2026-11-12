@@ -1,3 +1,9 @@
+import {
+  riverTrainingTable,
+  riverDeal,
+  RIVER_PRESET_ACTIONS,
+  toRiverHero,
+} from "./solvedStrategy";
 import { Action, Table, act, createTable } from "./table";
 import {
   BaselineFeedback,
@@ -5,11 +11,10 @@ import {
   trainingTable,
   handClass,
   heroPosition,
-  baselineName,
 } from "./baselineCoach";
 import { toHero } from "./bots";
 export type Cursor = {
-  mode: "free" | "coached";
+  mode: "free" | "coached" | "river";
   hand: number;
   refills: number;
   table: Table;
@@ -98,7 +103,12 @@ export function newSession(
     coaching: [],
     hand: 1,
     refills: 0,
-    table: mode === "coached" ? trainingTable(42, 0) : toHero(createTable(42)),
+    table:
+      mode === "river"
+        ? riverTrainingTable()
+        : mode === "coached"
+          ? trainingTable(42, 0)
+          : toHero(createTable(42)),
     attempts: previous?.attempts ?? [],
     archive: previous?.archive ?? [],
     nextId: previous?.nextId ?? 1,
@@ -111,7 +121,9 @@ export function sessionAction(
   s: SimulatorSession,
   a: Action,
 ): SimulatorSession {
-  const table = toHero(act(s.table, a));
+  const moved = act(s.table, a);
+  const table =
+    s.mode === "river" ? toRiverHero(moved, s.hand - 1) : toHero(moved);
   const id = takeId(s);
   const feedback = evaluateBaseline(s.table, a);
   const attempt: DecisionAttempt = {
@@ -138,6 +150,15 @@ export function continueSession(s: SimulatorSession): SimulatorSession {
   if (!Number.isSafeInteger(s.hand + 1))
     throw new Error("Session counter limit");
   s = archiveCompleted(s);
+  if (s.mode === "river")
+    return {
+      ...s,
+      hand: s.hand + 1,
+      coaching: [],
+      practice: false,
+      retryOf: null,
+      table: riverTrainingTable(s.hand),
+    };
   if (s.mode === "coached")
     return {
       ...s,
@@ -229,7 +250,10 @@ export function decisionTable(d: DecisionAttempt): Table {
 }
 export function reviewStates(h: ReviewedHand): Table[] {
   const r = h.record;
-  let t = createTable(r.seed, r.stacks, r.button);
+  let t =
+    r.mode === "river"
+      ? riverDeal(r.hand - 1)
+      : createTable(r.seed, r.stacks, r.button);
   const states = [t];
   for (const a of r.actions) {
     t = act(t, a);
@@ -247,7 +271,7 @@ export function troublesomeSpots(s: SimulatorSession) {
     const key =
       d.feedback.status === "ungraded"
         ? `manual:${identity(d.before)}:${d.before.actions.length}`
-        : `${baselineName}:${heroPosition(t.button)}:${handClass(t.players[0].hole)}`;
+        : `${d.feedback.strategyKey ?? "Academy first-in baseline v1"}:${heroPosition(t.button)}:${handClass(t.players[0].hole)}`;
     const g = groups.get(key) ?? {
       key,
       label: `${handClass(t.players[0].hole)} · ${heroPosition(t.button)} · ${["Preflop", "Flop", "Turn", "River"][t.stage]}`,
@@ -312,9 +336,16 @@ export function decodeSession(raw: string | null): SimulatorSession {
   const cursor = readCursor(p);
   if (p.version < 3) {
     let s = { ...newSession(cursor.mode), ...cursor };
-    let table = createTable(p.seed, p.stacks, p.button);
+    let table =
+      p.mode === "river"
+        ? riverDeal(p.hand - 1)
+        : createTable(p.seed, p.stacks, p.button);
     for (const action of p.actions) {
-      if (table.actor === 0) {
+      if (
+        table.actor === 0 &&
+        (cursor.mode !== "river" ||
+          table.actions.length >= RIVER_PRESET_ACTIONS)
+      ) {
         const before = recordCursor({ ...cursor, table });
         const id = s.nextId++;
         s.attempts.push({
@@ -424,7 +455,10 @@ function readCursor(p: any): Cursor {
   if (
     !p ||
     (p.version !== 1 && p.version !== 2 && p.version !== 3) ||
-    (p.version >= 2 && p.mode !== "free" && p.mode !== "coached") ||
+    (p.version >= 2 &&
+      p.mode !== "free" &&
+      p.mode !== "coached" &&
+      p.mode !== "river") ||
     !Number.isSafeInteger(p.hand) ||
     p.hand < 1 ||
     !Number.isSafeInteger(p.refills) ||
@@ -458,10 +492,17 @@ function readCursor(p: any): Cursor {
       return { type: "raise", to: v.to! };
     throw new Error("Invalid action");
   });
-  let table = createTable(p.seed, p.stacks, p.button);
+  let table =
+    p.mode === "river"
+      ? riverDeal(p.hand - 1)
+      : createTable(p.seed, p.stacks, p.button);
   const coaching: BaselineFeedback[] = [];
-  for (const a of actions) {
-    if (table.actor === 0) coaching.push(evaluateBaseline(table, a));
+  for (const [index, a] of actions.entries()) {
+    if (
+      table.actor === 0 &&
+      (p.mode !== "river" || index >= RIVER_PRESET_ACTIONS)
+    )
+      coaching.push(evaluateBaseline(table, a));
     table = act(table, a);
   }
   const mode = p.version === 1 ? "free" : p.mode;
@@ -474,6 +515,18 @@ function readCursor(p: any): Cursor {
         JSON.stringify(expected.actions)
     )
       throw new Error("Inconsistent coached setup");
+  }
+  if (mode === "river") {
+    const expected = riverTrainingTable(p.hand - 1);
+    if (
+      p.seed !== expected.seed ||
+      p.button !== expected.button ||
+      p.stacks.some((n: number) => n !== 200) ||
+      actions.length < RIVER_PRESET_ACTIONS ||
+      JSON.stringify(actions.slice(0, RIVER_PRESET_ACTIONS)) !==
+        JSON.stringify(expected.actions)
+    )
+      throw new Error("Inconsistent river practice setup");
   }
   if (!table.done && table.actor !== 0)
     throw new Error("Session is not at a player decision");
