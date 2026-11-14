@@ -23,7 +23,7 @@ npm run build
 npm run test:browser
 ```
 
-The test suite has 120 unit tests across ten files and 19 browser journeys covering original play plus saving, recovery, exact retries, adaptive return, failure handling, responsive layouts, keyboard/focus, accessibility and reduced motion. The browser runner uses a production build on its own port; install Chromium once with `npx playwright install chromium`, or set `CHROMIUM_PATH` to an existing system browser. The production build regenerates the range files from the included source data; it does not need a solver installation. Solver scripts are optional offline development tools, not a requirement for running the supplied app.
+The test suite has 127 unit tests across eleven files and 23 browser journeys covering original play plus saving, recovery, exact retries, adaptive return, failure handling, responsive layouts, keyboard/focus, accessibility and reduced motion. The browser runner uses a production build on its own port; install Chromium once with `npx playwright install chromium`, or set `CHROMIUM_PATH` to an existing system browser. The production build regenerates the range files from the included source data; it does not need a solver installation. Solver scripts are optional offline development tools, not a requirement for running the supplied app.
 
 ## Source and next steps
 
@@ -42,3 +42,9 @@ The simulator now includes [automatic sessions, mistake reviews and adjustable r
 Play normally: answers save automatically before Continue. Open **Review mistakes** for session summaries, grouped errors, original references, reflections/pins and **Retry this decision / Play this hand**. Manual practice pauses and preserves your live hand. Under **Practice settings**, toggle **Mix in my mistakes** and choose approximately one review per 2–20 hands. Adaptive returns start from preflop and identify themselves only after the target answer.
 
 Supported mixed alternatives stay separate from zero-support reference errors. History stays in this browser origin (address and port) on this device; use export/import for transfer. Storage failures are shown explicitly. Actual iPhone/Safari verification remains outstanding.
+
+## Hand results and phone-only use
+
+Full hands now finish with a distinct **Hand complete** screen. After your final decision, choose **View hand result**, inspect the stored showdown runout or actual fold outcome, then **Next hand**. Results survive reload. The screen names both your selection and the scripted action when they differ; a supported Call is not the same as playing a new calling branch in this scripted trainer. Preflop mode explicitly stops before postflop. See [the completion audit](docs/implementation/HAND_COMPLETION.md).
+
+The next planned feature is an installable offline PWA, followed by math practice, short capsules and focused sessions. The current project ZIP is not an iPhone app and Expo Go cannot run it. A hosted site would remove the PC requirement; fully offline use additionally needs app/content caching and real-device verification. No hosting or App Store publication has been performed. See [the future feature and distribution plan](docs/NEXT_FEATURES.md).

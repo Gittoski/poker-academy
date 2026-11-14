@@ -8,11 +8,17 @@ This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PL
 
 - [x] Replace the retired academy with jensbaagaard/poker-practice; preserve attribution and a Git backup.
 - [x] Deliver the navy theme without changing the engine, grading, training controllers or chart data.
-- [x] Last verified: 120 unit tests, 19 browser journeys, TypeScript, production build and simulator/strategy-calculation integrity checks.
+- [x] Last verified: 127 unit tests, 23 browser journeys, TypeScript, production build and simulator/strategy-calculation integrity checks.
 - [x] Retain range viewing, preflop training, scripted full-hand practice and existing custom-range/theme settings.
 - [ ] Actual iPhone/Safari, VoiceOver and device animation verification. Chromium phone-sized tests do not close this release gate.
 
 Current limitations: no guided curriculum or whole-app offline installation; full-hand play follows supplied scripts. The grade favors the most frequent reference action and is not an EV-loss score. Existing source/provenance limits remain documented in [UPSTREAM.md](docs/UPSTREAM.md).
+
+## Current follow-up: complete-hand results and independent phone use
+
+- [x] Verify explicit Full-hands result acknowledgement, complete stored all-in runouts, reload recovery and protection against accidental extra inputs. See the [completion audit](docs/implementation/HAND_COMPLETION.md).
+- [x] Plan phone-only offline installation, math drills, short capsules and focused simulator sessions in [NEXT_FEATURES.md](docs/NEXT_FEATURES.md).
+- [ ] M03 is the next feature: an offline PWA with downloaded packs and actual-device evidence; hosting/App Store publication remains separately authorized.
 
 ## Learning progression
 
@@ -52,7 +58,7 @@ The user has refined M01/M02 and the initial M08 scheduler into a simulator-firs
 - [x] R07: measured retention limits, analytics and long-term recovery.
 - [x] R08: automated full regression, actual-app evidence and delivery. Actual-device release gate remains open above.
 
-The focused R01–R08 implementation and available automated verification are complete; the actual-device release gate remains open. Follow the detailed feature checklist before expanding the curriculum. Automatic saving, session recovery, exact reviews, manual retries and adaptive returns are connected in both modes; 120 unit tests, 19 browser journeys, TypeScript, integrity and production build pass. The goal-ready brief remains as implementation history. See the usage guide and verification report for the delivered feature.
+The focused R01–R08 implementation and available automated verification are complete; the actual-device release gate remains open. Follow the detailed feature checklist before expanding the curriculum. Automatic saving, session recovery, exact reviews, manual retries and adaptive returns are connected in both modes; 127 unit tests, 23 browser journeys, TypeScript, integrity and production build pass. The goal-ready brief remains as implementation history. See the usage guide and verification report for the delivered feature.
 
 ## Completion discipline
 
