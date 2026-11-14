@@ -122,6 +122,15 @@ export class JournalRuntime {
   }
   adopt(restored: Restored) {
     this.script = restored.script
+    this.recoverySources.set(this.source.id, this.source)
+    if (restored.script) {
+      const source = createSource(
+        'script',
+        `restored:${restored.script.spot}`,
+        restored.script,
+      )
+      this.recoverySources.set(source.id, source)
+    }
     this.feedback = restored.attempt
     this.restored = restored
     this.active = structuredClone(restored.hand)

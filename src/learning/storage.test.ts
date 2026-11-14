@@ -834,3 +834,27 @@ it('an interrupted replacement import rolls back instead of erasing existing his
   expect(retained.sessions).toEqual(original.sessions)
   repo.close()
 })
+
+it('pending recovery from an adopted hand includes its immutable reference source', async () => {
+  const { source, event } = fixture(),
+    repo = await repository()
+  await repo.cache(source)
+  await repo.submit(event)
+  const runtime = new JournalRuntime(repo, event.hand.config, source, () => {})
+  runtime.adopt(
+    await runtime.restore((await repo.backup()).hands[0], event.cursor),
+  )
+  repo.close()
+  runtime.persist({
+    hand: unpackHand(event.cursor.hand, source),
+    phase: 'verdict',
+    score: EMPTY_SCORE,
+    decisions: 1,
+  })
+  await runtime.flush()
+  const recovery = JSON.parse(runtime.pendingExport())
+  expect(recovery.sources.some((s: SourceRecord) => s.id === source.id)).toBe(
+    true,
+  )
+  expect(recovery.events).toHaveLength(1)
+})
