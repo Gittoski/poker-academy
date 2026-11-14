@@ -35,3 +35,7 @@ UPDATE_DESIGN_PREVIEWS=1 npm run test:browser
 ```
 
 This environment verified chart loading and URL state, preflop feedback/continuation, full-hand postflop feedback and next-hand continuation, and responsive range layouts at 320/390/768/1365px. A 390px Play screenshot was inspected. These are Chromium checks, not native iPhone or Safari results.
+
+## Additional requested brand-inspired study
+
+The user requested directions inspired by Offsuit Games and Blackjack Wiz. See [four new showcase boards](inspired/README.md), covering start, playing a hand, feedback, ranges and setup for each direction. Reference-site access was blocked, so these are clearly labeled interpretations. They have not been applied to the app.

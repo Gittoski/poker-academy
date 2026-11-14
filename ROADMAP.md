@@ -18,3 +18,5 @@ The fresh foundation is Next.js, not Expo/React Native. Full-hand practice follo
 Import verification: all 46 files under `src/`, 296 under `data/` and 797 under `public/` match the pinned upstream revision byte-for-byte. Additional QA uses Playwright; no old simulator code was brought forward. All 86 unit tests, TypeScript, production build and four browser flows pass locally. CI is configured but remote CI results are not claimed.
 
 See [the visual proposals and their scope](docs/design/README.md). Emerald is the recommended starting direction. The design pass has deliberately not been applied to the running app yet.
+
+- [x] Show four additional original concept boards inspired by the requested Offsuit Games / Blackjack Wiz directions (five example screens per style). These are generated visual studies, with unverified reference fidelity, not app changes. See `docs/design/inspired/README.md`.
