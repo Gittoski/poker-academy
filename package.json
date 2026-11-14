@@ -1,39 +1,30 @@
 {
-  "name": "poker-academy",
-  "version": "1.0.0",
-  "main": "index.ts",
+  "name": "open-range-viewer",
+  "private": true,
+  "version": "0.1.0",
+  "license": "MIT",
+  "scripts": {
+    "dev": "next dev",
+    "build:ranges": "node scripts/build-ranges.mjs",
+    "prebuild": "node scripts/build-ranges.mjs --if-present",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check": "tsc --noEmit && vitest run",
+    "build:hands": "node scripts/generate-hands.mjs",
+    "solve:flops": "node scripts/solve-postflop.mjs"
+  },
   "dependencies": {
-    "@react-native-async-storage/async-storage": "2.2.0",
-    "expo": "~58.0.23",
-    "expo-status-bar": "~58.0.4",
-    "react": "19.3.0",
-    "react-dom": "19.3.0",
-    "react-native": "0.88.1",
-    "react-native-safe-area-context": "~5.11.1",
-    "react-native-web": "~0.21.4"
+    "next": "^15.5.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.14.0",
-    "@playwright/test": "^1.65.0",
-    "@types/node": "^26.6.6",
-    "@types/react": "~19.3.0",
-    "prettier": "^3.9.10",
-    "tsx": "^4.23.15",
-    "typescript": "~6.0.3"
-  },
-  "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
-    "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/*.test.ts",
-    "build:web": "EXPO_NO_TELEMETRY=1 EXPO_OFFLINE=1 expo export --platform web && node scripts/offline-web.cjs",
-    "build:ios": "EXPO_NO_TELEMETRY=1 EXPO_OFFLINE=1 expo export --platform ios --output-dir dist-ios",
-    "test:web": "node scripts/web-tests.cjs",
-    "format": "prettier --write App.tsx src tests scripts *.json *.md docs",
-    "format:check": "prettier --check App.tsx src tests scripts *.json *.md docs",
-    "check": "npm run typecheck && npm test && npm run format:check"
-  },
-  "private": true
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
 }
