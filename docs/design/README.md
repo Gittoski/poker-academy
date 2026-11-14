@@ -39,3 +39,7 @@ This environment verified chart loading and URL state, preflop feedback/continua
 ## Additional requested brand-inspired study
 
 The user requested directions inspired by Offsuit Games and Blackjack Wiz. See [four new showcase boards](inspired/README.md), covering start, playing a hand, feedback, ranges and setup for each direction. Reference-site access was blocked, so these are clearly labeled interpretations. They have not been applied to the app.
+
+## Corrected direction from the user's actual reference
+
+The user rejected the earlier brand interpretations and provided a concrete screenshot. The current reference is black/graphite with subtle gradients, lime accents, plain white cards and restrained icons. See [the corrected mobile and desktop previews](reference-study/README.md). Earlier styles remain archived as proposals rather than the implementation target.

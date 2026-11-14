@@ -20,3 +20,5 @@ Import verification: all 46 files under `src/`, 296 under `data/` and 797 under 
 See [the visual proposals and their scope](docs/design/README.md). Emerald is the recommended starting direction. The design pass has deliberately not been applied to the running app yet.
 
 - [x] Show four additional original concept boards inspired by the requested Offsuit Games / Blackjack Wiz directions (five example screens per style). These are generated visual studies, with unverified reference fidelity, not app changes. See `docs/design/inspired/README.md`.
+
+Current visual direction (user correction): use the supplied screenshot's black canvas, graphite gradients, lime accents and plain white cards. Discard the prior cartoon and casino-gold assumptions for implementation. Three corrected player-facing previews are in `docs/design/reference-study/`; they are not yet applied to the running app.
