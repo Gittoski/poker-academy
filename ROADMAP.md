@@ -43,7 +43,7 @@ M03 device work and M09 source research can proceed when their prerequisites/cap
 The user has refined M01/M02 and the initial M08 scheduler into a simulator-first feature with eight explicit product choices. See [the agreed specification](docs/SESSION_REVIEW_SPEC.md), [R01–R08 implementation checklist](docs/SESSION_REVIEW_ROADMAP.md) and [goal-ready brief](docs/SESSION_REVIEW_GOAL.md).
 
 - [x] Plan automatic sessions, automatic error capture, exact/related reviews, whole-hand adaptive replay, delayed review labels, mixed-action handling, gradual spacing and compact retention with the user.
-- [ ] R01: schemas, classification, metric copy and preservation tests.
+- [x] R01: schemas, classification, metric copy and preservation tests.
 - [ ] R02: bounded storage, session lifecycle and exact recovery.
 - [ ] R03: automatic capture in both simulator modes.
 - [ ] R04: review area, exact retries and live-hand preservation.
@@ -52,7 +52,7 @@ The user has refined M01/M02 and the initial M08 scheduler into a simulator-firs
 - [ ] R07: measured retention limits, analytics and long-term recovery.
 - [ ] R08: full regression, actual-app evidence and delivery; device checks when available.
 
-Next implementation is R01. Follow the detailed feature checklist before expanding the curriculum. Planning is complete; no feature code has been written yet. The stored `/goal` brief is ready for the user to invoke and is not an active goal by itself.
+Next implementation is R02. Follow the detailed feature checklist before expanding the curriculum. R01 contract code and preservation tests are complete; the learning layer is not yet connected to play. The stored `/goal` brief is ready for the user to invoke and is not an active goal by itself.
 
 ## Completion discipline
 

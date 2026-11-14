@@ -4,13 +4,15 @@ Source of truth: [the agreed specification](SESSION_REVIEW_SPEC.md). Preserve th
 
 ## R01 — Contracts, classification and preservation baseline
 
-- [ ] Audit both trainer modes' hand/answer/cursor/selection seams and capture baseline behavior tests.
-- [ ] Define versioned session, hand, decision, source, problem and scheduler schemas, stable IDs and original-versus-executed actions.
-- [ ] Implement learning classification from available unrounded reference data; test ties, supported alternatives, zero support, tiny frequencies and unavailable data.
-- [ ] Define metric names/copy so strict frequency scores and learning mistakes are not confused.
-- [ ] Record a reviewed plan for narrow controller integrity-baseline updates; leave engine/data/palette baselines intact.
+- [x] Audit both trainer modes' hand/answer/cursor/selection seams and capture baseline behavior tests.
+- [x] Define versioned session, hand, decision, source, problem and scheduler schemas, stable IDs and original-versus-executed actions.
+- [x] Implement learning classification from available unrounded reference data; test ties, supported alternatives, zero support, tiny frequencies and unavailable data.
+- [x] Define metric names/copy so strict frequency scores and learning mistakes are not confused.
+- [x] Record a reviewed plan for narrow controller integrity-baseline updates; leave engine/data/palette baselines intact.
 
 Done when the record/grade contract and equivalence tests are executable before feature wiring.
+
+Evidence: [integration audit](implementation/SESSION_REVIEW_INTEGRATION.md); 94 unit tests, integrity, TypeScript and production build pass. No controller wiring yet.
 
 ## R02 — Bounded local storage, sessions and recovery
 

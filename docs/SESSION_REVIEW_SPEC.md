@@ -1,6 +1,6 @@
 # Sessions, automatic mistake review and adaptive simulator practice
 
-Status: collaboratively agreed product direction; implementation has not started. This refines M01/M02 and the first simulator-focused part of M08 in the broader learning plan. The approved navy theme and current working trainer remain the foundation.
+Status: collaboratively agreed product direction; R01 contracts and tests implemented; storage and simulator integration pending. This refines M01/M02 and the first simulator-focused part of M08 in the broader learning plan. The approved navy theme and current working trainer remain the foundation.
 
 ## Confirmed choices
 
