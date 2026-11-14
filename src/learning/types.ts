@@ -8,21 +8,52 @@ import type { Grade, Prompt, Score, TrainerSetup } from '@/lib/trainer'
 export const LEARNING_VERSION = 1 as const
 export type Origin = 'regular' | 'adaptive' | 'manual'
 export type LearningKind = 'match' | 'alternative' | 'outside' | 'ungraded'
-export interface LearningResult { version: 1; kind: LearningKind; frequency: number | null; reason?: string }
-export interface FrequencyReference { values: number[]; scale: 1 | 100; applicable: boolean }
-export interface LearningConfig extends TrainerSetup { mode: GameMode; rangesId: string }
-export type SourceRecord = { version: 1; id: string; logicalId: string; hash: string; bytes: number; createdAt: number } & (
-  { kind: 'ranges'; payload: RangeEntry[] } | { kind: 'script'; payload: HandScript }
+export interface LearningResult {
+  version: 1
+  kind: LearningKind
+  frequency: number | null
+  reason?: string
+}
+export interface FrequencyReference {
+  values: number[]
+  scale: 1 | 100
+  applicable: boolean
+}
+export interface LearningConfig extends TrainerSetup {
+  mode: GameMode
+  rangesId: string
+}
+export type SourceRecord = {
+  version: 1
+  id: string
+  logicalId: string
+  hash: string
+  bytes: number
+  createdAt: number
+} & (
+  | { kind: 'ranges'; payload: RangeEntry[] }
+  | { kind: 'script'; payload: HandScript }
 )
 export type PackedDecision = Omit<Decision, 'entry'> & { entryId: string }
-export type PackedSeat = Omit<Seat, 'hand' | 'lastDecision'> & { lastDecision?: PackedDecision }
-export type PackedHand = Omit<HandState, 'seats'> & { rangesId: string; seats: PackedSeat[] }
+export type PackedSeat = Omit<Seat, 'hand' | 'lastDecision'> & {
+  lastDecision?: PackedDecision
+}
+export type PackedHand = Omit<HandState, 'seats'> & {
+  rangesId: string
+  seats: PackedSeat[]
+}
 export type SavedPrompt = Prompt & {
   street: 'preflop' | 'flop' | 'turn' | 'river'
   reference: FrequencyReference
   decision?: PackedDecision
 }
-export interface StoredVerdict { decisionId: string; prompt: SavedPrompt; guess: number; legacyGrade: Grade; learning: LearningResult }
+export interface StoredVerdict {
+  decisionId: string
+  prompt: SavedPrompt
+  guess: number
+  legacyGrade: Grade
+  learning: LearningResult
+}
 export interface Cursor {
   version: 1
   handId: string
@@ -37,8 +68,13 @@ export interface Cursor {
   npcAction: 'raise' | 'call' | 'fold' | null
   rng: number
 }
-export interface ReviewTarget { problemId: string; nodeKey: string; variant: 'exact' | 'related' }
+export interface ReviewTarget {
+  problemId: string
+  nodeKey: string
+  variant: 'exact' | 'related'
+}
 export interface HandRecord {
+  revision?: number
   version: 1
   id: string
   sessionId: string
@@ -78,7 +114,14 @@ export interface DecisionRecord {
   pinned: boolean
   note: string
 }
-export interface Counts { decisions: number; hands: number; match: number; alternative: number; outside: number; ungraded: number }
+export interface Counts {
+  decisions: number
+  hands: number
+  match: number
+  alternative: number
+  outside: number
+  ungraded: number
+}
 export interface SessionRecord {
   version: 1
   id: string
@@ -112,13 +155,21 @@ export interface ProblemRecord {
   note: string
   pinned: boolean
 }
-export interface SchedulerState { version: 1; enabled: boolean; interval: number; seed: number; index: number; slot: number }
+export interface SchedulerState {
+  version: 1
+  enabled: boolean
+  interval: number
+  seed: number
+  index: number
+  slot: number
+}
 export interface LearningMeta {
   version: 1
   cursor: Cursor | null
   resume: Cursor | null
   sessionId: string | null
   scheduler: SchedulerState
+  nextScheduler?: SchedulerState
   lastHandFinished: string | null
 }
 export interface LearningBackup {

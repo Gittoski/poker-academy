@@ -16,10 +16,12 @@ Evidence: [integration audit](implementation/SESSION_REVIEW_INTEGRATION.md); 94 
 
 ## R02 — Bounded local storage, sessions and recovery
 
-- [ ] Implement indexed storage, atomic/idempotent writes, reference normalization, migrations and the bounded pending-write recovery buffer.
+- [x] Implement indexed storage, atomic/idempotent writes, reference normalization, migrations and the bounded pending-write recovery buffer.
 - [ ] Add automatic session lifecycle, safe inactivity boundaries, compact live checkpoints and hydration gating.
-- [ ] Implement an initial storage budget, deduplication, pruning rules, honest failure state and export/import; protect unresolved representatives/pins.
-- [ ] Define multi-tab ownership/fencing and test corrupted/unavailable/quota-limited storage.
+- [x] Implement an initial storage budget, deduplication, pruning rules, honest failure state and export/import; protect unresolved representatives/pins.
+- [x] Define multi-tab ownership/fencing and test corrupted/unavailable/quota-limited storage.
+
+Storage-core evidence: 104 unit tests and TypeScript pass, including idempotent reload recovery, denied localStorage, unavailable IndexedDB, competing writers, interrupted pending records, safe idle boundaries, backup validation and representative-preserving compaction. Hydration/controller browser verification is being completed in R03.
 
 Done when a submitted mistake can survive reload without Continue/End session, and the app never falsely claims a failed save succeeded.
 
