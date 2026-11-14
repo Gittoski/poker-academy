@@ -1,33 +1,54 @@
-# Fresh foundation roadmap
+# Poker Practice roadmap
 
-The user has replaced the previous academy project with jensbaagaard/poker-practice. Preserve the imported training behavior and make visual/usability changes in small, reviewable steps.
+Goal: progressively improve real-life six-max Hold’em decisions, especially against recreational players, through a simple simulator-centered learning loop. Preserve the working app and approved black/graphite/navy theme.
 
-- [x] Back up the old application at `backup/academy-before-poker-practice` on GitHub.
-- [x] Replace the active application with upstream revision `449993f78d995c77b72d0bcac418a8507dd6f783`; retain source attribution and original documentation.
-- [x] Verify clean installation, TypeScript, all 86 upstream unit tests and production build.
-- [x] Inspect the imported range viewer and both training modes at phone and desktop widths; record current limitations.
-- [x] Show three clearly labeled visual proposals without changing the app's existing behavior.
-- [x] Apply the approved black/graphite theme with navy accents, plain cards, subtle motion and new table/action styling; preserve simulator logic and chart palettes.
-- [ ] Optional product/navigation follow-up: play-first entry, settings sheet and optional chart/explanation disclosure. These are not part of the approved presentation-only change.
-- [x] Verify the navy theme with 86 unit tests, nine browser checks, automated accessibility scans, responsive geometry, reduced-motion checks and simulator-integrity hashes.
-- [ ] Test on an actual iPhone/Safari; consider an installable web app after the core interface is approved.
+This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PLAN.md) explains lesson progression, feature scope and completion criteria. [Foundation history](docs/FOUNDATION_HISTORY.md) retains the completed import/theme work.
 
-The fresh foundation is Next.js, not Expo/React Native. Full-hand practice follows supplied scripted lines; unrestricted play and exact retry are possible future product work, not features claimed by this import. The old curriculum/XP system is not part of this new scope.
+## Current verified foundation
 
+- [x] Replace the retired academy with jensbaagaard/poker-practice; preserve attribution and a Git backup.
+- [x] Deliver the navy theme without changing the engine, grading, training controllers or chart data.
+- [x] Last verified: 86 unit tests, nine browser checks, TypeScript, production build and simulator/strategy-calculation integrity checks.
+- [x] Retain range viewing, preflop training, scripted full-hand practice and existing custom-range/theme settings.
+- [ ] Actual iPhone/Safari, VoiceOver and device animation verification. Chromium phone-sized tests do not close this release gate.
 
-Initial import verification: all 46 files under `src/`, 296 under `data/` and 797 under `public/` match the pinned upstream revision byte-for-byte. Additional QA uses Playwright; no old simulator code was brought forward. All 86 unit tests, TypeScript, production build and four browser flows pass locally. CI is configured but remote CI results are not claimed.
+Current limitations: no persistent learning journal or curriculum; full-hand play follows supplied scripts. The grade favors the most frequent reference action and is not an EV-loss score. Existing source/provenance limits remain documented in [UPSTREAM.md](docs/UPSTREAM.md).
 
-See [the visual proposals and their scope](docs/design/README.md). The earlier Emerald proposal was superseded by the user’s actual reference. The approved direction is now implemented with navy accents.
+## Learning progression
 
-- [x] Show four additional original concept boards inspired by the requested Offsuit Games / Blackjack Wiz directions (five example screens per style). These are generated visual studies, with unverified reference fidelity, not app changes. See `docs/design/inspired/README.md`.
+Basics → solid preflop → postflop foundations → range thinking → exploits → advanced challenges → transfer to live hands.
 
-Current visual direction (user correction): use the supplied screenshot's black canvas, graphite gradients, lime accents and plain white cards. Discard the prior cartoon and casino-gold assumptions for implementation. Three corrected player-facing previews are in `docs/design/reference-study/`; the approved presentation layer is now applied, with navy replacing lime.
+Teach one concept, show an example, practice it, check it independently and revisit it later. Keep free play available; avoid showing all lessons or advanced controls at once. App progress is not a guarantee of expertise or profitability.
 
+## Milestones to build
 
-## Navy theme implementation
+| Status | ID | Milestone | Main prerequisite | Completion evidence |
+| --- | --- | --- | --- | --- |
+| [ ] | M01 | Persistent learning journal and honest progress metrics | Current decision/context audit | Save/reload/migration/export tests; no duplicate records; existing play unchanged |
+| [ ] | M02 | Saved hand reviews, exact retries and mistake book | M01, versioned source IDs | Same-decision restoration, hidden-information safety, separate first tries/practice, live-session preservation |
+| [ ] | M03 | Phone reliability and installed offline practice | M01–M02 | Tested device cold starts, complete pack caching, resume and storage/update recovery |
+| [ ] | M04 | Guided Basics path plus math/hand-reading drills | M01; reviewed exact examples | One-concept progression, independent answer fixtures, retained completion and later review |
+| [ ] | M05 | Focused preflop and fair mixed-strategy practice | M01–M02; objective/metric versioning | Supported actions distinguished from most-frequent drills; configuration/edge-case regressions |
+| [ ] | M06 | Postflop concepts and scoped explanations | M04–M05; covered reference spots | Different-board exercises; arithmetic/source/heuristic distinctions; unsupported spots clearly handled |
+| [ ] | M07 | Exploitative recreational-player scenarios | M04–M06 | Explicit tendencies/evidence, uncertainty and counter-risks; no invented model probabilities or EVs |
+| [ ] | M08 | Adaptive focus, spaced review and weekly weakness summary | M01–M02; topic tags from M04–M07 | Tested scheduling, bounded queues, sample counts and first-try/retry separation |
+| [ ] | M09 | Broader documented reference/solver packs | Exact configurations and usable sources | Provenance, coverage manifests, numerical checks and node matching per new family |
+| [ ] | M10 | Broader branching simulator as a separate mode | Rules-complete engine and M09 coverage | Betting/replay/conservation tests; covered grading; honest ungraded sandbox branches |
+| [ ] | M11 | Advanced held-out challenges and live-hand notebook | Journal/review, concepts and adequate coverage | No answer leakage; fresh/retained sample reporting; validated incomplete hand reconstruction |
 
-The user approved the actual black/graphite reference and substituted navy for lime. The presentation pass updates the shell, table drawing, cards, action controls and CSS motion. The engine, grading, training controllers, chart data and supplied hand scripts remain unchanged. Original classic/cool chart palettes are retained. Chart DOM gained accessible rows; exact calculations remain protected.
+M03 device work and M09 source research can proceed when their prerequisites/capabilities are available; neither should stall unrelated local learning improvements. M10 is intentionally late so current working play does not get replaced by an unverified rewrite.
 
-See [THEME.md](docs/THEME.md) for scope and SHA-256 preservation checks, and [the implemented screenshots/recording](docs/design/implemented/README.md). Existing routes and training behavior are retained. Native iPhone/Safari verification is still pending.
+## Next bounded implementation
 
-Theme verification: TypeScript, all 86 original unit tests, nine browser checks, the SHA-256 simulator guard and production build pass. The nine flows include a three-street, five-card runout at 320px with no board/seat overlap. Actual browser screenshots and a short H.264 recording are captured from the running app. iPhone/Safari testing remains open.
+**M01: persistent learning journal.** First audit the decision checkpoints in both trainer modes. Define stable source/version IDs and a versioned local record; add a narrow event/storage seam while preserving the existing action/grade path. Then implement save/reload and backup behavior, with duplicate/interrupted-write tests. New progress labels must describe reference matching rather than claim universal poker accuracy.
+
+After M01 is verified, continue to M02. Do not restore the entire retired academy or bundle the whole curriculum into one change.
+
+## Completion discipline
+
+- [ ] For each future milestone: implement the bounded feature, test it, fix failures, run regressions, update this checklist/documentation and commit verified changes.
+- [ ] Preserve engine/data/grading integrity; deliberately document and test any feature that genuinely requires a protected-code change before updating its baseline.
+- [ ] Keep the navy interface focused and phone-friendly. Existing chart palettes need no redesign for this plan.
+- [ ] Keep data/metric versions compatible with saved reviews and progress. No account is required for local learning.
+
+All future milestones above are planned, not implemented. No dates or poker-strength guarantees are assigned without evidence.

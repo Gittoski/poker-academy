@@ -30,3 +30,7 @@ The upstream test suite has 86 tests across eight files. Nine browser checks cov
 See [upstream attribution and import scope](docs/UPSTREAM.md), the [original README](docs/UPSTREAM_README.md) and the new [roadmap](ROADMAP.md). The original README's live-site and Vercel deployment statements refer to the upstream author's project, not this fork. No deployment or cloud-environment publication has been performed.
 
 See [three visual directions](docs/design/visual-directions.png) and the [proposed phone usability changes](docs/design/README.md). Earlier visual concepts remain archived as proposals. The current implemented direction follows the user’s supplied reference with navy replacing lime. The navy visual pass is implemented. See [what changed and how the simulator was protected](docs/THEME.md), plus [screenshots and a short real-app recording](docs/design/implemented/README.md). Optional navigation/product changes remain separate from this visual pass.
+
+## Learning roadmap
+
+The next upgrades focus on lasting progress, exact mistake review and a staged Basics → preflop → postflop → exploitative → advanced learning path. See the [active checklist](ROADMAP.md) and [full learning plan](docs/LEARNING_PLAN.md). These are planned features; the current working trainer is preserved.
