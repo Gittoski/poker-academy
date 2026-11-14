@@ -9,3 +9,7 @@ next-env.d.ts
 # Output of the removed convert-pokertrainer script
 data/converted/
 .env*
+
+# Browser verification artifacts
+/test-results/
+/playwright-report/

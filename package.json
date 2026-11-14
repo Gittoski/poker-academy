@@ -13,7 +13,8 @@
     "test": "vitest run",
     "check": "tsc --noEmit && vitest run",
     "build:hands": "node scripts/generate-hands.mjs",
-    "solve:flops": "node scripts/solve-postflop.mjs"
+    "solve:flops": "node scripts/solve-postflop.mjs",
+    "test:browser": "playwright test"
   },
   "dependencies": {
     "next": "^15.5.0",
@@ -21,6 +22,7 @@
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
     "@types/node": "^22.15.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
