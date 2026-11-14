@@ -1,6 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useJournal } from '@/learning/Journal'
+import { LearningFeedback } from '@/learning/LearningFeedback'
 import type { RangeEntry } from '@/data/types'
 import {
   actionLabel,
@@ -27,11 +29,26 @@ import {
   type PostflopPlay,
   type SuitMap,
 } from '@/lib/fullHands'
-import { act, decisionFor, heroSeat, seatToAct, startHand, type Decision, type HandState } from '@/lib/handSim'
+import {
+  act,
+  decisionFor,
+  heroSeat,
+  seatToAct,
+  startHand,
+  type Decision,
+  type HandState,
+} from '@/lib/handSim'
 import { POSITION_LABELS, type Position } from '@/lib/positions'
 import { resolveActions } from '@/lib/range'
 import { headline } from '@/lib/scenarios'
-import { addResult, EMPTY_SCORE, gradeIndex, preflopPrompt, type Prompt, type TrainerSetup } from '@/lib/trainer'
+import {
+  addResult,
+  EMPTY_SCORE,
+  gradeIndex,
+  preflopPrompt,
+  type Prompt,
+  type TrainerSetup,
+} from '@/lib/trainer'
 import { BoardCards, CardFace, HoleCards } from './HoleCards'
 import { RangeGrid } from './RangeGrid'
 import { StrategyGrid } from './StrategyGrid'
@@ -50,7 +67,14 @@ interface Props {
 const NPC_DELAY_MS = 1000
 /** Share of hands where the player is dealt a hand the chart folds preflop instead of the script's cards. */
 const FOLD_HAND_RATE = 0.3
-const FLOP_KEYS: Record<ActionKind, string> = { X: 'x', B: 'b', R: 'r', AI: 'a', C: 'c', F: 'f' }
+const FLOP_KEYS: Record<ActionKind, string> = {
+  X: 'x',
+  B: 'b',
+  R: 'r',
+  AI: 'a',
+  C: 'c',
+  F: 'f',
+}
 
 /** loading: fetching a script · npc: opponents act · hero: waiting for the player · verdict: feedback shown */
 type Phase = 'loading' | 'npc' | 'hero' | 'verdict'
@@ -81,53 +105,157 @@ interface Live {
 
 /** Pre-generated hands played from the first preflop decision to the end; wrong moves are corrected and the line continues. */
 export function FullHandTrainer({ entries, setup, index }: Props) {
-  const [live, setLive] = useState<Live | null>(null)
-  const [phase, setPhase] = useState<Phase>('loading')
+  const { journal, paused } = useJournal()
+  const restored = journal.restored
+  const answered = useRef(false)
+  const [decisionsThisHand, setDecisionsThisHand] = useState(
+    restored?.cursor.decisions ?? 0,
+  )
+  const [live, setLive] = useState<Live | null>(() =>
+    restored && restored.script
+      ? {
+          script: restored.script,
+          suitMap: restored.hand.suitMap!,
+          hand: journal.nativeHand(),
+          play: restored.cursor.play,
+          foldHand: restored.hand.foldHand,
+        }
+      : null,
+  )
+  const [phase, setPhase] = useState<Phase>(restored?.cursor.phase ?? 'loading')
   const [error, setError] = useState<string | null>(null)
-  const [verdict, setVerdict] = useState<HandVerdict | null>(null)
-  const [score, setScore] = useState(EMPTY_SCORE)
+  const [verdict, setVerdict] = useState<HandVerdict | null>(() => {
+    const v = restored?.cursor.verdict
+    if (!v) return null
+    const p = journal.nativePrompt(
+      v.prompt,
+      restored.script,
+      restored.attempt?.before.play ?? null,
+    )
+    return {
+      prompt: p as HandPrompt,
+      guess: v.guess,
+      result: v.legacyGrade,
+      learning: v.learning,
+      reference: v.prompt.reference,
+    }
+  })
+  const [score, setScore] = useState(restored?.cursor.score ?? EMPTY_SCORE)
   /** Bumped on every deal so a load that is superseded (strict-mode double effects, setup changes) is dropped. */
   const dealId = useRef(0)
 
-  const newHand = useCallback(() => {
-    const id = ++dealId.current
-    const entry = pickHand(index, setup.seat)
-    setVerdict(null)
-    setLive(null)
-    if (!entry) {
-      setError(setup.seat ? `No generated hands with you in the ${POSITION_LABELS[setup.seat]} yet.` : 'No generated hands yet. Run scripts/generate-hands.mjs.')
-      setPhase('npc')
-      return
+  const dealing = useRef(false)
+  const mounted = useRef(true)
+  useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
     }
-    setError(null)
-    setPhase('loading')
-    loadHandScript(entry.id)
-      .then((script) => {
-        if (dealId.current !== id) return
-        const suitMap = randomSuitMap()
-        const foldCards = Math.random() < FOLD_HAND_RATE ? foldHandFor(script, suitMap, setup, entries) : null
-        const dealt = dealForScript(script, suitMap, setup, entries, Math.random, foldCards ?? undefined)
-        setLive({ script, suitMap, hand: startHand(setup, Math.random, script.hero, dealt), play: null, foldHand: foldCards !== null })
+  }, [])
+  const newHand = useCallback(async () => {
+    if (paused || dealing.current) return
+    dealing.current = true
+    const id = ++dealId.current
+    try {
+      await journal.flush()
+      const review = await journal.chooseReview()
+      if (!mounted.current || dealId.current !== id) return
+      if (review && review.script) {
+        journal.adopt(review)
+        setLive({
+          script: review.script,
+          suitMap: review.hand.suitMap!,
+          hand: journal.nativeHand(),
+          play: null,
+          foldHand: review.hand.foldHand,
+        })
+        setVerdict(null)
+        setDecisionsThisHand(0)
         setPhase('npc')
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-      })
-      .catch((err: Error) => {
-        if (dealId.current !== id) return
-        setError(`Could not load the hand. ${err.message}`)
+        return
+      }
+      const entry = pickHand(index, setup.seat)
+      setVerdict(null)
+      setLive(null)
+      if (!entry) {
+        setError(
+          setup.seat
+            ? `No generated hands with you in the ${POSITION_LABELS[setup.seat]} yet.`
+            : 'No generated hands yet. Run scripts/generate-hands.mjs.',
+        )
         setPhase('npc')
+        return
+      }
+      setError(null)
+      setPhase('loading')
+      const script = await loadHandScript(entry.id)
+      if (!mounted.current || dealId.current !== id) return
+      const suitMap = randomSuitMap()
+      const foldCards =
+        Math.random() < FOLD_HAND_RATE
+          ? foldHandFor(script, suitMap, setup, entries)
+          : null
+      const dealt = dealForScript(
+        script,
+        suitMap,
+        setup,
+        entries,
+        Math.random,
+        foldCards ?? undefined,
+      )
+      const hand = startHand(setup, Math.random, script.hero, dealt)
+      journal.begin(hand, script, suitMap, foldCards !== null)
+      setDecisionsThisHand(0)
+      setLive({
+        script,
+        suitMap,
+        hand,
+        play: null,
+        foldHand: foldCards !== null,
       })
-  }, [index, setup, entries])
+      setPhase('npc')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch (e) {
+      if (mounted.current) {
+        setError(
+          `Could not load the hand. ${e instanceof Error ? e.message : 'Try again.'}`,
+        )
+        setPhase('npc')
+      }
+    } finally {
+      dealing.current = false
+    }
+  }, [index, setup, entries, journal, paused])
 
   useEffect(() => {
-    newHand()
-  }, [newHand])
+    if (!journal.active) void newHand().catch((e) => journal.failed(e))
+  }, [newHand, journal])
 
-  const handOver = !!live && (live.play?.done || (!!live.hand.ended && live.hand.ended.kind !== 'flop'))
+  const handOver =
+    !!live &&
+    (live.play?.done || (!!live.hand.ended && live.hand.ended.kind !== 'flop'))
   const foldedPreflop = live?.hand.ended?.kind === 'hero-folded'
+
+  useEffect(() => {
+    if (paused || !live || phase === 'loading') return
+    journal.persist(
+      {
+        hand: live.hand,
+        play: live.play,
+        phase,
+        score,
+        decisions: decisionsThisHand,
+      },
+      !!handOver && decisionsThisHand > 0,
+    )
+  }, [journal, paused, live, phase, score, decisionsThisHand, handOver])
+  useEffect(() => {
+    if (phase === 'hero') answered.current = false
+  }, [phase, live])
 
   // Drive the scripted line: opponents act after a pause, the player is prompted at their nodes.
   useEffect(() => {
-    if (phase !== 'npc' || !live || handOver) return
+    if (paused || phase !== 'npc' || !live || handOver) return
     const { script, hand, play } = live
     if (play) {
       const node = currentNode(script, play)
@@ -136,7 +264,15 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
         setPhase('hero')
         return
       }
-      const timer = setTimeout(() => setLive((prev) => (prev?.play ? { ...prev, play: advancePostflop(prev.script, prev.play) } : prev)), NPC_DELAY_MS)
+      const timer = setTimeout(
+        () =>
+          setLive((prev) =>
+            prev?.play
+              ? { ...prev, play: advancePostflop(prev.script, prev.play) }
+              : prev,
+          ),
+        NPC_DELAY_MS,
+      )
       return () => clearTimeout(timer)
     }
     if (hand.ended) {
@@ -152,11 +288,19 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
     const timer = setTimeout(() => {
       setLive((prev) => {
         if (!prev || prev.play) return prev
-        return { ...prev, hand: act(prev.hand, setup, scriptedPreflopAction(prev.hand, prev.script), decisionFor(prev.hand, setup, entries)) }
+        return {
+          ...prev,
+          hand: act(
+            prev.hand,
+            setup,
+            scriptedPreflopAction(prev.hand, prev.script),
+            decisionFor(prev.hand, setup, entries),
+          ),
+        }
       })
     }, NPC_DELAY_MS)
     return () => clearTimeout(timer)
-  }, [phase, live, handOver, setup, entries])
+  }, [phase, live, handOver, setup, entries, paused])
 
   const prompt = useMemo<HandPrompt | null>(() => {
     if (phase !== 'hero' || !live) return null
@@ -167,7 +311,11 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
       const street = currentStreet(script, play)!.street
       return {
         street,
-        options: node.actions.map((a) => ({ label: actionLabel(a, play.bets, node.p), key: FLOP_KEYS[a.a], kind: a.a })),
+        options: node.actions.map((a) => ({
+          label: actionLabel(a, play.bets, node.p),
+          key: FLOP_KEYS[a.a],
+          kind: a.a,
+        })),
         probs: node.probs,
         expected: node.chosen,
         title: `${POSITION_LABELS[script.hero]} vs ${POSITION_LABELS[script.villain]} · ${STREET_LABELS[street]}`,
@@ -177,37 +325,83 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
     }
     const decision = decisionFor(hand, setup, entries)
     if (!decision) return null
-    const expected = live.foldHand ? undefined : scriptedPreflopAction(hand, script)
-    return { ...preflopPrompt(decision, setup, expected), street: 'preflop', decision }
+    const expected = live.foldHand
+      ? undefined
+      : scriptedPreflopAction(hand, script)
+    return {
+      ...preflopPrompt(decision, setup, expected),
+      street: 'preflop',
+      decision,
+    }
   }, [phase, live, setup, entries])
 
   const answer = useCallback(
     (index: number) => {
-      if (!prompt) return
+      if (paused || answered.current || !prompt || !live) return
+      answered.current = true
       const result = gradeIndex(prompt.probs, index)
-      setVerdict({ prompt, guess: index, result })
-      setScore((s) => addResult(s, result))
-      setLive((prev) => {
-        if (!prev) return prev
-        if (prev.play) return { ...prev, play: advancePostflop(prev.script, prev.play) }
-        const decision = prompt.decision!
-        return { ...prev, hand: act(prev.hand, setup, decision.actions[prompt.expected], decision) }
+      const next = live.play
+        ? { ...live, play: advancePostflop(live.script, live.play) }
+        : {
+            ...live,
+            hand: act(
+              live.hand,
+              setup,
+              prompt.decision!.actions[prompt.expected],
+              prompt.decision!,
+            ),
+          }
+      const nextScore = addResult(score, result)
+      journal.answer(
+        {
+          hand: live.hand,
+          play: live.play,
+          phase: 'hero',
+          score,
+          decisions: decisionsThisHand,
+        },
+        prompt,
+        index,
+        {
+          hand: next.hand,
+          play: next.play,
+          phase: 'verdict',
+          score: nextScore,
+          decisions: decisionsThisHand + 1,
+        },
+      )
+      setVerdict({
+        prompt,
+        guess: index,
+        result,
+        learning: journal.feedback?.learning,
+        reference: journal.feedback?.prompt.reference,
       })
+      setScore(nextScore)
+      setDecisionsThisHand((n) => n + 1)
+      setLive(next)
       setPhase('verdict')
     },
-    [prompt, setup],
+    [prompt, setup, live, score, decisionsThisHand, journal, paused],
   )
 
   const proceed = useCallback(() => {
-    if (handOver) newHand()
+    if (paused) return
+    if (handOver) void newHand().catch((e) => journal.failed(e))
     else {
       setVerdict(null)
       setPhase('npc')
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  }, [handOver, newHand])
+  }, [handOver, newHand, journal, paused])
 
-  useAnswerKeys({ prompt, onAnswer: answer, canProceed: phase === 'verdict' || (phase === 'npc' && handOver), onProceed: proceed })
+  useAnswerKeys({
+    prompt: paused ? null : prompt,
+    onAnswer: answer,
+    canProceed:
+      !paused && (phase === 'verdict' || (phase === 'npc' && handOver)),
+    onProceed: proceed,
+  })
 
   const hero = live ? heroSeat(live.hand) : null
   const actingPosition = useMemo<Position | null>(() => {
@@ -217,15 +411,24 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
     return node ? positionOf(live.script, node.p) : null
   }, [live])
 
-  const folded = useMemo(() => new Set(live?.hand.seats.filter((s) => s.folded).map((s) => s.position) ?? []), [live])
+  const folded = useMemo(
+    () =>
+      new Set(
+        live?.hand.seats.filter((s) => s.folded).map((s) => s.position) ?? [],
+      ),
+    [live],
+  )
 
   const bets = useMemo(() => {
     const out: Partial<Record<Position, number>> = {}
     if (!live) return out
     if (live.play) {
-      for (const p of ['ip', 'oop'] as const) if (live.play.bets[p] > 0) out[positionOf(live.script, p)] = live.play.bets[p]
+      for (const p of ['ip', 'oop'] as const)
+        if (live.play.bets[p] > 0)
+          out[positionOf(live.script, p)] = live.play.bets[p]
     } else {
-      for (const s of live.hand.seats) if (s.committed > 0) out[s.position] = s.committed
+      for (const s of live.hand.seats)
+        if (s.committed > 0) out[s.position] = s.committed
     }
     return out
   }, [live])
@@ -234,10 +437,13 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
   const labels = useMemo(() => {
     const out: Partial<Record<Position, string>> = {}
     if (!live) return out
-    for (const s of live.hand.seats) if (s.lastAction) out[s.position] = s.lastAction
+    for (const s of live.hand.seats)
+      if (s.lastAction) out[s.position] = s.lastAction
     if (live.play) {
       const street = currentStreet(live.script, live.play)!
-      const played = live.play.done ? street.nodes : street.nodes.slice(0, live.play.nodeIndex)
+      const played = live.play.done
+        ? street.nodes
+        : street.nodes.slice(0, live.play.nodeIndex)
       for (const p of ['ip', 'oop'] as const) {
         const last = played.filter((n) => n.p === p).pop()
         const position = positionOf(live.script, p)
@@ -249,8 +455,19 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
   }, [live])
 
   const shown = prompt ?? verdict?.prompt ?? null
-  const handOverMessage = live && handOver ? (foldedPreflop ? PREFLOP_FOLD_MESSAGE : resultMessage(live.script)) : null
-  const chartWeights = useMemo(() => (verdict?.prompt.decision ? resolveActions(verdict.prompt.decision.entry.range) : null), [verdict])
+  const handOverMessage =
+    live && handOver
+      ? foldedPreflop
+        ? PREFLOP_FOLD_MESSAGE
+        : resultMessage(live.script)
+      : null
+  const chartWeights = useMemo(
+    () =>
+      verdict?.prompt.decision
+        ? resolveActions(verdict.prompt.decision.entry.range)
+        : null,
+    [verdict],
+  )
 
   let title = 'Dealing…'
   let subtitle = ''
@@ -259,19 +476,36 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
     subtitle = error
   } else if (shown && live) {
     title = shown.title
-    subtitle = phase === 'hero' ? 'Your move' : shown.decision ? headline(shown.decision.scenario, setup, live.hand.hero, shown.decision.villain).subtitle : ''
+    subtitle =
+      phase === 'hero'
+        ? 'Your move'
+        : shown.decision
+          ? headline(
+              shown.decision.scenario,
+              setup,
+              live.hand.hero,
+              shown.decision.villain,
+            ).subtitle
+          : ''
   } else if (handOverMessage) {
     title = 'Hand over'
     subtitle = handOverMessage
   } else if (live) {
     const { script, play } = live
-    title = play ? `${POSITION_LABELS[script.hero]} vs ${POSITION_LABELS[script.villain]} · ${STREET_LABELS[currentStreet(script, play)!.street]}` : `You are ${POSITION_LABELS[script.hero]}`
-    subtitle = actingPosition ? `${POSITION_LABELS[actingPosition]} to act…` : ''
+    title = play
+      ? `${POSITION_LABELS[script.hero]} vs ${POSITION_LABELS[script.villain]} · ${STREET_LABELS[currentStreet(script, play)!.street]}`
+      : `You are ${POSITION_LABELS[script.hero]}`
+    subtitle = actingPosition
+      ? `${POSITION_LABELS[actingPosition]} to act…`
+      : ''
   }
 
   return (
     <>
       <ScoreBar score={score} unit="decisions" />
+      <p className="learning-score-note">
+        Frequency drill · most-frequent action agreement
+      </p>
 
       <section className="card">
         <div className="range-card__head">
@@ -281,7 +515,8 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
           </div>
           {live && (
             <span className="pill">
-              {POSITION_LABELS[live.script.hero]} · {live.script.kind === 'srp' ? 'Single-raised' : '3-bet pot'}
+              {POSITION_LABELS[live.script.hero]} ·{' '}
+              {live.script.kind === 'srp' ? 'Single-raised' : '3-bet pot'}
             </span>
           )}
         </div>
@@ -296,19 +531,33 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
               acting={handOver ? undefined : (actingPosition ?? undefined)}
               folded={folded}
               labels={labels}
-              pot={live.play ? (live.play.done ? live.script.result.pot : currentStreet(live.script, live.play)!.pot) : undefined}
+              pot={
+                live.play
+                  ? live.play.done
+                    ? live.script.result.pot
+                    : currentStreet(live.script, live.play)!.pot
+                  : undefined
+              }
             />
-            {live.play && <BoardCards cards={boardShown(live.script, live.play, live.suitMap)} />}
-            {handOver && !foldedPreflop && live.script.result.kind === 'showdown' && (
-              <div className="showdown">
-                <span className="showdown__label">Villain</span>
-                <div className="hole-cards hole-cards--small">
-                  {mapHole(live.script.villainCards, live.suitMap).map((c) => (
-                    <CardFace key={c.rank + c.suit} card={c} small />
-                  ))}
-                </div>
-              </div>
+            {live.play && (
+              <BoardCards
+                cards={boardShown(live.script, live.play, live.suitMap)}
+              />
             )}
+            {handOver &&
+              !foldedPreflop &&
+              live.script.result.kind === 'showdown' && (
+                <div className="showdown">
+                  <span className="showdown__label">Villain</span>
+                  <div className="hole-cards hole-cards--small">
+                    {mapHole(live.script.villainCards, live.suitMap).map(
+                      (c) => (
+                        <CardFace key={c.rank + c.suit} card={c} small />
+                      ),
+                    )}
+                  </div>
+                </div>
+              )}
             <HoleCards cards={hero.cards} />
           </>
         )}
@@ -316,11 +565,24 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
         {prompt ? (
           <ActionPrompt prompt={prompt} onAnswer={answer} />
         ) : verdict ? (
-          <VerdictView verdict={verdict} source={verdict.prompt.street === 'preflop' ? 'chart' : 'solver'} continues handOver={handOverMessage} onProceed={proceed} />
+          <VerdictView
+            verdict={verdict}
+            source={verdict.prompt.street === 'preflop' ? 'chart' : 'solver'}
+            continues
+            handOver={handOverMessage}
+            onProceed={proceed}
+          >
+            <LearningFeedback journal={journal} />
+          </VerdictView>
         ) : handOverMessage ? (
           <div className="verdict" aria-live="polite">
             <strong>{handOverMessage}</strong>
-            <button type="button" className="btn btn--primary verdict__next" onClick={newHand} autoFocus>
+            <button
+              type="button"
+              className="btn btn--primary verdict__next"
+              onClick={newHand}
+              autoFocus
+            >
               Next hand
             </button>
           </div>
@@ -328,7 +590,11 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
           <div className="empty">{error}</div>
         ) : (
           <div className="actions actions--waiting" aria-live="polite">
-            {phase === 'loading' ? 'Dealing…' : actingPosition ? `${POSITION_LABELS[actingPosition]} is thinking…` : ''}
+            {phase === 'loading'
+              ? 'Dealing…'
+              : actingPosition
+                ? `${POSITION_LABELS[actingPosition]} is thinking…`
+                : ''}
           </div>
         )}
       </section>
@@ -345,20 +611,32 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
         </section>
       )}
 
-      {verdict && hero && verdict.prompt.grid && verdict.prompt.kinds && verdict.prompt.street !== 'preflop' && (
-        <section className="card">
-          <div className="range-card__head">
-            <div className="range-card__title">
-              <h2>{STREET_LABELS[verdict.prompt.street]} strategy</h2>
-              <span>{verdict.prompt.title}</span>
+      {verdict &&
+        hero &&
+        verdict.prompt.grid &&
+        verdict.prompt.kinds &&
+        verdict.prompt.street !== 'preflop' && (
+          <section className="card">
+            <div className="range-card__head">
+              <div className="range-card__title">
+                <h2>{STREET_LABELS[verdict.prompt.street]} strategy</h2>
+                <span>{verdict.prompt.title}</span>
+              </div>
             </div>
-          </div>
-          <StrategyGrid kinds={verdict.prompt.kinds} labels={verdict.prompt.options.map((o) => o.label)} cells={verdict.prompt.grid} highlight={hero.hand.label} />
-          <div className="notes">
-            <p>Solver output for your whole range in this spot, averaged over suit combinations per hand. Your exact combo can differ.</p>
-          </div>
-        </section>
-      )}
+            <StrategyGrid
+              kinds={verdict.prompt.kinds}
+              labels={verdict.prompt.options.map((o) => o.label)}
+              cells={verdict.prompt.grid}
+              highlight={hero.hand.label}
+            />
+            <div className="notes">
+              <p>
+                Solver output for your whole range in this spot, averaged over
+                suit combinations per hand. Your exact combo can differ.
+              </p>
+            </div>
+          </section>
+        )}
     </>
   )
 }

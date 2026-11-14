@@ -19,15 +19,15 @@
     },
     "src/components/FullHandTrainer.tsx": {
       "files": 1,
-      "sha256": "c9c6526ede051af266907b67c0d69649d603f7a7dc8d42005512bfde4115cd65"
+      "sha256": "1f03b331949debc5ba3661f9bd93be7f39fad24c589faf591728dfe91e75d914"
     },
     "src/components/HandTrainer.tsx": {
       "files": 1,
-      "sha256": "63b6aadac93d3be58b804dea6762ff3c681e99b12fbed43900d256881d61d42e"
+      "sha256": "6bd1683358df8939794627c17f692910115957eded2f0c1c005d186e110f02d0"
     },
     "src/components/PlayPage.tsx": {
       "files": 1,
-      "sha256": "ea8036e089f55ccac61bd6816ca8ef69e24910f8d99fdd4e72ec3c2d21d1947f"
+      "sha256": "d3d3ff8364cfd2ff04d06ce67a14e5da066951a84ed71d99c46da84dc5341c59"
     },
     "src/components/RangeViewer.tsx": {
       "files": 1,
@@ -55,7 +55,7 @@
     },
     "src/components/trainer/VerdictView.tsx": {
       "files": 1,
-      "sha256": "e7afe1cc516a877ad9d059bd55942c817a3c7f0c6e81ddd160a20c6b88d609b8"
+      "sha256": "a13e91cf234d2ba41d933de8fa60a7529330207f590194c8982743a979b92cac"
     },
     "src/components/trainer/useAnswerKeys.ts": {
       "files": 1,
@@ -79,5 +79,15 @@
     "start": "  const totals =",
     "end": "  return (",
     "sha256": "3e9ec15ea1600d90e0ddfdd616dfb19503ec5a60edc40e12cddf85b76f87ad46"
+  },
+  "sessionReviewIntegration": {
+    "approvedPaths": [
+      "src/components/FullHandTrainer.tsx",
+      "src/components/HandTrainer.tsx",
+      "src/components/PlayPage.tsx",
+      "src/components/trainer/VerdictView.tsx"
+    ],
+    "reason": "Hydrated checkpoints, automatic answer capture, paused review/manual practice, source-precise feedback; poker library, supplied data, chart calculation and palette baselines unchanged.",
+    "evidence": "docs/implementation/SESSION_REVIEW_INTEGRATION.md"
   }
 }

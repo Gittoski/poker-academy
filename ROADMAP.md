@@ -8,11 +8,11 @@ This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PL
 
 - [x] Replace the retired academy with jensbaagaard/poker-practice; preserve attribution and a Git backup.
 - [x] Deliver the navy theme without changing the engine, grading, training controllers or chart data.
-- [x] Last verified: 86 unit tests, nine browser checks, TypeScript, production build and simulator/strategy-calculation integrity checks.
+- [x] Last verified: 119 unit tests, 19 browser journeys, TypeScript, production build and simulator/strategy-calculation integrity checks.
 - [x] Retain range viewing, preflop training, scripted full-hand practice and existing custom-range/theme settings.
 - [ ] Actual iPhone/Safari, VoiceOver and device animation verification. Chromium phone-sized tests do not close this release gate.
 
-Current limitations: no persistent learning journal or curriculum; full-hand play follows supplied scripts. The grade favors the most frequent reference action and is not an EV-loss score. Existing source/provenance limits remain documented in [UPSTREAM.md](docs/UPSTREAM.md).
+Current limitations: no guided curriculum or whole-app offline installation; full-hand play follows supplied scripts. The grade favors the most frequent reference action and is not an EV-loss score. Existing source/provenance limits remain documented in [UPSTREAM.md](docs/UPSTREAM.md).
 
 ## Learning progression
 
@@ -24,8 +24,8 @@ Teach one concept, show an example, practice it, check it independently and revi
 
 | Status | ID | Milestone | Main prerequisite | Completion evidence |
 | --- | --- | --- | --- | --- |
-| [ ] | M01 | Persistent learning journal and honest progress metrics | Current decision/context audit | Save/reload/migration/export tests; no duplicate records; existing play unchanged |
-| [ ] | M02 | Saved hand reviews, exact retries and mistake book | M01, versioned source IDs | Same-decision restoration, hidden-information safety, separate first tries/practice, live-session preservation |
+| [x] | M01 | Persistent learning journal and honest progress metrics | Current decision/context audit | Save/reload/migration/export tests; no duplicate records; existing play unchanged |
+| [x] | M02 | Saved hand reviews, exact retries and mistake book | M01, versioned source IDs | Same-decision restoration, hidden-information safety, separate first tries/practice, live-session preservation |
 | [ ] | M03 | Phone reliability and installed offline practice | M01–M02 | Tested device cold starts, complete pack caching, resume and storage/update recovery |
 | [ ] | M04 | Guided Basics path plus math/hand-reading drills | M01; reviewed exact examples | One-concept progression, independent answer fixtures, retained completion and later review |
 | [ ] | M05 | Focused preflop and fair mixed-strategy practice | M01–M02; objective/metric versioning | Supported actions distinguished from most-frequent drills; configuration/edge-case regressions |
@@ -44,15 +44,15 @@ The user has refined M01/M02 and the initial M08 scheduler into a simulator-firs
 
 - [x] Plan automatic sessions, automatic error capture, exact/related reviews, whole-hand adaptive replay, delayed review labels, mixed-action handling, gradual spacing and compact retention with the user.
 - [x] R01: schemas, classification, metric copy and preservation tests.
-- [ ] R02: bounded storage, session lifecycle and exact recovery.
-- [ ] R03: automatic capture in both simulator modes.
-- [ ] R04: review area, exact retries and live-hand preservation.
-- [ ] R05: adaptive insertion with toggle and approximate frequency slider.
-- [ ] R06: related covered examples, due states and cross-session improvement.
-- [ ] R07: measured retention limits, analytics and long-term recovery.
-- [ ] R08: full regression, actual-app evidence and delivery; device checks when available.
+- [x] R02: bounded storage, session lifecycle and exact recovery.
+- [x] R03: automatic capture in both simulator modes.
+- [x] R04: review area, exact retries and live-hand preservation.
+- [x] R05: adaptive insertion with toggle and approximate frequency slider.
+- [x] R06: related covered examples, due states and cross-session improvement.
+- [x] R07: measured retention limits, analytics and long-term recovery.
+- [x] R08: automated full regression, actual-app evidence and delivery. Actual-device release gate remains open above.
 
-Next implementation is R02. Follow the detailed feature checklist before expanding the curriculum. R01 contract code and preservation tests are complete; the learning layer is not yet connected to play. The stored `/goal` brief is ready for the user to invoke and is not an active goal by itself.
+The focused R01–R08 implementation and available automated verification are complete; the actual-device release gate remains open. Follow the detailed feature checklist before expanding the curriculum. Automatic saving, session recovery, exact reviews, manual retries and adaptive returns are connected in both modes; 119 unit tests, 19 browser journeys, TypeScript, integrity and production build pass. The goal-ready brief remains as implementation history. See the usage guide and verification report for the delivered feature.
 
 ## Completion discipline
 

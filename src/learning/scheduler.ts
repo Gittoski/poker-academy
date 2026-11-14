@@ -1,5 +1,4 @@
 import type { LearningConfig, ProblemRecord, SchedulerState } from './types'
-import { configKey } from './keys'
 export function nextRandom(seed: number): [number, number] {
   let n = seed >>> 0 || 1
   n ^= n << 13
@@ -36,6 +35,7 @@ export function configureScheduler(
     seed,
     index: 0,
     slot: Math.floor(r * interval),
+    slotUsed: false,
   }
 }
 /** Advance only after hands with player decisions; never consumes the dealer RNG. */
@@ -44,15 +44,29 @@ export function advanceScheduler(state: SchedulerState): SchedulerState {
   if (state.index + 1 < state.interval)
     return { ...state, index: state.index + 1 }
   const [r, seed] = nextRandom(state.seed)
-  return { ...state, index: 0, slot: Math.floor(r * state.interval), seed }
+  return {
+    ...state,
+    index: 0,
+    slot: Math.floor(r * state.interval),
+    slotUsed: false,
+    seed,
+  }
 }
 export function compatible(
-  problem: ProblemRecord,
+  problem: Pick<ProblemRecord, 'config' | 'hero'>,
   config: LearningConfig,
 ): boolean {
+  const a = problem.config,
+    b = config
   return (
-    configKey(problem.config) === configKey(config) &&
-    (!config.seat || problem.hero === config.seat)
+    a.mode === b.mode &&
+    a.format === b.format &&
+    a.stack === b.stack &&
+    a.rangeType === b.rangeType &&
+    a.openSize === b.openSize &&
+    a.players === b.players &&
+    a.rangesId === b.rangesId &&
+    (!b.seat || problem.hero === b.seat)
   )
 }
 export function selectProblem(
@@ -61,7 +75,8 @@ export function selectProblem(
   config: LearningConfig,
   now: number,
 ): ProblemRecord | null {
-  if (!state.enabled || state.index !== state.slot) return null
+  if (!state.enabled || state.slotUsed || state.index !== state.slot)
+    return null
   const eligible = problems.filter(
     (p) => compatible(p, config) && p.dueAt <= now,
   )

@@ -1,3 +1,6 @@
+import { LEARNING_LABELS, formatFrequency } from '@/learning/classification'
+import type { LearningResult, FrequencyReference } from '@/learning/types'
+import type { ReactNode } from 'react'
 import type { Grade, Prompt } from '@/lib/trainer'
 import { actionsClass } from './ActionPrompt'
 
@@ -5,11 +8,18 @@ export interface Verdict {
   prompt: Prompt
   guess: number
   result: Grade
+  learning?: LearningResult
+  reference?: FrequencyReference
 }
 
-const GRADE_TEXT: Record<Grade, string> = { correct: 'Correct', partial: 'Partly right', wrong: 'Wrong' }
+const GRADE_TEXT: Record<Grade, string> = {
+  correct: 'Correct',
+  partial: 'Partly right',
+  wrong: 'Wrong',
+}
 
 interface Props {
+  children?: ReactNode
   verdict: Verdict
   /** Where the answer came from, for the explanation. */
   source: 'chart' | 'solver'
@@ -21,8 +31,15 @@ interface Props {
 }
 
 /** Feedback on an answer: every option with its frequency, the expected one outlined, and an explanation. */
-export function VerdictView({ verdict, source, continues, handOver, onProceed }: Props) {
-  const { prompt, guess, result } = verdict
+export function VerdictView({
+  verdict,
+  source,
+  continues,
+  handOver,
+  onProceed,
+  children,
+}: Props) {
+  const { prompt, guess, result, learning } = verdict
   const expected = prompt.options[prompt.expected].label
   const mostly = prompt.probs[prompt.expected] < 100
   let text: string
@@ -31,29 +48,68 @@ export function VerdictView({ verdict, source, continues, handOver, onProceed }:
     text = `The ${source} ${mostly ? 'mostly ' : ''}plays ${expected.toLowerCase()}${mostly ? ` (${prompt.probs[prompt.expected]}%)` : ''}`
     text += continues ? ', so the hand continues that way.' : '.'
   }
+  if (learning) {
+    text =
+      learning.kind === 'match'
+        ? 'Your choice is a most-frequent supported action.'
+        : learning.kind === 'alternative'
+          ? 'Your choice has positive support in this reference.'
+          : learning.kind === 'outside'
+            ? 'Your choice has zero support in this reference.'
+            : 'No applicable valid reference is available.'
+    if (continues && guess !== prompt.expected)
+      text += ` The supplied hand continues with ${expected.toLowerCase()}.`
+  }
   return (
     <>
-      <div className={actionsClass(prompt)} role="group" aria-label="Chart frequencies">
+      <div
+        className={actionsClass(prompt)}
+        role="group"
+        aria-label="Chart frequencies"
+      >
         {prompt.options.map((o, i) => {
           const classes = ['action-btn', `action-btn--${o.kind}`]
           if (i === guess) classes.push('action-btn--chosen')
           if (i === prompt.expected) classes.push('action-btn--best')
-          if (i !== guess && i !== prompt.expected) classes.push('action-btn--dim')
+          if (i !== guess && i !== prompt.expected)
+            classes.push('action-btn--dim')
           return (
-            <button key={i} type="button" className={classes.join(' ')} disabled>
+            <button
+              key={i}
+              type="button"
+              className={classes.join(' ')}
+              disabled
+            >
               <span>{o.label}</span>
-              <small>{prompt.probs[i]}%</small>
+              <small>
+                {verdict.reference
+                  ? formatFrequency(
+                      verdict.reference.values[i] / verdict.reference.scale,
+                    )
+                  : `${prompt.probs[i]}%`}
+              </small>
             </button>
           )
         })}
       </div>
-      <div className={`verdict verdict--${result}`} aria-live="polite">
-        <strong>{GRADE_TEXT[result]}.</strong>{' '}
+      <div
+        className={`verdict verdict--${learning?.kind === 'match' || learning?.kind === 'alternative' ? 'correct' : result}`}
+        aria-live="polite"
+      >
+        <strong>
+          {learning ? LEARNING_LABELS[learning.kind] : GRADE_TEXT[result]}.
+        </strong>{' '}
         <span>
           {text}
           {handOver ? ` ${handOver}` : ''}
         </span>
-        <button type="button" className="btn btn--primary verdict__next" onClick={onProceed} autoFocus>
+        {children}
+        <button
+          type="button"
+          className="btn btn--primary verdict__next"
+          onClick={onProceed}
+          autoFocus
+        >
           {handOver ? 'Next hand' : 'Continue'}
         </button>
       </div>

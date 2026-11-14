@@ -1,12 +1,29 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useJournal } from '@/learning/Journal'
+import { LearningFeedback } from '@/learning/LearningFeedback'
 import type { RangeEntry } from '@/data/types'
-import { act, decisionFor, heroSeat, sampleAction, seatToAct, startHand, type Decision, type HandState } from '@/lib/handSim'
+import {
+  act,
+  decisionFor,
+  heroSeat,
+  sampleAction,
+  seatToAct,
+  startHand,
+  type Decision,
+  type HandState,
+} from '@/lib/handSim'
 import { POSITION_LABELS, type Position } from '@/lib/positions'
 import { resolveActions } from '@/lib/range'
 import { headline } from '@/lib/scenarios'
-import { addResult, EMPTY_SCORE, gradeIndex, preflopPrompt, type TrainerSetup } from '@/lib/trainer'
+import {
+  addResult,
+  EMPTY_SCORE,
+  gradeIndex,
+  preflopPrompt,
+  type TrainerSetup,
+} from '@/lib/trainer'
 import { HoleCards } from './HoleCards'
 import { RangeGrid } from './RangeGrid'
 import { TableDiagram } from './TableDiagram'
@@ -22,7 +39,8 @@ interface Props {
 
 const NPC_DELAY_MS = 1000
 const AUTO_NEXT_MS = 1200
-const COLD_3BET_NOTE = 'The charts only cover the previous raiser facing a re-raise, so a cold 3-bet is an automatic fold.'
+const COLD_3BET_NOTE =
+  'The charts only cover the previous raiser facing a re-raise, so a cold 3-bet is an automatic fold.'
 
 /** npc: opponents are acting · hero: waiting for the player · verdict: showing feedback on the player's move */
 type Phase = 'npc' | 'hero' | 'verdict'
@@ -33,31 +51,92 @@ interface PreflopVerdict extends Verdict {
 
 /** Preflop only: opponents play their cards from the charts and every decision of the player is graded. */
 export function HandTrainer({ entries, setup }: Props) {
-  const [hand, setHand] = useState<HandState>(() => startHand(setup, Math.random, setup.seat))
-  const [forcedFold, setForcedFold] = useState(false)
-  const [phase, setPhase] = useState<Phase>('npc')
-  const [verdict, setVerdict] = useState<PreflopVerdict | null>(null)
-  const [decisionsThisHand, setDecisionsThisHand] = useState(0)
+  const { journal, paused } = useJournal()
+  const restored = journal.restored
+  const answered = useRef(false)
+  const dealing = useRef(false)
+  const [hand, setHand] = useState<HandState>(() =>
+    restored ? journal.nativeHand() : startHand(setup, Math.random, setup.seat),
+  )
+  const [forcedFold, setForcedFold] = useState(
+    restored?.cursor.forcedFold ?? false,
+  )
+  const [phase, setPhase] = useState<Phase>(restored?.cursor.phase ?? 'npc')
+  const [verdict, setVerdict] = useState<PreflopVerdict | null>(() => {
+    const v = restored?.cursor.verdict
+    if (!v) return null
+    const p = journal.nativePrompt(v.prompt, null, null)
+    return {
+      prompt: p,
+      guess: v.guess,
+      result: v.legacyGrade,
+      learning: v.learning,
+      reference: v.prompt.reference,
+      decision: p.decision!,
+    }
+  })
+  const [decisionsThisHand, setDecisionsThisHand] = useState(
+    restored?.cursor.decisions ?? 0,
+  )
   const [inspected, setInspected] = useState<Position | null>(null)
-  const [score, setScore] = useState(EMPTY_SCORE)
+  const [score, setScore] = useState(restored?.cursor.score ?? EMPTY_SCORE)
 
-  const decision = useMemo(() => (phase === 'hero' ? decisionFor(hand, setup, entries) : null), [phase, hand, setup, entries])
-  const prompt = useMemo(() => (decision ? preflopPrompt(decision, setup) : null), [decision, setup])
+  const decision = useMemo(
+    () => (phase === 'hero' ? decisionFor(hand, setup, entries) : null),
+    [phase, hand, setup, entries],
+  )
+  const prompt = useMemo(
+    () => (decision ? preflopPrompt(decision, setup) : null),
+    [decision, setup],
+  )
 
-  const newHand = useCallback(() => {
-    setHand(startHand(setup, Math.random, setup.seat))
-    setForcedFold(false)
-    setPhase('npc')
-    setVerdict(null)
-    setDecisionsThisHand(0)
-    setInspected(null)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [setup])
+  const newHand = useCallback(async () => {
+    if (dealing.current || paused) return
+    dealing.current = true
+    try {
+      const review = await journal.chooseReview()
+      if (review) {
+        journal.adopt(review)
+        setHand(journal.nativeHand())
+        setForcedFold(review.cursor.forcedFold)
+        setPhase(review.cursor.phase)
+        setVerdict(null)
+        setDecisionsThisHand(0)
+        setInspected(null)
+        return
+      }
+      const next = startHand(setup, Math.random, setup.seat)
+      journal.begin(next)
+      setHand(next)
+      setForcedFold(false)
+      setPhase('npc')
+      setVerdict(null)
+      setDecisionsThisHand(0)
+      setInspected(null)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch (e) {
+      journal.failed(e)
+    } finally {
+      dealing.current = false
+    }
+  }, [setup, journal, paused])
+
+  useEffect(() => {
+    if (paused) return
+    if (!journal.active) journal.begin(hand)
+    journal.persist(
+      { hand, phase, score, decisions: decisionsThisHand, forcedFold },
+      !!hand.ended && decisionsThisHand > 0,
+    )
+  }, [journal, paused, hand, phase, score, decisionsThisHand, forcedFold])
+  useEffect(() => {
+    if (phase === 'hero') answered.current = false
+  }, [phase, hand])
 
   // Drive opponents, hand the turn to the player, and deal again after hands with no decision
   // unless the player is looking at an opponent's range.
   useEffect(() => {
-    if (phase !== 'npc') return
+    if (paused || phase !== 'npc') return
     if (hand.ended) {
       if (decisionsThisHand > 0 || inspected) return
       const timer = setTimeout(newHand, AUTO_NEXT_MS)
@@ -72,64 +151,173 @@ export function HandTrainer({ entries, setup }: Props) {
     }
     if (seat.position === hand.hero) setForcedFold(true)
     const timer = setTimeout(() => {
-      setHand((prev) => act(prev, setup, current ? sampleAction(current) : 'fold', current))
+      const action = current ? sampleAction(current, journal.random) : 'fold'
+      setHand(act(hand, setup, action, current))
     }, NPC_DELAY_MS)
     return () => clearTimeout(timer)
-  }, [phase, hand, setup, entries, decisionsThisHand, inspected, newHand])
+  }, [
+    phase,
+    hand,
+    setup,
+    entries,
+    decisionsThisHand,
+    inspected,
+    newHand,
+    paused,
+    journal,
+  ])
 
   const answer = useCallback(
     (index: number) => {
-      if (!decision || !prompt) return
+      if (paused || answered.current || !decision || !prompt) return
+      answered.current = true
       const result = gradeIndex(prompt.probs, index)
-      setVerdict({ prompt, guess: index, result, decision })
-      setScore((s) => addResult(s, result))
+      const next = act(hand, setup, decision.actions[index], decision)
+      const nextScore = addResult(score, result)
+      journal.answer(
+        {
+          hand,
+          phase: 'hero',
+          score,
+          decisions: decisionsThisHand,
+          forcedFold,
+        },
+        { ...prompt, decision },
+        index,
+        {
+          hand: next,
+          phase: 'verdict',
+          score: nextScore,
+          decisions: decisionsThisHand + 1,
+          forcedFold,
+        },
+      )
+      setVerdict({
+        prompt,
+        guess: index,
+        result,
+        learning: journal.feedback?.learning,
+        reference: journal.feedback?.prompt.reference,
+        decision,
+      })
+      setScore(nextScore)
       setDecisionsThisHand((n) => n + 1)
-      setHand((prev) => act(prev, setup, decision.actions[index], decision))
+      setHand(next)
       setPhase('verdict')
     },
-    [decision, prompt, setup],
+    [
+      decision,
+      prompt,
+      setup,
+      hand,
+      score,
+      decisionsThisHand,
+      forcedFold,
+      journal,
+      paused,
+    ],
   )
 
   const proceed = useCallback(() => {
-    if (hand.ended) newHand()
+    if (paused) return
+    if (hand.ended) void newHand()
     else {
       setVerdict(null)
       setPhase('npc')
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  }, [hand.ended, newHand])
+  }, [hand.ended, newHand, paused])
 
-  useAnswerKeys({ prompt, onAnswer: answer, canProceed: phase === 'verdict' || (phase === 'npc' && !!hand.ended), onProceed: proceed })
+  useAnswerKeys({
+    prompt: paused ? null : prompt,
+    onAnswer: answer,
+    canProceed:
+      !paused && (phase === 'verdict' || (phase === 'npc' && !!hand.ended)),
+    onProceed: proceed,
+  })
 
   const hero = heroSeat(hand)
   const acting = seatToAct(hand)
-  const folded = useMemo(() => new Set(hand.seats.filter((s) => s.folded).map((s) => s.position)), [hand])
-  const bets = useMemo(() => Object.fromEntries(hand.seats.filter((s) => s.committed > 0).map((s) => [s.position, s.committed])) as Partial<Record<Position, number>>, [hand])
+  const folded = useMemo(
+    () => new Set(hand.seats.filter((s) => s.folded).map((s) => s.position)),
+    [hand],
+  )
+  const bets = useMemo(
+    () =>
+      Object.fromEntries(
+        hand.seats
+          .filter((s) => s.committed > 0)
+          .map((s) => [s.position, s.committed]),
+      ) as Partial<Record<Position, number>>,
+    [hand],
+  )
   const labels = useMemo(() => {
     const out: Partial<Record<Position, string>> = {}
-    const reveal = hand.ended && !['hero-folded', 'walk'].includes(hand.ended.kind)
+    const reveal =
+      hand.ended && !['hero-folded', 'walk'].includes(hand.ended.kind)
     for (const s of hand.seats) {
-      if (reveal && !s.folded && s.position !== hand.hero) out[s.position] = [s.lastAction, s.hand.label].filter(Boolean).join(' · ')
+      if (reveal && !s.folded && s.position !== hand.hero)
+        out[s.position] = [s.lastAction, s.hand.label]
+          .filter(Boolean)
+          .join(' · ')
       else if (s.lastAction) out[s.position] = s.lastAction
     }
     return out
   }, [hand])
 
-  const inspectable = useMemo(() => new Set(hand.seats.filter((s) => s.lastDecision && s.position !== hand.hero).map((s) => s.position)), [hand])
-  const inspectedSeat = inspected ? hand.seats.find((s) => s.position === inspected && s.lastDecision) : undefined
-  const inspectedWeights = useMemo(() => (inspectedSeat?.lastDecision ? resolveActions(inspectedSeat.lastDecision.entry.range) : null), [inspectedSeat?.lastDecision])
-  const toggleInspected = useCallback((position: Position) => setInspected((prev) => (prev === position ? null : position)), [])
+  const inspectable = useMemo(
+    () =>
+      new Set(
+        hand.seats
+          .filter((s) => s.lastDecision && s.position !== hand.hero)
+          .map((s) => s.position),
+      ),
+    [hand],
+  )
+  const inspectedSeat = inspected
+    ? hand.seats.find((s) => s.position === inspected && s.lastDecision)
+    : undefined
+  const inspectedWeights = useMemo(
+    () =>
+      inspectedSeat?.lastDecision
+        ? resolveActions(inspectedSeat.lastDecision.entry.range)
+        : null,
+    [inspectedSeat?.lastDecision],
+  )
+  const toggleInspected = useCallback(
+    (position: Position) =>
+      setInspected((prev) => (prev === position ? null : position)),
+    [],
+  )
 
   const shown = prompt ?? verdict?.prompt ?? null
   const shownDecision = decision ?? verdict?.decision ?? null
-  const handOver = hand.ended ? `${hand.ended.message}${forcedFold ? ` ${COLD_3BET_NOTE}` : ''}` : null
-  const chartWeights = useMemo(() => (verdict && shownDecision ? resolveActions(shownDecision.entry.range) : null), [verdict, shownDecision])
+  const handOver = hand.ended
+    ? `${hand.ended.message}${forcedFold ? ` ${COLD_3BET_NOTE}` : ''}`
+    : null
+  const chartWeights = useMemo(
+    () =>
+      verdict && shownDecision
+        ? resolveActions(shownDecision.entry.range)
+        : null,
+    [verdict, shownDecision],
+  )
 
   let title: string
   let subtitle: string
   if (shown) {
     title = shown.title
-    subtitle = phase === 'hero' ? 'Your move' : shownDecision ? headline(shownDecision.scenario, setup, hand.hero, shownDecision.villain).subtitle : ''
+    subtitle =
+      phase === 'hero'
+        ? 'Your move'
+        : shownDecision
+          ? headline(
+              shownDecision.scenario,
+              setup,
+              hand.hero,
+              shownDecision.villain,
+            ).subtitle
+          : ''
   } else if (handOver) {
     title = 'Hand over'
     subtitle = handOver
@@ -141,6 +329,9 @@ export function HandTrainer({ entries, setup }: Props) {
   return (
     <>
       <ScoreBar score={score} unit="answered" />
+      <p className="learning-score-note">
+        Frequency drill · most-frequent action agreement
+      </p>
 
       <section className="card">
         <div className="range-card__head">
@@ -170,12 +361,25 @@ export function HandTrainer({ entries, setup }: Props) {
         {prompt ? (
           <ActionPrompt prompt={prompt} onAnswer={answer} />
         ) : verdict ? (
-          <VerdictView verdict={verdict} source="chart" continues={false} handOver={handOver} onProceed={proceed} />
+          <VerdictView
+            verdict={verdict}
+            source="chart"
+            continues={false}
+            handOver={handOver}
+            onProceed={proceed}
+          >
+            <LearningFeedback journal={journal} />
+          </VerdictView>
         ) : handOver ? (
           <div className="verdict" aria-live="polite">
             <strong>{handOver}</strong>
             {decisionsThisHand > 0 || inspected ? (
-              <button type="button" className="btn btn--primary verdict__next" onClick={newHand} autoFocus>
+              <button
+                type="button"
+                className="btn btn--primary verdict__next"
+                onClick={newHand}
+                autoFocus
+              >
                 Next hand
               </button>
             ) : (
@@ -184,7 +388,11 @@ export function HandTrainer({ entries, setup }: Props) {
           </div>
         ) : (
           <div className="actions actions--waiting" aria-live="polite">
-            {acting?.position === hand.hero ? 'No chart for this spot, you fold…' : acting ? `${POSITION_LABELS[acting.position]} is thinking…` : ''}
+            {acting?.position === hand.hero
+              ? 'No chart for this spot, you fold…'
+              : acting
+                ? `${POSITION_LABELS[acting.position]} is thinking…`
+                : ''}
           </div>
         )}
       </section>
@@ -195,15 +403,37 @@ export function HandTrainer({ entries, setup }: Props) {
             <div className="range-card__title">
               <h2>{POSITION_LABELS[inspectedSeat.position]} range</h2>
               <span>
-                {headline(inspectedSeat.lastDecision.scenario, setup, inspectedSeat.position, inspectedSeat.lastDecision.villain).title}
-                {inspectedSeat.lastAction ? ` · played ${inspectedSeat.lastAction}` : ''}
+                {
+                  headline(
+                    inspectedSeat.lastDecision.scenario,
+                    setup,
+                    inspectedSeat.position,
+                    inspectedSeat.lastDecision.villain,
+                  ).title
+                }
+                {inspectedSeat.lastAction
+                  ? ` · played ${inspectedSeat.lastAction}`
+                  : ''}
               </span>
             </div>
-            <button type="button" className="btn" onClick={() => setInspected(null)}>
+            <button
+              type="button"
+              className="btn"
+              onClick={() => setInspected(null)}
+            >
               Close
             </button>
           </div>
-          <RangeGrid weights={inspectedWeights} highlight={hand.ended && !['hero-folded', 'walk'].includes(hand.ended.kind) && !inspectedSeat.folded ? inspectedSeat.hand.label : undefined} />
+          <RangeGrid
+            weights={inspectedWeights}
+            highlight={
+              hand.ended &&
+              !['hero-folded', 'walk'].includes(hand.ended.kind) &&
+              !inspectedSeat.folded
+                ? inspectedSeat.hand.label
+                : undefined
+            }
+          />
         </section>
       )}
 

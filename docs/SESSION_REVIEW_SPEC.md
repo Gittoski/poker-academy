@@ -1,6 +1,6 @@
 # Sessions, automatic mistake review and adaptive simulator practice
 
-Status: collaboratively agreed product direction; R01 contracts and tests implemented; storage and simulator integration pending. This refines M01/M02 and the first simulator-focused part of M08 in the broader learning plan. The approved navy theme and current working trainer remain the foundation.
+Status: collaboratively agreed product direction; R01–R08 implemented with all available automated checks passing; actual-device release gate remains open. This refines M01/M02 and the first simulator-focused part of M08 in the broader learning plan. The approved navy theme and current working trainer remain the foundation.
 
 ## Confirmed choices
 
@@ -180,4 +180,4 @@ Required verification includes:
 
 The focused build checklist is [SESSION_REVIEW_ROADMAP.md](SESSION_REVIEW_ROADMAP.md). It should be implemented incrementally before expanding the curriculum. A goal-ready implementation brief is in [SESSION_REVIEW_GOAL.md](SESSION_REVIEW_GOAL.md).
 
-No feature code has been implemented by writing this specification. Initial default values above remain documented engineering proposals that can be tuned after measurement; the eight confirmed product choices remain the contract.
+The implementation now follows this specification; see the focused checklist and verification report. Initial default values above remain documented engineering proposals that can be tuned after measurement; the eight confirmed product choices remain the contract.

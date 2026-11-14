@@ -21,3 +21,17 @@ R01 changes no protected controller, engine, data or palette. Its executable tes
 ## R01 evidence
 
 94 unit tests pass, including eight learning contract tests; integrity and TypeScript checks pass. Production build passes. This is a foundation, not a functional saving/review UI. Actual device validation remains outstanding.
+
+## Reviewed controller integration
+
+The four approved controller/presentation hashes are deliberately updated for the session-review feature. `src/lib`, `src/data`, `data`, `public`, chart aggregation/functions and chart palettes keep their original hashes. The guard remains enabled.
+
+- Both answer handlers now capture a packed before-state and separate selected/executed action before setting the verdict. Existing `act`, `advancePostflop`, prompt creation and legacy scoring functions remain the engine.
+- Hydration precedes controller mounting. Reload restores hand IDs, cards, cursor, verdict and per-hand NPC random state. Scripted hand factories run only for new deals. Initial range/script references are included atomically in hand events.
+- NPC sampling in preflop is outside React state updaters, with a persisted independent seed. The distribution still uses the existing `sampleAction`; ordinary deal/hand-selection algorithms remain the upstream functions. Scheduler randomization never consumes the dealer stream.
+- Review pauses both timers and answer shortcuts. Exact/manual play uses its own journal origin and preserves the live cursor. Returning or reloading during manual practice restores live play.
+- Feedback now names raw-reference support, displays original precision and explains the scripted continuation. The old frequency-drill score is retained separately, not relabeled as EV loss.
+
+Evidence at integration commit: 116 unit tests and TypeScript pass; production build passes; seven review-feature browser journeys pass. The nine original browser journeys also passed during integration. Additional final regressions remain R08. Browser journeys cover both modes, prompt/verdict reload, automatic saving before Continue, same-frame duplicate input, review keyboard suppression, exact postflop board/source restoration, manual/live return, slider persistence, adaptive whole-hand replay and delayed labels, 8/9-seat play, storage-denied export, mobile dialog sizing, accessibility and a competing tab.
+
+Final delivery: 119 unit tests, TypeScript, reviewed integrity guard, production build and all 19 browser journeys pass. See SESSION_REVIEW_VERIFICATION.md for source-size measurements, failure/retention evidence and the external iPhone/Safari gate.

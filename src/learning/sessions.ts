@@ -2,6 +2,8 @@ import { newId } from './identity'
 import type { Counts, SessionRecord } from './types'
 export const SESSION_GAP_MS = 30 * 60 * 1000
 export const emptyCounts = (): Counts => ({
+  firstExposures: 0,
+  repeatExposures: 0,
   decisions: 0,
   hands: 0,
   match: 0,

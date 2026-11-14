@@ -93,6 +93,7 @@ export interface HandRecord {
   actions: { position: string; action: string }[]
 }
 export interface DecisionRecord {
+  history?: { position: string; action: string }[]
   version: 1
   id: string
   handId: string
@@ -108,6 +109,7 @@ export interface DecisionRecord {
   learning: LearningResult
   nodeKey: string
   skillKey: string
+  exampleKey?: string
   problemId: string | null
   targeted: boolean
   firstExposure: boolean
@@ -115,6 +117,8 @@ export interface DecisionRecord {
   note: string
 }
 export interface Counts {
+  firstExposures?: number
+  repeatExposures?: number
   decisions: number
   hands: number
   match: number
@@ -133,10 +137,12 @@ export interface SessionRecord {
   counts: Record<Origin, Counts>
 }
 export interface ProblemRecord {
+  pinnedExample?: string | null
   version: 1
   id: string
   nodeKey: string
   skillKey: string
+  exampleKey?: string
   config: LearningConfig
   hero: string
   street: SavedPrompt['street']
@@ -156,6 +162,7 @@ export interface ProblemRecord {
   pinned: boolean
 }
 export interface SchedulerState {
+  slotUsed?: boolean
   version: 1
   enabled: boolean
   interval: number

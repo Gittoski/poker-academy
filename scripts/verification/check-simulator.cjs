@@ -1,4 +1,4 @@
-// The approved visual pass must not change game rules, data, grading or controller behavior.
+// Engine/data/calculations retain the visual-pass baseline. Four reviewed controller seams add session recording/recovery; see the integration audit.
 const fs = require('node:fs')
 const path = require('node:path')
 const crypto = require('node:crypto')
@@ -50,4 +50,4 @@ if (start < 0 || end < 0 || crypto.createHash('sha256').update(chart.slice(start
   process.exitCode = 1
 }
 
-if (!process.exitCode) console.log("PASS simulator engine, controllers, grading, chart calculations, palettes and data match the pre-theme baseline")
+if (!process.exitCode) console.log("PASS reviewed simulator baselines: engine, grading, chart calculations, palettes and data unchanged; approved review controller integration intact")

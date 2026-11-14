@@ -14,6 +14,8 @@ import type {
 import { validateSource } from './sources'
 import { unpackHand } from './checkpoints'
 import { validateRecords } from './validation'
+import { compatible } from './scheduler'
+import type { LearningConfig } from './types'
 import { configureScheduler } from './scheduler'
 import { compactBackup } from './retention'
 
@@ -34,6 +36,7 @@ type Store = (typeof STORES)[number]
 export interface WriteEvent {
   id: string
   revision: number
+  sources?: SourceRecord[]
   source?: SourceRecord
   hand: HandRecord
   cursor: Cursor
@@ -63,6 +66,7 @@ export const defaultMeta = (): LearningMeta => ({
 
 export class LearningRepository {
   private db: IDBDatabase | null = null
+  private overBudget = false
   private owner = newId('writer')
   private queue: Promise<unknown> = Promise.resolve()
   private walKey: string
@@ -77,7 +81,7 @@ export class LearningRepository {
     this.walKey = `${name}:pending`
   }
   async open(): Promise<void> {
-    const opening = indexedDB.open(this.name, 3)
+    const opening = indexedDB.open(this.name, 4)
     opening.onupgradeneeded = () => {
       const db = opening.result
       for (const name of STORES) {
@@ -91,9 +95,14 @@ export class LearningRepository {
           store.createIndex('sessionId', 'sessionId')
         if (name === 'decisions' && !store.indexNames.contains('handId'))
           store.createIndex('handId', 'handId')
-        if(name==='decisions'&&!store.indexNames.contains('skillKey'))store.createIndex('skillKey','skillKey')
+        if (name === 'decisions' && !store.indexNames.contains('skillKey'))
+          store.createIndex('skillKey', 'skillKey')
         if (name === 'decisions' && !store.indexNames.contains('nodeKey'))
           store.createIndex('nodeKey', 'nodeKey')
+        if (name === 'problems' && !store.indexNames.contains('time'))
+          store.createIndex('time', 'lastSeenAt')
+        if (name === 'problems' && !store.indexNames.contains('dueAt'))
+          store.createIndex('dueAt', 'dueAt')
         if (
           (name === 'sessions' || name === 'decisions' || name === 'hands') &&
           !store.indexNames.contains('time')
@@ -125,12 +134,12 @@ export class LearningRepository {
     if (!this.db) throw Error('Local history is unavailable')
     return this.db.transaction(stores, mode)
   }
-  async acquire(now = Date.now()): Promise<boolean> {
+  async acquire(now = Date.now(), exclusive = false): Promise<boolean> {
     const tx = this.tx(['meta'], 'readwrite'),
       completion = done(tx),
       store = tx.objectStore('meta')
     const old = await req(store.get(LEASE))
-    if (old && old.owner !== this.owner && old.until > now) {
+    if (old && old.owner !== this.owner && old.until > now && !exclusive) {
       await completion
       return false
     }
@@ -155,12 +164,16 @@ export class LearningRepository {
     limit = 100,
     index?: string,
     key?: string,
+    offset = 0,
+    accept?: (value: T) => boolean,
   ): Promise<T[]> {
     const tx = this.tx([store]),
       table = tx.objectStore(store)
     const source = index ? table.index(index) : table
     return new Promise((resolve, reject) => {
       const out: T[] = []
+      let skipped = offset === 0
+      let acceptedSkip = 0
       const r = source.openCursor(
         key ? IDBKeyRange.only(key) : undefined,
         'prev',
@@ -168,6 +181,22 @@ export class LearningRepository {
       r.onerror = () => reject(r.error)
       r.onsuccess = () => {
         const cursor = r.result
+        if (cursor && accept) {
+          if (!accept(cursor.value)) {
+            cursor.continue()
+            return
+          }
+          if (acceptedSkip < offset) {
+            acceptedSkip++
+            cursor.continue()
+            return
+          }
+        }
+        if (cursor && !accept && !skipped) {
+          skipped = true
+          cursor.advance(offset)
+          return
+        }
         if (!cursor || out.length >= limit) {
           resolve(out)
           return
@@ -176,6 +205,91 @@ export class LearningRepository {
         cursor.continue()
       }
     })
+  }
+  async dueProblems(config: LearningConfig, now: number) {
+    const tx = this.tx(['problems']),
+      store = tx.objectStore('problems').index('dueAt')
+    return new Promise<ProblemRecord[]>((resolve, reject) => {
+      const candidates: ProblemRecord[] = [],
+        r = store.openCursor(IDBKeyRange.upperBound(now))
+      const compare = (a: ProblemRecord, b: ProblemRecord) =>
+        (a.status === 'active' ? 0 : 1) - (b.status === 'active' ? 0 : 1) ||
+        a.dueAt - b.dueAt ||
+        b.errors - a.errors
+      r.onerror = () => reject(r.error)
+      r.onsuccess = () => {
+        const c = r.result
+        if (!c) {
+          resolve(candidates)
+          return
+        }
+        const p = c.value as ProblemRecord
+        if (compatible(p, config)) {
+          candidates.push(p)
+          candidates.sort(compare)
+          if (candidates.length > 50) candidates.pop()
+        }
+        c.continue()
+      }
+    })
+  }
+  async relatedExamples(problem: ProblemRecord, config: LearningConfig) {
+    const tx = this.tx(['decisions']),
+      index = tx.objectStore('decisions').index('skillKey')
+    return new Promise<DecisionRecord[]>((resolve, reject) => {
+      const found = new Map<string, DecisionRecord>(),
+        r = index.openCursor(IDBKeyRange.only(problem.skillKey), 'prev')
+      const compare = (a: DecisionRecord, b: DecisionRecord) =>
+        Number(problem.usedExamples.includes(a.nodeKey)) -
+          Number(problem.usedExamples.includes(b.nodeKey)) ||
+        a.createdAt - b.createdAt
+      r.onerror = () => reject(r.error)
+      r.onsuccess = () => {
+        const c = r.result
+        if (!c) {
+          resolve([...found.values()].sort(compare))
+          return
+        }
+        const d = c.value as DecisionRecord,
+          key = d.exampleKey ?? d.nodeKey
+        if (
+          key !== (problem.exampleKey ?? problem.nodeKey) &&
+          d.learning.kind !== 'ungraded' &&
+          compatible({ config: d.config, hero: d.before.hand.hero }, config)
+        ) {
+          if (!found.has(key)) found.set(key, d)
+          if (found.size > 20) {
+            const worst = [...found.values()].sort(compare).at(-1)!
+            found.delete(worst.exampleKey ?? worst.nodeKey)
+          }
+        }
+        c.continue()
+      }
+    })
+  }
+  async usage() {
+    const tx = this.tx([...STORES])
+    const sizes = await Promise.all(
+      STORES.map(
+        (name) =>
+          new Promise<number>((resolve, reject) => {
+            let size = 0
+            const r = tx.objectStore(name).openCursor()
+            r.onerror = () => reject(r.error)
+            r.onsuccess = () => {
+              const c = r.result
+              if (!c) {
+                resolve(size)
+                return
+              }
+              if (c.key !== LEASE)
+                size += new TextEncoder().encode(JSON.stringify(c.value)).length
+              c.continue()
+            }
+          }),
+      ),
+    )
+    return sizes.reduce((a, b) => a + b, 0)
   }
   async meta(): Promise<LearningMeta> {
     const state = await this.get<LearningMeta>('meta', META)
@@ -214,7 +328,7 @@ export class LearningRepository {
   private readPending(): WriteEvent[] {
     const raw = this.pending?.getItem(this.walKey)
     if (!raw) return []
-    if (raw.length > WAL_LIMIT)
+    if (new TextEncoder().encode(raw).length > WAL_LIMIT)
       throw Error(
         'Pending recovery data exceeds its safety limit; export it before clearing.',
       )
@@ -240,10 +354,26 @@ export class LearningRepository {
     // Synchronous write-ahead: answer submission doesn't depend on Continue or unload.
     let walError: unknown
     try {
-      const events = this.readPending().filter((e) => e.id !== event.id)
-      events.push(event)
+      const pending = this.readPending()
+      const events = pending.filter(
+        (e) =>
+          e.id !== event.id &&
+          (e.hand.id !== event.hand.id || !!e.decision || !!e.finished),
+      )
+      const source =
+        event.source ??
+        pending.find((e) => e.hand.id === event.hand.id && e.source)?.source
+      const sources =
+        event.sources ??
+        pending.find((e) => e.hand.id === event.hand.id && e.sources)?.sources
+      events.push({
+        ...event,
+        ...(source ? { source } : {}),
+        ...(sources ? { sources } : {}),
+      })
       const text = JSON.stringify(events)
-      if (text.length > WAL_LIMIT) throw Error('Pending buffer is full')
+      if (new TextEncoder().encode(text).length > WAL_LIMIT)
+        throw Error('Pending buffer is full')
       this.pending?.setItem(this.walKey, text)
     } catch (e) {
       walError = e
@@ -268,6 +398,10 @@ export class LearningRepository {
     for (const event of this.readPending()) await this.submit(event)
   }
   private async commit(event: WriteEvent) {
+    if (this.overBudget)
+      throw Error(
+        'Protected history fills the local learning budget. Export history and clear unneeded data before saving more.',
+      )
     const tx = this.tx(
         ['sources', 'sessions', 'hands', 'decisions', 'problems', 'meta'],
         'readwrite',
@@ -275,6 +409,10 @@ export class LearningRepository {
       completion = done(tx)
     try {
       await this.fence(tx)
+      for (const source of event.sources ?? []) {
+        validateSource(source)
+        tx.objectStore('sources').put(source)
+      }
       if (event.source) {
         validateSource(event.source)
         tx.objectStore('sources').put(event.source)
@@ -288,7 +426,8 @@ export class LearningRepository {
       const existing: HandRecord | undefined = await req(hs.get(event.hand.id))
       if (
         existing?.revision !== undefined &&
-        existing.revision >= event.revision
+        existing.revision >= event.revision &&
+        !event.decision
       ) {
         await completion
         return
@@ -314,9 +453,11 @@ export class LearningRepository {
           session.id = event.hand.sessionId
         } else session = previous!
       }
+      const stale =
+        existing?.revision !== undefined && existing.revision >= event.revision
       const hand = {
-        ...event.hand,
-        revision: event.revision,
+        ...(stale ? existing : event.hand),
+        revision: Math.max(existing?.revision ?? 0, event.revision),
         sessionId: session.id,
         completedAt: existing?.completedAt ?? event.hand.completedAt,
       }
@@ -333,6 +474,9 @@ export class LearningRepository {
           session.endedAt = session.lastActivityAt
         session = touchSession(session, event.at)
         session.counts[d.origin].decisions++
+        const exposure = d.firstExposure ? 'firstExposures' : 'repeatExposures'
+        session.counts[d.origin][exposure] =
+          (session.counts[d.origin][exposure] ?? 0) + 1
         session.counts[d.origin][d.learning.kind]++
         let problem: ProblemRecord | undefined =
           d.targeted && hand.target
@@ -345,6 +489,7 @@ export class LearningRepository {
             id: d.problemId,
             nodeKey: d.nodeKey,
             skillKey: d.skillKey,
+            exampleKey: d.exampleKey,
             config: d.config,
             hero: d.before.hand.hero,
             street: d.prompt.street,
@@ -379,20 +524,63 @@ export class LearningRepository {
             if (d.learning.kind !== 'outside') {
               problem.successes++
               if (!problem.successSessions.includes(session.id))
-                problem.successSessions=[...problem.successSessions.slice(-31),session.id]
+                problem.successSessions = [
+                  ...problem.successSessions.slice(-31),
+                  session.id,
+                ]
               if (!problem.usedExamples.includes(d.nodeKey))
-                problem.usedExamples=[...problem.usedExamples.slice(-31),d.nodeKey]
+                problem.usedExamples = [
+                  ...problem.usedExamples.slice(-31),
+                  d.nodeKey,
+                ]
               problem.dueAt =
                 event.at +
                 Math.min(
                   30 * 86400000,
                   3600000 * 2 ** Math.min(problem.successes, 10),
                 )
-              const covered:DecisionRecord[]=await req(ds.index('skillKey').getAll(problem.skillKey,1000))
-              const hasRelated=covered.some(a=>a.nodeKey!==problem!.nodeKey&&a.learning.kind!=='ungraded')
-              const varied=!hasRelated||problem.usedExamples.some(k=>k!==problem!.nodeKey)
-              if(problem.successes>=3&&problem.successSessions.length>=2&&varied)problem.status='maintenance'
-              if(problem.successes>=6&&problem.successSessions.length>=3&&varied){problem.status='archive';problem.dueAt=event.at+30*86400000}
+              const hasRelated = await new Promise<boolean>(
+                (resolve, reject) => {
+                  const r = ds
+                    .index('skillKey')
+                    .openCursor(IDBKeyRange.only(problem!.skillKey))
+                  r.onerror = () => reject(r.error)
+                  r.onsuccess = () => {
+                    const c = r.result
+                    if (!c) {
+                      resolve(false)
+                      return
+                    }
+                    const a = c.value as DecisionRecord
+                    if (
+                      (a.exampleKey ?? a.nodeKey) !==
+                        (problem!.exampleKey ?? problem!.nodeKey) &&
+                      a.learning.kind !== 'ungraded'
+                    ) {
+                      resolve(true)
+                      return
+                    }
+                    c.continue()
+                  }
+                },
+              )
+              const varied =
+                !hasRelated ||
+                problem.usedExamples.some((k) => k !== problem!.nodeKey)
+              if (
+                problem.successes >= 3 &&
+                problem.successSessions.length >= 2 &&
+                varied
+              )
+                problem.status = 'maintenance'
+              if (
+                problem.successes >= 6 &&
+                problem.successSessions.length >= 3 &&
+                varied
+              ) {
+                problem.status = 'archive'
+                problem.dueAt = event.at + 30 * 86400000
+              }
             }
           }
           if (d.learning.kind === 'outside' && !problem.examples.includes(d.id))
@@ -400,6 +588,10 @@ export class LearningRepository {
           ps.put(problem)
         }
       }
+      if (hand.decisions > (await req(ds.index('handId').count(hand.id))))
+        throw Error(
+          'An earlier answer is still pending. Retry saving or export pending work.',
+        )
       if (event.finished && !existing?.completedAt) {
         hand.completedAt = event.at
         if (hand.decisions > 0) {
@@ -415,7 +607,7 @@ export class LearningRepository {
       hs.put(hand)
       ss.put(session)
       state.sessionId = session.id
-      state.cursor = event.cursor
+      if (!stale) state.cursor = event.cursor
       m.put({ ...state, id: META })
       await completion
     } catch (e) {
@@ -445,7 +637,68 @@ export class LearningRepository {
       meta,
     }
   }
-  async restore(input: unknown) {
+  async importPending(input: unknown) {
+    if (!input || typeof input !== 'object')
+      throw Error('Invalid recovery file')
+    const data = input as {
+      version: number
+      kind: string
+      sources: SourceRecord[]
+      events: WriteEvent[]
+    }
+    if (
+      data.version !== 1 ||
+      data.kind !== 'pending-recovery' ||
+      !Array.isArray(data.sources) ||
+      !Array.isArray(data.events) ||
+      data.sources.length > 256 ||
+      data.events.length > 2000
+    )
+      throw Error('Invalid recovery file')
+    const existing = await this.backup(),
+      sources = new Map(existing.sources.map((s) => [s.id, s]))
+    for (const source of data.sources) {
+      validateSource(source)
+      sources.set(source.id, source)
+    }
+    for (const e of data.events) {
+      if (
+        !e ||
+        typeof e.id !== 'string' ||
+        !Number.isSafeInteger(e.revision) ||
+        e.revision < 1 ||
+        !Number.isFinite(e.at) ||
+        e.at < 0 ||
+        e.cursor?.handId !== e.hand?.id ||
+        (e.decision && e.decision.handId !== e.hand.id)
+      )
+        throw Error('Invalid recovery event')
+      for (const source of e.sources ?? []) {
+        validateSource(source)
+        sources.set(source.id, source)
+      }
+      if (e.source) {
+        validateSource(e.source)
+        sources.set(e.source.id, e.source)
+      }
+    }
+    validateRecords({
+      version: 1,
+      exportedAt: Date.now(),
+      sources: [...sources.values()],
+      sessions: [],
+      hands: data.events.map((e) => e.hand),
+      decisions: data.events.flatMap((e) => (e.decision ? [e.decision] : [])),
+      problems: [],
+      meta: { ...defaultMeta(), cursor: null },
+    })
+    // Validation precedes writes. Replay is idempotent; a quota failure can be retried with the same file.
+    for (const source of sources.values())
+      if (!existing.sources.some((s) => s.id === source.id))
+        await this.cache(source)
+    for (const event of data.events) await this.submit(event)
+  }
+  async restore(input: unknown, clearPending = true) {
     const data = validateBackup(input)
     const tx = this.tx([...STORES], 'readwrite'),
       completion = done(tx)
@@ -457,7 +710,8 @@ export class LearningRepository {
       }
       tx.objectStore('meta').put({ ...data.meta, id: META })
       await completion
-      this.pending?.removeItem(this.walKey)
+      if (clearPending) this.pending?.removeItem(this.walKey)
+      this.overBudget = false
     } catch (e) {
       try {
         tx.abort()
@@ -470,30 +724,134 @@ export class LearningRepository {
     const task = this.queue
       .catch(() => {})
       .then(async () => {
-        const result = compactBackup(await this.backup())
-        if (result.removed > 0) await this.restore(result.data)
-        if (result.protectedOverBudget)
-          throw Error(
-            'Protected history exceeds the local budget. Export history; new details may not fit.',
+        const tx = this.tx([...STORES], 'readwrite'),
+          completion = done(tx)
+        try {
+          await this.fence(tx)
+          const arrays = await Promise.all(
+            TABLES.map((s) => req(tx.objectStore(s).getAll())),
           )
-        return { bytes: result.bytes, removed: result.removed }
+          const meta =
+            (await req(tx.objectStore('meta').get(META))) ?? defaultMeta()
+          const before: LearningBackup = {
+            version: 1,
+            exportedAt: Date.now(),
+            sources: arrays[0],
+            sessions: arrays[1],
+            hands: arrays[2],
+            decisions: arrays[3],
+            problems: arrays[4],
+            meta,
+          }
+          const result = compactBackup(before)
+          if (
+            result.removed > 0 ||
+            result.data.hands.length !== before.hands.length ||
+            result.data.sources.length !== before.sources.length
+          ) {
+            for (const name of TABLES) {
+              const table = tx.objectStore(name)
+              table.clear()
+              for (const item of result.data[name]) table.put(item)
+            }
+          }
+          await completion
+          this.overBudget = result.protectedOverBudget
+          if (result.protectedOverBudget)
+            throw Error(
+              'Protected history fills the local learning budget. Export history before saving more.',
+            )
+          return { bytes: result.bytes, removed: result.removed }
+        } catch (e) {
+          try {
+            tx.abort()
+          } catch {}
+          await completion.catch(() => {})
+          throw e
+        }
       })
     this.queue = task
     return task
   }
-  async settings(enabled:boolean,interval:number){
-    const tx=this.tx(['meta'],'readwrite'),completion=done(tx)
-    try{await this.fence(tx);const meta:LearningMeta=(await req(tx.objectStore('meta').get(META)))??defaultMeta();meta.nextScheduler=configureScheduler(meta.scheduler,enabled,interval);tx.objectStore('meta').put({...meta,id:META});await completion;return meta.nextScheduler}catch(e){try{tx.abort()}catch{}await completion.catch(()=>{});throw e}
+  async reserveReview() {
+    const tx = this.tx(['meta'], 'readwrite'),
+      completion = done(tx)
+    try {
+      await this.fence(tx)
+      const meta: LearningMeta =
+        (await req(tx.objectStore('meta').get(META))) ?? defaultMeta()
+      if (meta.nextScheduler) {
+        meta.scheduler = meta.nextScheduler
+        delete meta.nextScheduler
+      }
+      const previous = structuredClone(meta)
+      if (
+        meta.scheduler.enabled &&
+        meta.scheduler.index === meta.scheduler.slot &&
+        !meta.scheduler.slotUsed
+      )
+        meta.scheduler.slotUsed = true
+      tx.objectStore('meta').put({ ...meta, id: META })
+      await completion
+      return previous
+    } catch (e) {
+      try {
+        tx.abort()
+      } catch {}
+      await completion.catch(() => {})
+      throw e
+    }
   }
-  async annotate(id: string, note: string, pinned: boolean) {
+  async settings(enabled: boolean, interval: number) {
+    const tx = this.tx(['meta'], 'readwrite'),
+      completion = done(tx)
+    try {
+      await this.fence(tx)
+      const meta: LearningMeta =
+        (await req(tx.objectStore('meta').get(META))) ?? defaultMeta()
+      meta.nextScheduler = configureScheduler(meta.scheduler, enabled, interval)
+      tx.objectStore('meta').put({ ...meta, id: META })
+      await completion
+      return meta.nextScheduler
+    } catch (e) {
+      try {
+        tx.abort()
+      } catch {}
+      await completion.catch(() => {})
+      throw e
+    }
+  }
+  async annotate(
+    id: string,
+    note: string,
+    pinned: boolean,
+    attemptId?: string,
+  ) {
     if (note.length > 2000) throw Error('Notes are limited to 2,000 characters')
-    const tx = this.tx(['problems', 'meta'], 'readwrite'),
+    const tx = this.tx(['problems', 'decisions', 'meta'], 'readwrite'),
       completion = done(tx)
     try {
       await this.fence(tx)
       const p = await req(tx.objectStore('problems').get(id))
       if (!p) throw Error('Problem unavailable')
-      tx.objectStore('problems').put({ ...p, note, pinned })
+      const chosen = pinned
+        ? (attemptId ?? p.pinnedExample ?? p.examples.at(-1) ?? null)
+        : null
+      if (p.pinnedExample && p.pinnedExample !== chosen) {
+        const old = await req(tx.objectStore('decisions').get(p.pinnedExample))
+        if (old) tx.objectStore('decisions').put({ ...old, pinned: false })
+      }
+      if (chosen) {
+        const selected = await req(tx.objectStore('decisions').get(chosen))
+        if (!selected) throw Error('Pinned attempt is unavailable')
+        tx.objectStore('decisions').put({ ...selected, pinned: true })
+      }
+      tx.objectStore('problems').put({
+        ...p,
+        note,
+        pinned,
+        pinnedExample: chosen,
+      })
       await completion
     } catch (e) {
       try {
