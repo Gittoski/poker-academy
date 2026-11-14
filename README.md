@@ -34,3 +34,5 @@ See [three visual directions](docs/design/visual-directions.png) and the [propos
 ## Learning roadmap
 
 The next upgrades focus on lasting progress, exact mistake review and a staged Basics → preflop → postflop → exploitative → advanced learning path. See the [active checklist](ROADMAP.md) and [full learning plan](docs/LEARNING_PLAN.md). These are planned features; the current working trainer is preserved.
+
+The immediate simulator-focused feature is now specified: [automatic sessions, mistake reviews and adjustable recurring practice](docs/SESSION_REVIEW_SPEC.md), with a [bounded implementation checklist](docs/SESSION_REVIEW_ROADMAP.md). This feature is planned, not implemented.

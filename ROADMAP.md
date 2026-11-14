@@ -38,11 +38,21 @@ Teach one concept, show an example, practice it, check it independently and revi
 
 M03 device work and M09 source research can proceed when their prerequisites/capabilities are available; neither should stall unrelated local learning improvements. M10 is intentionally late so current working play does not get replaced by an unverified rewrite.
 
-## Next bounded implementation
+## Current focused feature: sessions, reviews and adaptive practice
 
-**M01: persistent learning journal.** First audit the decision checkpoints in both trainer modes. Define stable source/version IDs and a versioned local record; add a narrow event/storage seam while preserving the existing action/grade path. Then implement save/reload and backup behavior, with duplicate/interrupted-write tests. New progress labels must describe reference matching rather than claim universal poker accuracy.
+The user has refined M01/M02 and the initial M08 scheduler into a simulator-first feature with eight explicit product choices. See [the agreed specification](docs/SESSION_REVIEW_SPEC.md), [R01–R08 implementation checklist](docs/SESSION_REVIEW_ROADMAP.md) and [goal-ready brief](docs/SESSION_REVIEW_GOAL.md).
 
-After M01 is verified, continue to M02. Do not restore the entire retired academy or bundle the whole curriculum into one change.
+- [x] Plan automatic sessions, automatic error capture, exact/related reviews, whole-hand adaptive replay, delayed review labels, mixed-action handling, gradual spacing and compact retention with the user.
+- [ ] R01: schemas, classification, metric copy and preservation tests.
+- [ ] R02: bounded storage, session lifecycle and exact recovery.
+- [ ] R03: automatic capture in both simulator modes.
+- [ ] R04: review area, exact retries and live-hand preservation.
+- [ ] R05: adaptive insertion with toggle and approximate frequency slider.
+- [ ] R06: related covered examples, due states and cross-session improvement.
+- [ ] R07: measured retention limits, analytics and long-term recovery.
+- [ ] R08: full regression, actual-app evidence and delivery; device checks when available.
+
+Next implementation is R01. Follow the detailed feature checklist before expanding the curriculum. Planning is complete; no feature code has been written yet. The stored `/goal` brief is ready for the user to invoke and is not an active goal by itself.
 
 ## Completion discipline
 
