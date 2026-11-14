@@ -1,0 +1,83 @@
+// Optional developer recording of the real app. Requires a production build, Chromium and system FFmpeg.
+const fs = require('node:fs')
+const os = require('node:os')
+const path = require('node:path')
+const net = require('node:net')
+const { spawn, execFileSync } = require('node:child_process')
+const root = path.resolve(__dirname, '..')
+const ffmpeg = process.env.FFMPEG_PATH || '/usr/bin/ffmpeg'
+if (!fs.existsSync(ffmpeg)) throw Error('Set FFMPEG_PATH to a system FFmpeg executable for this optional recording tool.')
+const cache = fs.mkdtempSync(path.join(os.tmpdir(), 'poker-video-tools-'))
+const core = path.dirname(require.resolve('playwright-core/package.json'))
+const ff = JSON.parse(fs.readFileSync(path.join(core, 'browsers.json'), 'utf8')).browsers.find(b => b.name === 'ffmpeg')
+const ffDirectory = path.join(cache, `ffmpeg-${ff.revision}`)
+fs.mkdirSync(ffDirectory)
+fs.copyFileSync(ffmpeg, path.join(ffDirectory, process.platform === 'win32' ? 'ffmpeg-win64.exe' : process.platform === 'darwin' ? 'ffmpeg-mac' : 'ffmpeg-linux'))
+process.env.PLAYWRIGHT_BROWSERS_PATH = cache
+const { chromium } = require('@playwright/test')
+;(async () => {
+  const probe = net.createServer()
+  await new Promise(resolve => probe.listen(0, '127.0.0.1', resolve))
+  const port = probe.address().port
+  await new Promise(resolve => probe.close(resolve))
+  const server = spawn(process.execPath, [path.join(root, 'node_modules/next/dist/bin/next'), 'start', '--hostname', '127.0.0.1', '--port', String(port)], { cwd: root, stdio: 'ignore', env: { ...process.env, NEXT_TELEMETRY_DISABLED: '1' } })
+  let browser
+  try {
+    const base = `http://127.0.0.1:${port}`
+    let ready = false
+    for (let i = 0; i < 60; i++) {
+      if (server.exitCode !== null) throw Error('Recording server exited')
+      try { if ((await fetch(base)).ok) { ready = true; break } } catch {}
+      await new Promise(resolve => setTimeout(resolve, 200))
+    }
+    if (!ready) throw Error('Recording server did not start')
+    browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium', args: ['--no-sandbox'] })
+    const output = path.join(root, 'docs/design/implemented')
+    const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'poker-interface-recording-'))
+    fs.mkdirSync(output, { recursive: true })
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'no-preference', recordVideo: { dir: temporary, size: { width: 390, height: 844 } } })
+    const page = await context.newPage()
+    const errors = []
+    page.on('pageerror', e => errors.push(e.message))
+    await page.addInitScript(() => { let state = 42; Math.random = () => { state = (Math.imul(state, 1664525) + 1013904223) >>> 0; return state / 4294967296 } })
+    await page.goto(base + '/play')
+    const move = page.getByRole('group', { name: 'Your move', exact: true })
+    await move.waitFor({ timeout: 20000 })
+    await page.waitForTimeout(700)
+    await page.screenshot({ path: path.join(output, 'navy-phone.png'), fullPage: true })
+    await move.getByRole('button').first().hover()
+    await page.mouse.down()
+    await page.waitForTimeout(100)
+    await page.mouse.up()
+    await page.locator('.verdict').waitFor()
+    await page.waitForTimeout(1200)
+    await page.getByRole('button', { name: /^(Continue|Next hand)$/ }).click()
+    await move.waitFor({ timeout: 20000 })
+    await page.waitForTimeout(850)
+    await move.getByRole('button').first().click()
+    await page.locator('.verdict').waitFor()
+    await page.waitForTimeout(1300)
+    await page.getByRole('button', { name: /^(Continue|Next hand)$/ }).click()
+    await page.getByRole('button', { name: 'Next hand', exact: true }).waitFor({ timeout: 15000 })
+    await page.waitForTimeout(500)
+    await page.getByRole('button', { name: 'Next hand', exact: true }).click()
+    await move.waitFor({ timeout: 20000 })
+    await page.waitForTimeout(900)
+    const video = page.video()
+    await context.close()
+    if (errors.length) throw Error(errors.join('\n'))
+    execFileSync(ffmpeg, ['-y', '-i', await video.path(), '-an', '-c:v', 'libx264', '-preset', 'fast', '-crf', '20', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', path.join(output, 'navy-interface-demo.mp4')], { stdio: 'ignore' })
+    const desktop = await browser.newContext({ viewport: { width: 1365, height: 950 }, reducedMotion: 'reduce' })
+    const wide = await desktop.newPage()
+    await wide.addInitScript(() => { let state = 42; Math.random = () => { state = (Math.imul(state, 1664525) + 1013904223) >>> 0; return state / 4294967296 } })
+    await wide.goto(base + '/play')
+    await wide.getByRole('group', { name: 'Your move', exact: true }).waitFor({ timeout: 20000 })
+    await wide.screenshot({ path: path.join(output, 'navy-desktop.png'), fullPage: true })
+    await desktop.close()
+    console.log('Recorded real simulator decisions, feedback, continuation and next-hand dealing. App logic was not changed for the recording.')
+  } finally {
+    if (browser) await browser.close()
+    server.kill()
+    fs.rmSync(cache, { recursive: true, force: true })
+  }
+})().catch(e => { console.error(e); process.exitCode = 1 })

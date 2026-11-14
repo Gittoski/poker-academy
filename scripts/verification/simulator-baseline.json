@@ -1,0 +1,83 @@
+{
+  "revision": "c4732f2",
+  "paths": {
+    "src/lib": {
+      "files": 23,
+      "sha256": "126d1ad72b8af7cdd8c661d6d8f2c6f4371b5451fed2ddcfdc18261b1dd2563c"
+    },
+    "src/data": {
+      "files": 1,
+      "sha256": "36e818810e58a92400293a0e5c3be8e08ecd2f568b86715bcd633c88a80223ad"
+    },
+    "data": {
+      "files": 296,
+      "sha256": "1957cee3771cdca37b8940478db37861dacd8e53654f41f2e75d6cb77d5bb323"
+    },
+    "public": {
+      "files": 797,
+      "sha256": "4c5e3d5d3f8b243a6893e4a9c3bcd3431af89abc77ef6d616a81d1e440b5b15c"
+    },
+    "src/components/FullHandTrainer.tsx": {
+      "files": 1,
+      "sha256": "c9c6526ede051af266907b67c0d69649d603f7a7dc8d42005512bfde4115cd65"
+    },
+    "src/components/HandTrainer.tsx": {
+      "files": 1,
+      "sha256": "63b6aadac93d3be58b804dea6762ff3c681e99b12fbed43900d256881d61d42e"
+    },
+    "src/components/PlayPage.tsx": {
+      "files": 1,
+      "sha256": "ea8036e089f55ccac61bd6816ca8ef69e24910f8d99fdd4e72ec3c2d21d1947f"
+    },
+    "src/components/RangeViewer.tsx": {
+      "files": 1,
+      "sha256": "cc8c3db9023261b1d791d31e6af51f3acc762f022768224e675d5d2bcdaa6fa1"
+    },
+    "src/components/Legend.tsx": {
+      "files": 1,
+      "sha256": "da59911faab9adf7e439f718e6b7f3c52cb89365f673afa5ed23c3fcbc40f494"
+    },
+    "src/components/SetupPanel.tsx": {
+      "files": 1,
+      "sha256": "a1a70d934862ddbd45db83e43d9a46639f6c344a418e75ec449d5902e4dce1e0"
+    },
+    "src/components/TrainerSetupPanel.tsx": {
+      "files": 1,
+      "sha256": "1f1d61c29261221a83cf6d485403d2bf786c58bce25ad50980c18a61f82ec9b1"
+    },
+    "src/components/UserRangesEditor.tsx": {
+      "files": 1,
+      "sha256": "6bdaf0f38e3e80601abf5b27983963bee217cfe48fa71d03beb44cde199378b9"
+    },
+    "src/components/Segmented.tsx": {
+      "files": 1,
+      "sha256": "3bda64fc0c4380cce62571697ddd8d91409dd2a3e32f66e88dba18389d8c8875"
+    },
+    "src/components/trainer/VerdictView.tsx": {
+      "files": 1,
+      "sha256": "e7afe1cc516a877ad9d059bd55942c817a3c7f0c6e81ddd160a20c6b88d609b8"
+    },
+    "src/components/trainer/useAnswerKeys.ts": {
+      "files": 1,
+      "sha256": "b39541e39f8602ba62ed075fc932d5bc5a006a3dc6188bc2d49cea31ea561bed"
+    },
+    "src/app/globals.css": {
+      "files": 1,
+      "sha256": "398592672149d7b01d2fa6377dc2fe36da55c9dd3d2a97388b548f8914b627d6"
+    }
+  },
+  "functions": {
+    "src/components/RangeGrid.tsx": {
+      "cellBackground": "dde90c440c3054a64d353361ba8d5d85e35dfd94a4a6932b7be5e84c66bab16f"
+    },
+    "src/components/StrategyGrid.tsx": {
+      "background": "00991e9e492a3bb98a0fe4b1a235fa9f99563113b180c19362093795f2c97c7d"
+    }
+  },
+  "aggregation": {
+    "path": "src/components/StrategyGrid.tsx",
+    "start": "  const totals =",
+    "end": "  return (",
+    "sha256": "3e9ec15ea1600d90e0ddfdd616dfb19503ec5a60edc40e12cddf85b76f87ad46"
+  }
+}

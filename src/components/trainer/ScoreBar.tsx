@@ -8,7 +8,7 @@ export function ScoreBar({ score, unit }: { score: Score; unit: string }) {
     [score.bestStreak, 'best'],
   ]
   return (
-    <section className="card">
+    <section className="card score-card">
       <div className="score" aria-live="polite">
         {items.map(([value, label]) => (
           <div key={label} className="score__item">

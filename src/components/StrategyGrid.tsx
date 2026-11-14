@@ -45,19 +45,23 @@ export function StrategyGrid({ kinds, labels, cells, highlight }: Props) {
   return (
     <>
       <div className="grid" role="grid" aria-label="Flop strategy by hand">
-        {HAND_GRID.flat().map((hand) => {
-          const avg = cells[hand.label]
-          const classes = ['cell']
-          if (hand.kind === 'pair') classes.push('cell--pair')
-          if (!avg) classes.push('cell--absent')
-          if (hand.label === highlight) classes.push('cell--highlight')
-          const title = avg ? labels.map((label, i) => `${label} ${Math.round(avg[i])}%`).join(', ') : 'Not in range'
-          return (
-            <div key={hand.label} role="gridcell" className={classes.join(' ')} style={avg ? { background: background(avg, kinds) } : undefined} title={title}>
-              {hand.label}
-            </div>
-          )
-        })}
+        {HAND_GRID.map((row, rowIndex) => (
+          <div className="grid__row" role="row" key={rowIndex}>
+            {row.map((hand) => {
+              const avg = cells[hand.label]
+              const classes = ['cell']
+              if (hand.kind === 'pair') classes.push('cell--pair')
+              if (!avg) classes.push('cell--absent')
+              if (hand.label === highlight) classes.push('cell--highlight')
+              const title = avg ? labels.map((label, i) => `${label} ${Math.round(avg[i])}%`).join(', ') : 'Not in range'
+              return (
+                <div key={hand.label} role="gridcell" className={classes.join(' ')} style={avg ? { background: background(avg, kinds) } : undefined} title={title}>
+                  {hand.label}
+                </div>
+              )
+            })}
+          </div>
+        ))}
       </div>
       <div className="legend">
         {kinds.map((kind, i) => (

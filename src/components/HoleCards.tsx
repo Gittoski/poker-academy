@@ -13,8 +13,8 @@ export function CardFace({ card, small }: { card: Card; small?: boolean }) {
 export function HoleCards({ cards }: { cards: Cards }) {
   return (
     <div className="hole-cards" role="img" aria-label={`Your hand: ${cardLabel(cards[0])} ${cardLabel(cards[1])}`}>
-      <CardFace card={cards[0]} />
-      <CardFace card={cards[1]} />
+      <CardFace key={cardLabel(cards[0])} card={cards[0]} />
+      <CardFace key={cardLabel(cards[1])} card={cards[1]} />
     </div>
   )
 }

@@ -1,3 +1,4 @@
+import { InterfaceIcon } from './InterfaceIcon'
 import Link from 'next/link'
 
 export type NavPage = 'viewer' | 'play'
@@ -16,17 +17,26 @@ const PAGES: { id: NavPage; label: string; href: string }[] = [
 export function TopNav({ active, setupParams }: Props) {
   const query = setupParams.toString()
   return (
-    <nav className="topbar" aria-label="Pages">
-      {PAGES.map((page) => (
-        <Link
-          key={page.id}
-          href={query ? `${page.href}?${query}` : page.href}
-          className={`topbar__link${page.id === active ? ' topbar__link--active' : ''}`}
-          aria-current={page.id === active ? 'page' : undefined}
-        >
-          {page.label}
-        </Link>
-      ))}
-    </nav>
+    <header className="app-header">
+      <div className="app-brand">
+        <span className="app-brand__mark" aria-hidden="true">
+          ♠
+        </span>
+        <span>Poker Practice</span>
+      </div>
+      <nav className="topbar" aria-label="Pages">
+        {PAGES.map((page) => (
+          <Link
+            key={page.id}
+            href={query ? `${page.href}?${query}` : page.href}
+            className={`topbar__link${page.id === active ? ' topbar__link--active' : ''}`}
+            aria-current={page.id === active ? 'page' : undefined}
+          >
+            <InterfaceIcon name={page.id === 'play' ? 'play' : 'ranges'} />
+            <span>{page.label}</span>
+          </Link>
+        ))}
+      </nav>
+    </header>
   )
 }

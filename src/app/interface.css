@@ -1,0 +1,744 @@
+/* Approved presentation layer. Poker/chart palette variables stay in globals.css. */
+:root {
+  color-scheme: dark;
+  --bg: #090b10;
+  --card: #151820;
+  --card-2: #1c202b;
+  --border: #3c4353;
+  --control: #252a36;
+  --selected: #223d68;
+  --accent: #527bb8;
+  --focus: #a4c4f5;
+  --text: #f4f6fb;
+  --muted: #adb5c6;
+  --seat-top: #292d39;
+  --seat-bottom: #181c26;
+  --seat-opponent: #909db6;
+  --table-fill: #10131b;
+  --table-rail: #3e4452;
+  --surface: linear-gradient(155deg, #202531 0%, #171b25 48%, #12151d 100%);
+  --button: linear-gradient(160deg, #303544 0%, #272c39 48%, #202430 100%);
+  --shadow: 0 14px 36px #00000035, inset 0 1px 0 #ffffff05;
+}
+
+body {
+  background:
+    radial-gradient(ellipse at 50% 0, #18253c48, transparent 560px), var(--bg);
+  min-height: 100dvh;
+  line-height: 1.45;
+}
+
+button,
+a,
+[role='button'] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+button,
+a {
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 110ms ease;
+}
+button:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
+}
+button:not(:disabled):active {
+  transform: translateY(1px) scale(0.985);
+}
+
+.page {
+  max-width: 800px;
+  padding: 24px 20px 40px;
+}
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.app-brand {
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  font-size: 19px;
+  font-weight: 750;
+  letter-spacing: -0.6px;
+}
+.app-brand__mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 42px;
+  font-size: 33px;
+  color: #e5edfc;
+}
+.app-brand small {
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+  font-weight: 450;
+  letter-spacing: 0.1px;
+  color: var(--muted);
+}
+.topbar {
+  padding: 4px;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #131722;
+}
+.topbar__link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 42px;
+  padding: 7px 13px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-size: 13px;
+}
+.topbar__link .interface-icon {
+  width: 17px;
+  height: 19px;
+}
+.topbar__link--active {
+  background: linear-gradient(150deg, #294b7c, #1c3256);
+  border-color: #4d70a2;
+  color: #fff;
+  box-shadow:
+    0 3px 12px #0003,
+    inset 0 1px 0 #ffffff0c;
+}
+.interface-icon {
+  width: 24px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.card {
+  min-width: 0;
+  padding: 18px;
+  background: var(--surface);
+  border-color: var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+.range-card__head {
+  gap: 10px;
+  margin-bottom: 14px;
+  align-items: flex-start;
+}
+.range-card__title {
+  display: block;
+  min-width: 0;
+}
+.range-card__title h2 {
+  font-size: 18px;
+  letter-spacing: -0.4px;
+  line-height: 1.25;
+}
+.range-card__title span {
+  display: block;
+  font-size: 12px;
+  line-height: 1.5;
+  margin-top: 5px;
+}
+.pill {
+  padding: 5px 9px;
+  font-size: 10px;
+  background: #111722;
+  border-color: #414c60;
+}
+
+/* Keep the board inside the drawn table using only layout. Controllers stay untouched. */
+.card:has(> .table-wrap) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+.card:has(> .table-wrap) > .range-card__head {
+  grid-area: 1 / 1;
+}
+.card > .table-wrap {
+  grid-area: 2 / 1;
+}
+.card > .table-wrap + .board {
+  grid-area: 2 / 1;
+  align-self: center;
+  justify-self: center;
+  z-index: 1;
+  transform: translateY(2px);
+  margin: 0;
+  pointer-events: none;
+}
+.table-wrap {
+  padding: 10px 0 6px;
+  min-width: 0;
+}
+.table-wrap svg {
+  max-width: 620px;
+  margin: 0 auto;
+  overflow: visible;
+}
+.table-surface {
+  filter: drop-shadow(0 9px 12px #0004);
+}
+.seat-surface {
+  filter: drop-shadow(0 3px 3px #0005);
+}
+.seat-pulse {
+  animation: interface-seat-breathe 1800ms ease-in-out infinite;
+}
+.seat--clickable:hover .seat-surface,
+.seat--clickable:focus-visible .seat-surface {
+  stroke: var(--focus);
+  filter: brightness(1.14);
+}
+.seat--clickable:focus-visible {
+  outline: none;
+}
+
+.hole-cards {
+  gap: 10px;
+  margin: 10px 0 20px;
+  padding: 12px 0 2px;
+}
+.playing-card {
+  width: 66px;
+  height: 94px;
+  border-radius: 9px;
+  background: linear-gradient(145deg, #ffffff 0%, #f6f7fa 75%, #e8ebf0 100%);
+  color: #11141b;
+  border: 1px solid #ffffff;
+  box-shadow:
+    0 2px 3px #0004,
+    0 9px 18px #0005,
+    inset 0 1px 0 #fff;
+  gap: 6px;
+  animation: interface-card-in 240ms cubic-bezier(0.22, 0.68, 0.25, 1) both;
+}
+.playing-card--red {
+  color: #cf354b;
+}
+.playing-card__rank {
+  font-family: inherit;
+  font-size: 31px;
+  font-weight: 750;
+  letter-spacing: -1px;
+}
+.playing-card__suit {
+  font-family: Arial, sans-serif;
+  font-size: 25px;
+}
+.playing-card--small {
+  width: 44px;
+  height: 61px;
+  border-radius: 7px;
+  gap: 4px;
+}
+.playing-card--small .playing-card__rank {
+  font-size: 22px;
+}
+.playing-card--small .playing-card__suit {
+  font-size: 19px;
+}
+.board__cards {
+  gap: 6px;
+}
+.hole-cards .playing-card:nth-child(2),
+.board__cards .playing-card:nth-child(2) {
+  animation-delay: 45ms;
+}
+.board__cards .playing-card:nth-child(3) {
+  animation-delay: 90ms;
+}
+.board__cards .playing-card:nth-child(4) {
+  animation-delay: 135ms;
+}
+.board__cards .playing-card:nth-child(5) {
+  animation-delay: 180ms;
+}
+
+/* Neutral choices before an answer; existing chart colors remain unchanged. */
+.actions {
+  gap: 10px;
+  min-height: 76px;
+}
+.action-btn,
+.action-btn--raise,
+.action-btn--call,
+.action-btn--fold,
+.action-btn--X,
+.action-btn--C,
+.action-btn--B,
+.action-btn--R,
+.action-btn--AI,
+.action-btn--F {
+  min-width: 0;
+  justify-content: center;
+  gap: 9px;
+  min-height: 76px;
+  padding: 13px 8px;
+  background: var(--button);
+  color: var(--text);
+  border: 1px solid #4c5263;
+  border-radius: 15px;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.3;
+  box-shadow:
+    0 6px 12px #0003,
+    inset 0 1px 0 #ffffff09;
+}
+.action-btn > span {
+  overflow-wrap: anywhere;
+}
+.action-btn:not(:disabled):hover {
+  background: linear-gradient(160deg, #37445b, #27334a);
+  border-color: #7896c4;
+  transform: translateY(-2px);
+}
+.action-btn:not(:disabled):active {
+  transform: translateY(1px) scale(0.985);
+  box-shadow: inset 0 2px 5px #0005;
+}
+.action-btn--chosen {
+  box-shadow: 0 0 0 2px #779ed8;
+}
+.action-btn--best {
+  border: 2px solid #b9d2f9;
+  background: linear-gradient(150deg, #29466f, #1b2e4a);
+}
+.action-btn--dim {
+  opacity: 0.65;
+  box-shadow: none;
+}
+.action-btn small {
+  opacity: 1;
+  color: #d1d9e7;
+}
+.actions--wrap .action-btn {
+  min-width: 105px;
+}
+.keyboard-hints {
+  font-size: 11px;
+  padding-top: 4px;
+}
+
+.page:has(> .score-card) > .card:first-of-type {
+  padding: 10px;
+}
+.page:has(> .score-card) > .card:first-of-type .field__label {
+  display: none;
+}
+.score-card {
+  padding: 12px 16px;
+}
+.score {
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.score__item {
+  min-width: 0;
+  flex-direction: row;
+  gap: 6px;
+}
+.score__value {
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+.score__label {
+  font-size: 9px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.score__item + .score__item {
+  border-left: 1px solid #394152;
+  padding-left: 12px;
+}
+
+.segmented {
+  background: #11151e;
+  border: 1px solid #3b4353;
+  padding: 3px;
+  border-radius: 12px;
+  gap: 3px;
+}
+.segmented__btn {
+  min-height: 44px;
+  font-size: 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  padding: 8px 7px;
+  color: #b9c1d0;
+}
+.segmented__btn--active {
+  background: linear-gradient(145deg, #294976, #203554);
+  border-color: #5577a7;
+  color: #fff;
+  box-shadow: 0 2px 7px #0003;
+}
+.segmented--mini .segmented__btn {
+  min-height: 36px;
+  padding: 5px 9px;
+}
+.segmented__btn:disabled {
+  opacity: 0.6;
+}
+.field__label {
+  font-size: 12px;
+}
+.setup-toggle {
+  min-height: 52px;
+  padding: 16px 18px;
+  font-size: 14px;
+  border-radius: 18px;
+}
+.setup-toggle:hover {
+  background: #ffffff04;
+}
+.setup-body {
+  padding: 16px;
+}
+.setup-section {
+  letter-spacing: 0.1em;
+}
+.subcard,
+.theme-picker__box {
+  border-radius: 12px;
+  background: #141923;
+}
+.theme-swatch {
+  min-height: 44px;
+}
+.editor textarea {
+  border-radius: 10px;
+  background: #10141c;
+}
+.btn {
+  min-height: 44px;
+  padding: 11px 16px;
+  border-radius: 11px;
+  font-weight: 650;
+  background: var(--button);
+  border-color: #4c5263;
+  color: var(--text);
+  box-shadow: inset 0 1px 0 #ffffff08;
+}
+.btn--primary {
+  color: #fff;
+  background: linear-gradient(145deg, #2a4d7f, #20395f);
+  border-color: #7193c6;
+}
+.btn:hover {
+  border-color: var(--focus);
+}
+.notes,
+.callout {
+  background: #141c2a;
+  border-radius: 10px;
+}
+.verdict {
+  padding: 16px;
+  border-radius: 12px;
+  background: #202633;
+  animation: interface-panel-in 220ms cubic-bezier(0.22, 0.68, 0.25, 1) both;
+}
+.verdict > strong {
+  font-size: 15px;
+}
+.verdict--correct {
+  background: linear-gradient(135deg, #19302a, #17241f);
+}
+.verdict--wrong {
+  background: linear-gradient(135deg, #33232e, #251c27);
+}
+.verdict--partial {
+  background: linear-gradient(135deg, #332d21, #25221d);
+}
+.verdict--correct strong {
+  color: #8fe0b5;
+}
+.verdict--wrong strong {
+  color: #ffa8b7;
+}
+.verdict--partial strong {
+  color: #eed28e;
+}
+.verdict__next {
+  min-width: 112px;
+}
+.showdown {
+  margin-top: 8px;
+}
+.footer {
+  margin-top: 28px;
+  font-size: 11px;
+  color: #a0a9ba;
+}
+.cell--absent {
+  opacity: 1;
+}
+.page > .table-wrap {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  padding: 14px;
+}
+
+@keyframes interface-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes interface-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes interface-seat-breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+@media (min-width: 1000px) {
+  .page:has(> .score-card) {
+    max-width: 1120px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 16px 22px;
+    align-items: start;
+  }
+  .page:has(> .score-card) > * {
+    margin-bottom: 0;
+  }
+  .page:has(> .score-card) > .app-header {
+    grid-column: 1 / -1;
+    margin-bottom: 10px;
+  }
+  .page:has(> .score-card) > .card:has(> .table-wrap) {
+    grid-column: 1;
+  }
+  .page:has(> .score-card) > .card:has(> .grid),
+  .page:has(> .score-card) > .card:has(> .setup-toggle) {
+    grid-column: 2;
+  }
+  .page:has(> .score-card) > .footer {
+    grid-column: 1 / -1;
+  }
+  .page:has(> .score-card) > .score-card {
+    min-height: 72px;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+  }
+  .card > .table-wrap svg {
+    max-width: 530px;
+  }
+  .page:has(> .score-card) > .card .cell {
+    font-size: 10px;
+  }
+  .score-card .score {
+    width: 100%;
+  }
+}
+
+@media (max-width: 599px) {
+  .page {
+    padding: max(12px, env(safe-area-inset-top)) 12px
+      calc(24px + env(safe-area-inset-bottom));
+  }
+  .app-header {
+    margin-bottom: 16px;
+    gap: 9px;
+  }
+  .app-brand {
+    gap: 4px;
+    font-size: 17px;
+  }
+  .app-brand__mark {
+    width: 28px;
+    font-size: 28px;
+  }
+  .app-brand small {
+    font-size: 8px;
+  }
+  .topbar {
+    padding: 3px;
+    gap: 2px;
+  }
+  .topbar__link {
+    min-height: 40px;
+    padding: 6px 9px;
+    gap: 4px;
+    font-size: 11px;
+  }
+  .topbar__link .interface-icon {
+    width: 15px;
+    height: 17px;
+  }
+  .card {
+    padding: 14px;
+    border-radius: 15px;
+    margin-bottom: 12px;
+  }
+  .range-card__head {
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  .range-card__title h2 {
+    font-size: 16px;
+  }
+  .range-card__title span {
+    font-size: 11px;
+  }
+  .pill {
+    padding: 4px 6px;
+    font-size: 9px;
+  }
+  .score-card {
+    padding: 10px 12px;
+  }
+  .score__item {
+    gap: 4px;
+  }
+  .score__item + .score__item {
+    padding-left: 7px;
+  }
+  .score__value {
+    font-size: 14px;
+  }
+  .score__label {
+    font-size: 8px;
+  }
+  .actions[aria-label='Your move'] {
+    position: sticky;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    z-index: 3;
+    padding: 4px 0;
+    background: #161b25;
+    border-radius: 15px;
+  }
+  .actions {
+    gap: 8px;
+  }
+  .action-btn {
+    min-height: 74px;
+    font-size: 13px;
+    padding: 11px 5px;
+  }
+  .actions--wrap .action-btn {
+    min-width: 88px;
+  }
+  .hole-cards {
+    margin: 6px 0 16px;
+    padding-top: 4px;
+  }
+  .playing-card {
+    width: 59px;
+    height: 82px;
+  }
+  .playing-card--small {
+    width: 34px;
+    height: 44px;
+  }
+  .playing-card--small .playing-card__rank {
+    font-size: 19px;
+  }
+  .playing-card--small .playing-card__suit {
+    font-size: 16px;
+  }
+  .board__cards {
+    gap: 5px;
+  }
+  .card > .table-wrap + .board {
+    transform: translateY(2px);
+  }
+  .keyboard-hints {
+    display: none;
+  }
+  .setup-toggle {
+    min-height: 52px;
+    padding: 14px;
+  }
+  .segmented__btn {
+    padding: 8px 3px;
+    font-size: 10px;
+  }
+  .segmented--mini .segmented__btn {
+    padding: 5px 7px;
+  }
+  .verdict {
+    padding: 13px;
+    font-size: 13px;
+  }
+  .verdict__next {
+    width: 100%;
+    margin-top: 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+  .playing-card,
+  .verdict {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .app-brand {
+    font-size: 15px;
+  }
+  .app-brand__mark {
+    width: 24px;
+    font-size: 25px;
+  }
+  .topbar__link {
+    padding-inline: 7px;
+  }
+  .board .playing-card--small {
+    height: 36px;
+    gap: 2px;
+  }
+  .board .playing-card__rank {
+    font-size: 17px;
+  }
+  .board .playing-card__suit {
+    font-size: 14px;
+  }
+}
+
+/* Real ARIA rows retain the original 13-by-13 cell geometry and chart palette. */
+.grid__row { display: grid; grid-template-columns: repeat(13, minmax(0, 1fr)); grid-column: 1 / -1; gap: 2px; }

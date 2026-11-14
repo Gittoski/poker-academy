@@ -11,10 +11,11 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "check": "tsc --noEmit && vitest run",
+    "check": "npm run test:integrity && tsc --noEmit && vitest run",
     "build:hands": "node scripts/generate-hands.mjs",
     "solve:flops": "node scripts/solve-postflop.mjs",
-    "test:browser": "playwright test"
+    "test:browser": "playwright test",
+    "test:integrity": "node scripts/verification/check-simulator.cjs"
   },
   "dependencies": {
     "next": "^15.5.0",
@@ -22,6 +23,7 @@
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.65.1",
     "@types/node": "^22.15.0",
     "@types/react": "^19.1.0",

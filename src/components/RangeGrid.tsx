@@ -22,23 +22,27 @@ function cellBackground(w: ActionWeights): string {
 export function RangeGrid({ weights, onHover, highlight }: Props) {
   return (
     <div className="grid" onMouseLeave={() => onHover?.(null)} role="grid" aria-label="Hand range">
-      {HAND_GRID.flat().map((hand) => {
-        const w = weights.get(hand.label) ?? { raise: 0, call: 0, fold: 1 }
-        return (
-          <div
-            key={hand.label}
-            role="gridcell"
-            className={`cell${hand.kind === 'pair' ? ' cell--pair' : ''}${hand.label === highlight ? ' cell--highlight' : ''}`}
-            style={{ background: cellBackground(w) }}
-            onMouseEnter={() => onHover?.(hand)}
-            onFocus={() => onHover?.(hand)}
-            tabIndex={0}
-            aria-label={`${hand.label}: raise ${Math.round(w.raise * 100)}%, call ${Math.round(w.call * 100)}%, fold ${Math.round(w.fold * 100)}%`}
-          >
-            {hand.label}
-          </div>
-        )
-      })}
+      {HAND_GRID.map((row, rowIndex) => (
+        <div className="grid__row" role="row" key={rowIndex}>
+          {row.map((hand) => {
+            const w = weights.get(hand.label) ?? { raise: 0, call: 0, fold: 1 }
+            return (
+              <div
+                key={hand.label}
+                role="gridcell"
+                className={`cell${hand.kind === 'pair' ? ' cell--pair' : ''}${hand.label === highlight ? ' cell--highlight' : ''}`}
+                style={{ background: cellBackground(w) }}
+                onMouseEnter={() => onHover?.(hand)}
+                onFocus={() => onHover?.(hand)}
+                tabIndex={0}
+                aria-label={`${hand.label}: raise ${Math.round(w.raise * 100)}%, call ${Math.round(w.call * 100)}%, fold ${Math.round(w.fold * 100)}%`}
+              >
+                {hand.label}
+              </div>
+            )
+          })}
+        </div>
+      ))}
     </div>
   )
 }

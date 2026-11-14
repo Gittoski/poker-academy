@@ -1,4 +1,10 @@
-import { POSITION_LABELS, positionsFor, type PlayerCount, type Position } from '@/lib/positions'
+import { useId } from 'react'
+import {
+  POSITION_LABELS,
+  positionsFor,
+  type PlayerCount,
+  type Position,
+} from '@/lib/positions'
 
 interface Props {
   players: PlayerCount
@@ -21,11 +27,11 @@ interface Props {
 }
 
 const W = 480
-const H = 280
+const H = 340
 const CX = W / 2
 const CY = H / 2
 const RX = 196
-const RY = 90
+const RY = 112
 
 function chipColor(position: Position, amount: number): string {
   if (position === 'SB' && amount === 0.5) return '#e04b4b'
@@ -34,32 +40,90 @@ function chipColor(position: Position, amount: number): string {
 }
 
 function formatBet(amount: number): string {
-  return Number.isInteger(amount) ? String(amount) : amount.toFixed(1).replace(/\.0$/, '')
+  return Number.isInteger(amount)
+    ? String(amount)
+    : amount.toFixed(1).replace(/\.0$/, '')
 }
 
-export function TableDiagram({ players, hero, villain, bets, acting, folded, labels, pot, clickable, selected, onSeatClick }: Props) {
+export function TableDiagram({
+  players,
+  hero,
+  villain,
+  bets,
+  acting,
+  folded,
+  labels,
+  pot,
+  clickable,
+  selected,
+  onSeatClick,
+}: Props) {
+  const gradientId = useId()
   const order = positionsFor(players)
   const heroIdx = order.indexOf(hero)
   const seats = order.map((position, i) => {
     const k = (i - heroIdx + order.length) % order.length
     const angle = Math.PI / 2 + (k * 2 * Math.PI) / order.length
-    return { position, angle, x: CX + RX * Math.cos(angle), y: CY + RY * Math.sin(angle) }
+    return {
+      position,
+      angle,
+      x: CX + RX * Math.cos(angle),
+      y: CY + RY * Math.sin(angle),
+    }
   })
 
   return (
     <div className="table-wrap">
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Table with ${players} players, hero ${hero}`}>
-        <ellipse cx={CX} cy={CY} rx={RX} ry={RY} fill="none" stroke="var(--accent)" strokeWidth={1.5} />
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        role="img"
+        aria-label={`Table with ${players} players, hero ${hero}`}
+      >
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--seat-top)" />
+            <stop offset="100%" stopColor="var(--seat-bottom)" />
+          </linearGradient>
+        </defs>
+        <ellipse
+          className="table-surface"
+          cx={CX}
+          cy={CY}
+          rx={RX}
+          ry={RY}
+          fill="var(--table-fill)"
+          stroke="var(--table-rail)"
+          strokeWidth={2}
+        />
+        <text
+          x={CX}
+          y={pot === undefined ? CY + 4 : CY - 78}
+          textAnchor="middle"
+          fontSize={11}
+          fontWeight={600}
+          letterSpacing={2}
+          fill="var(--muted)"
+        >
+          {pot === undefined ? 'PREFLOP' : 'POT'}
+        </text>
         {pot !== undefined && (
-          <text x={CX} y={CY + 4} textAnchor="middle" fontSize={12} fontWeight={700} fill="var(--muted)">
-            Pot {formatBet(pot)}bb
+          <text
+            x={CX}
+            y={CY - 51}
+            textAnchor="middle"
+            fontSize={21}
+            fontWeight={700}
+            fill="var(--text)"
+          >
+            {formatBet(pot)} BB
           </text>
         )}
         {seats.map(({ position, angle, x, y }) => {
           const isHero = position === hero
           const isVillain = position === villain
           const isFolded = folded?.has(position) ?? false
-          const isClickable = (clickable?.has(position) ?? false) && !!onSeatClick
+          const isClickable =
+            (clickable?.has(position) ?? false) && !!onSeatClick
           const isSelected = position === selected
           const label = labels?.[position]
           const bet = bets[position]
@@ -71,11 +135,15 @@ export function TableDiagram({ players, hero, villain, bets, acting, folded, lab
           return (
             <g
               key={position}
-              opacity={isFolded && !isSelected ? 0.35 : 1}
-              className={isClickable ? 'seat seat--clickable' : 'seat'}
+              opacity={isFolded && !isSelected ? 0.55 : 1}
+              className={`seat${isClickable ? ' seat--clickable' : ''}${isHero ? ' seat--hero' : ''}${position === acting ? ' seat--acting' : ''}`}
               role={isClickable ? 'button' : undefined}
               tabIndex={isClickable ? 0 : undefined}
-              aria-label={isClickable ? `Show ${POSITION_LABELS[position]} range` : undefined}
+              aria-label={
+                isClickable
+                  ? `Show ${POSITION_LABELS[position]} range`
+                  : undefined
+              }
               aria-pressed={isClickable ? isSelected : undefined}
               onClick={isClickable ? () => onSeatClick(position) : undefined}
               onKeyDown={
@@ -89,25 +157,90 @@ export function TableDiagram({ players, hero, villain, bets, acting, folded, lab
                   : undefined
               }
             >
-              {position === acting && <circle cx={x} cy={y} r={22} fill="none" stroke="var(--accent)" strokeWidth={2} className="seat-pulse" />}
-              {isSelected && <circle cx={x} cy={y} r={22} fill="none" stroke="var(--text)" strokeWidth={1.5} strokeDasharray="3 3" />}
-              <circle
-                cx={x}
-                cy={y}
-                r={17}
-                fill="#141519"
-                stroke={isVillain ? 'var(--villain)' : isHero ? 'var(--accent)' : '#3a3b41'}
-                strokeWidth={isHero || isVillain ? 2.5 : 1.5}
+              {isClickable && (
+                <rect
+                  x={x - 40}
+                  y={y - 40}
+                  width={80}
+                  height={80}
+                  rx={16}
+                  fill="transparent"
+                />
+              )}
+              {position === acting && (
+                <rect
+                  x={x - 41}
+                  y={y - 27}
+                  width={82}
+                  height={54}
+                  rx={15}
+                  fill="none"
+                  stroke="var(--focus)"
+                  strokeWidth={1.5}
+                  className="seat-pulse"
+                />
+              )}
+              {isSelected && (
+                <rect
+                  x={x - 41}
+                  y={y - 27}
+                  width={82}
+                  height={54}
+                  rx={15}
+                  fill="none"
+                  stroke="var(--text)"
+                  strokeWidth={1.5}
+                  strokeDasharray="3 3"
+                />
+              )}
+              <rect
+                className="seat-surface"
+                x={x - 37}
+                y={y - 23}
+                width={74}
+                height={46}
+                rx={12}
+                fill={`url(#${gradientId})`}
+                stroke={
+                  position === acting
+                    ? 'var(--focus)'
+                    : isHero
+                      ? 'var(--accent)'
+                      : isVillain
+                        ? 'var(--seat-opponent)'
+                        : 'var(--border)'
+                }
+                strokeWidth={isHero || position === acting ? 2 : 1.2}
               />
-              <text x={x} y={y + 4} textAnchor="middle" fontSize={11} fontWeight={700} fill="var(--text)">
+              <text
+                x={x}
+                y={isHero ? y - 2 : y + 4}
+                textAnchor="middle"
+                fontSize={13}
+                fontWeight={700}
+                fill="var(--text)"
+              >
                 {POSITION_LABELS[position]}
               </text>
+              {isHero && (
+                <text
+                  x={x}
+                  y={y + 13}
+                  textAnchor="middle"
+                  fontSize={9}
+                  fontWeight={700}
+                  letterSpacing={1.2}
+                  fill="var(--focus)"
+                >
+                  YOU
+                </text>
+              )}
               {label && (
                 <text
                   x={x}
-                  y={labelBelow ? y + 32 : y - 24}
+                  y={labelBelow ? y + 39 : y - 33}
                   textAnchor="middle"
-                  fontSize={9}
+                  fontSize={11}
                   fontWeight={600}
                   fill={isFolded ? 'var(--muted)' : 'var(--text)'}
                 >
@@ -116,18 +249,40 @@ export function TableDiagram({ players, hero, villain, bets, acting, folded, lab
               )}
               {position === 'BTN' && (
                 <g>
-                  <circle cx={dx} cy={dy} r={6} fill="#f2c94c" />
-                  <text x={dx} y={dy + 3} textAnchor="middle" fontSize={7} fontWeight={700} fill="#1b1b1b">
+                  <circle cx={dx} cy={dy} r={8} fill="#f2f4f8" />
+                  <text
+                    x={dx}
+                    y={dy + 3.5}
+                    textAnchor="middle"
+                    fontSize={9}
+                    fontWeight={700}
+                    fill="#171b24"
+                  >
                     D
                   </text>
                 </g>
               )}
               {bet !== undefined && (
                 <g>
-                  <text x={bx - 7} y={by + 4} textAnchor="end" fontSize={11} fontWeight={600} fill="var(--text)">
+                  <text
+                    x={bx - 7}
+                    y={by + 4}
+                    textAnchor="end"
+                    fontSize={11}
+                    fontWeight={600}
+                    fill="var(--text)"
+                  >
                     {formatBet(bet)}
                   </text>
-                  <circle cx={bx + 2} cy={by} r={6} fill={chipColor(position, bet)} stroke="#fff" strokeWidth={1} strokeDasharray="2 2" />
+                  <circle
+                    cx={bx + 2}
+                    cy={by}
+                    r={6}
+                    fill={chipColor(position, bet)}
+                    stroke="#fff"
+                    strokeWidth={1}
+                    strokeDasharray="2 2"
+                  />
                 </g>
               )}
             </g>
