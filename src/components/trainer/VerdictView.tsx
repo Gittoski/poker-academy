@@ -20,6 +20,7 @@ const GRADE_TEXT: Record<Grade, string> = {
 
 interface Props {
   children?: ReactNode
+  proceedLabel?: string
   verdict: Verdict
   /** Where the answer came from, for the explanation. */
   source: 'chart' | 'solver'
@@ -38,6 +39,7 @@ export function VerdictView({
   handOver,
   onProceed,
   children,
+  proceedLabel,
 }: Props) {
   const { prompt, guess, result, learning } = verdict
   const expected = prompt.options[prompt.expected].label
@@ -110,7 +112,7 @@ export function VerdictView({
           onClick={onProceed}
           autoFocus
         >
-          {handOver ? 'Next hand' : 'Continue'}
+          {proceedLabel ?? (handOver ? 'Next hand' : 'Continue')}
         </button>
       </div>
     </>

@@ -1,6 +1,10 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  completionSummary,
+  postAnswerPresentation,
+} from '@/simulator/completion'
 import { useJournal } from '@/learning/Journal'
 import { LearningFeedback } from '@/learning/LearningFeedback'
 import type { RangeEntry } from '@/data/types'
@@ -16,9 +20,7 @@ import {
   mapHole,
   pickHand,
   positionOf,
-  PREFLOP_FOLD_MESSAGE,
   randomSuitMap,
-  resultMessage,
   scriptedPreflopAction,
   shortActionLabel,
   startPostflop,
@@ -108,6 +110,11 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
   const { journal, paused } = useJournal()
   const restored = journal.restored
   const answered = useRef(false)
+  const proceeding = useRef(false)
+  const [resultShown, setResultShown] = useState(
+    restored?.cursor.resultShown ?? false,
+  )
+  const [resultReady, setResultReady] = useState(false)
   const [decisionsThisHand, setDecisionsThisHand] = useState(
     restored?.cursor.decisions ?? 0,
   )
@@ -170,12 +177,14 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
           foldHand: review.hand.foldHand,
         })
         setVerdict(null)
+        setResultShown(false)
         setDecisionsThisHand(0)
         setPhase('npc')
         return
       }
       const entry = pickHand(index, setup.seat)
       setVerdict(null)
+      setResultShown(false)
       setLive(null)
       if (!entry) {
         setError(
@@ -231,10 +240,23 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
     if (!journal.active) void newHand().catch((e) => journal.failed(e))
   }, [newHand, journal])
 
-  const handOver =
-    !!live &&
-    (live.play?.done || (!!live.hand.ended && live.hand.ended.kind !== 'flop'))
+  const handOverMessage = live
+    ? completionSummary(live.script, live.hand, live.play)
+    : null
+  const handOver = handOverMessage !== null
   const foldedPreflop = live?.hand.ended?.kind === 'hero-folded'
+  useEffect(() => {
+    if (handOver && phase === 'npc' && !verdict) setResultShown(true)
+  }, [handOver, phase, verdict])
+  useEffect(() => {
+    setResultReady(false)
+    if (!resultShown) return
+    const timer = setTimeout(() => setResultReady(true), 350)
+    return () => clearTimeout(timer)
+  }, [resultShown])
+  useEffect(() => {
+    proceeding.current = false
+  }, [phase, live, resultShown])
 
   useEffect(() => {
     if (paused || !live || phase === 'loading') return
@@ -245,10 +267,20 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
         phase,
         score,
         decisions: decisionsThisHand,
+        resultShown,
       },
       !!handOver && decisionsThisHand > 0,
     )
-  }, [journal, paused, live, phase, score, decisionsThisHand, handOver])
+  }, [
+    journal,
+    paused,
+    live,
+    phase,
+    score,
+    decisionsThisHand,
+    handOver,
+    resultShown,
+  ])
   useEffect(() => {
     if (phase === 'hero') answered.current = false
   }, [phase, live])
@@ -386,30 +418,45 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
   )
 
   const proceed = useCallback(() => {
-    if (paused) return
-    if (handOver) void newHand().catch((e) => journal.failed(e))
-    else {
+    if (paused || proceeding.current) return
+    if (handOver && resultShown && !resultReady) return
+    proceeding.current = true
+    if (handOver) {
+      if (!resultShown) {
+        setResultShown(true)
+        return
+      }
+      void newHand().catch((e) => journal.failed(e))
+    } else {
       setVerdict(null)
       setPhase('npc')
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  }, [handOver, newHand, journal, paused])
+  }, [paused, handOver, resultShown, resultReady, newHand, journal])
 
   useAnswerKeys({
     prompt: paused ? null : prompt,
     onAnswer: answer,
     canProceed:
-      !paused && (phase === 'verdict' || (phase === 'npc' && handOver)),
+      !paused &&
+      ((!resultShown && phase === 'verdict') ||
+        (handOver && resultShown && resultReady)),
     onProceed: proceed,
   })
 
+  const presentationPlay = useMemo(() => {
+    if (!live?.play) return null
+    const before =
+      verdict && !resultShown ? journal.feedback?.before.play : null
+    return before ? postAnswerPresentation(live.script, before) : live.play
+  }, [live, verdict, resultShown, journal])
   const hero = live ? heroSeat(live.hand) : null
   const actingPosition = useMemo<Position | null>(() => {
-    if (!live) return null
+    if (!live || phase === 'verdict' || resultShown) return null
     if (!live.play) return seatToAct(live.hand)?.position ?? null
     const node = currentNode(live.script, live.play)
     return node ? positionOf(live.script, node.p) : null
-  }, [live])
+  }, [live, phase, resultShown])
 
   const folded = useMemo(
     () =>
@@ -424,14 +471,14 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
     if (!live) return out
     if (live.play) {
       for (const p of ['ip', 'oop'] as const)
-        if (live.play.bets[p] > 0)
-          out[positionOf(live.script, p)] = live.play.bets[p]
+        if (presentationPlay!.bets[p] > 0)
+          out[positionOf(live.script, p)] = presentationPlay!.bets[p]
     } else {
       for (const s of live.hand.seats)
         if (s.committed > 0) out[s.position] = s.committed
     }
     return out
-  }, [live])
+  }, [live, presentationPlay])
 
   // Seat captions: preflop actions from the simulation, then each player's latest action on the current street.
   const labels = useMemo(() => {
@@ -440,10 +487,10 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
     for (const s of live.hand.seats)
       if (s.lastAction) out[s.position] = s.lastAction
     if (live.play) {
-      const street = currentStreet(live.script, live.play)!
-      const played = live.play.done
+      const street = currentStreet(live.script, presentationPlay!)!
+      const played = presentationPlay!.done
         ? street.nodes
-        : street.nodes.slice(0, live.play.nodeIndex)
+        : street.nodes.slice(0, presentationPlay!.nodeIndex)
       for (const p of ['ip', 'oop'] as const) {
         const last = played.filter((n) => n.p === p).pop()
         const position = positionOf(live.script, p)
@@ -452,15 +499,9 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
       }
     }
     return out
-  }, [live])
+  }, [live, presentationPlay])
 
-  const shown = prompt ?? verdict?.prompt ?? null
-  const handOverMessage =
-    live && handOver
-      ? foldedPreflop
-        ? PREFLOP_FOLD_MESSAGE
-        : resultMessage(live.script)
-      : null
+  const shown = resultShown ? null : (prompt ?? verdict?.prompt ?? null)
   const chartWeights = useMemo(
     () =>
       verdict?.prompt.decision
@@ -487,8 +528,8 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
               shown.decision.villain,
             ).subtitle
           : ''
-  } else if (handOverMessage) {
-    title = 'Hand over'
+  } else if (handOverMessage && resultShown) {
+    title = 'Hand complete'
     subtitle = handOverMessage
   } else if (live) {
     const { script, play } = live
@@ -533,18 +574,19 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
               labels={labels}
               pot={
                 live.play
-                  ? live.play.done
+                  ? resultShown
                     ? live.script.result.pot
-                    : currentStreet(live.script, live.play)!.pot
+                    : currentStreet(live.script, presentationPlay!)!.pot
                   : undefined
               }
             />
             {live.play && (
               <BoardCards
-                cards={boardShown(live.script, live.play, live.suitMap)}
+                cards={boardShown(live.script, presentationPlay, live.suitMap)}
               />
             )}
-            {handOver &&
+            {resultShown &&
+              handOver &&
               !foldedPreflop &&
               live.script.result.kind === 'showdown' && (
                 <div className="showdown">
@@ -562,29 +604,55 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
           </>
         )}
 
-        {prompt ? (
+        {resultShown && handOverMessage ? (
+          <section className="hand-result" aria-label="Hand result">
+            <h3>Hand complete</h3>
+            <p>{handOverMessage}</p>
+            {journal.feedback &&
+              journal.feedback.chosen !== journal.feedback.executed && (
+                <p>
+                  Your selection:{' '}
+                  {
+                    journal.feedback.prompt.options[journal.feedback.chosen]
+                      .label
+                  }
+                  . Scripted action:{' '}
+                  {
+                    journal.feedback.prompt.options[journal.feedback.executed]
+                      .label
+                  }
+                  . This result follows the scripted action.
+                </p>
+              )}
+            <button
+              type="button"
+              className="btn btn--primary verdict__next"
+              disabled={!resultReady}
+              onClick={proceed}
+            >
+              Next hand
+            </button>
+          </section>
+        ) : prompt ? (
           <ActionPrompt prompt={prompt} onAnswer={answer} />
         ) : verdict ? (
           <VerdictView
             verdict={verdict}
             source={verdict.prompt.street === 'preflop' ? 'chart' : 'solver'}
             continues
-            handOver={handOverMessage}
+            handOver={
+              handOver
+                ? 'Betting is complete. View the hand result before dealing again.'
+                : null
+            }
+            proceedLabel={handOver ? 'View hand result' : undefined}
             onProceed={proceed}
           >
             <LearningFeedback journal={journal} />
           </VerdictView>
         ) : handOverMessage ? (
-          <div className="verdict" aria-live="polite">
-            <strong>{handOverMessage}</strong>
-            <button
-              type="button"
-              className="btn btn--primary verdict__next"
-              onClick={newHand}
-              autoFocus
-            >
-              Next hand
-            </button>
+          <div className="actions actions--waiting" role="status">
+            Preparing hand result…
           </div>
         ) : error ? (
           <div className="empty">{error}</div>

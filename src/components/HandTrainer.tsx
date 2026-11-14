@@ -319,7 +319,7 @@ export function HandTrainer({ entries, setup }: Props) {
             ).subtitle
           : ''
   } else if (handOver) {
-    title = 'Hand over'
+    title = hand.ended?.kind === 'flop' ? 'Preflop round complete' : 'Hand over'
     subtitle = handOver
   } else {
     title = `You are ${POSITION_LABELS[hand.hero]}`
@@ -358,6 +358,12 @@ export function HandTrainer({ entries, setup }: Props) {
         />
         <HoleCards cards={hero.cards} />
 
+        {hand.ended?.kind === 'flop' && (
+          <p className="training-scope-note">
+            Preflop practice ends here. Choose Full hands above to play through
+            the flop, turn and river.
+          </p>
+        )}
         {prompt ? (
           <ActionPrompt prompt={prompt} onAnswer={answer} />
         ) : verdict ? (

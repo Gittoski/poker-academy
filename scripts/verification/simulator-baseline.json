@@ -19,11 +19,11 @@
     },
     "src/components/FullHandTrainer.tsx": {
       "files": 1,
-      "sha256": "1f03b331949debc5ba3661f9bd93be7f39fad24c589faf591728dfe91e75d914"
+      "sha256": "c2e3d41f308013a3adc16eb2c76644134940688d715b7fa52d8ba9cde8131123"
     },
     "src/components/HandTrainer.tsx": {
       "files": 1,
-      "sha256": "6bd1683358df8939794627c17f692910115957eded2f0c1c005d186e110f02d0"
+      "sha256": "500a4050a055e19a29cc8c6c8c4d1f4b3c03f73c9cb4032268beaf2709bdb9ff"
     },
     "src/components/PlayPage.tsx": {
       "files": 1,
@@ -55,11 +55,11 @@
     },
     "src/components/trainer/VerdictView.tsx": {
       "files": 1,
-      "sha256": "a13e91cf234d2ba41d933de8fa60a7529330207f590194c8982743a979b92cac"
+      "sha256": "b75dde4a8c7049500f857c4566b107f3fb4adb978f6cce5423ef1fd4c2e44c22"
     },
     "src/components/trainer/useAnswerKeys.ts": {
       "files": 1,
-      "sha256": "b39541e39f8602ba62ed075fc932d5bc5a006a3dc6188bc2d49cea31ea561bed"
+      "sha256": "4b41163434374367651d4287dedfa79c9b21ffbbbe9ee84351ca18207654bf4d"
     },
     "src/app/globals.css": {
       "files": 1,
@@ -89,5 +89,15 @@
     ],
     "reason": "Hydrated checkpoints, automatic answer capture, paused review/manual practice, source-precise feedback; poker library, supplied data, chart calculation and palette baselines unchanged.",
     "evidence": "docs/implementation/SESSION_REVIEW_INTEGRATION.md"
+  },
+  "handCompletionIntegration": {
+    "approvedPaths": [
+      "src/components/FullHandTrainer.tsx",
+      "src/components/HandTrainer.tsx",
+      "src/components/trainer/VerdictView.tsx",
+      "src/components/trainer/useAnswerKeys.ts"
+    ],
+    "reason": "Explicit final-result acknowledgement, decision-street presentation, persisted result view, repeated-key/duplicate-transition protection and clear preflop-only scope. Engine, grading functions and supplied script/chart data remain unchanged.",
+    "evidence": "docs/implementation/HAND_COMPLETION.md"
   }
 }

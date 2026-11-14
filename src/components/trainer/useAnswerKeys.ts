@@ -11,10 +11,23 @@ interface Options {
 }
 
 /** Option shortcuts (letters or 1–9) while a prompt is open; Enter or Space to continue. */
-export function useAnswerKeys({ prompt, onAnswer, canProceed, onProceed }: Options): void {
+export function useAnswerKeys({
+  prompt,
+  onAnswer,
+  canProceed,
+  onProceed,
+}: Options): void {
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.target instanceof HTMLElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return
+      if (
+        e.target instanceof HTMLElement &&
+        ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)
+      )
+        return
+      if (e.repeat) {
+        if (e.key === 'Enter' || e.key === ' ') e.preventDefault()
+        return
+      }
       if (e.key === 'Enter' || e.key === ' ') {
         if (canProceed) {
           e.preventDefault()
@@ -25,7 +38,10 @@ export function useAnswerKeys({ prompt, onAnswer, canProceed, onProceed }: Optio
       if (!prompt) return
       const key = e.key.toLowerCase()
       const digit = Number(key)
-      const index = Number.isInteger(digit) && digit >= 1 ? digit - 1 : prompt.options.findIndex((o) => o.key === key)
+      const index =
+        Number.isInteger(digit) && digit >= 1
+          ? digit - 1
+          : prompt.options.findIndex((o) => o.key === key)
       if (index >= 0 && index < prompt.options.length) onAnswer(index)
     }
     window.addEventListener('keydown', onKey)

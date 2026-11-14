@@ -774,3 +774,6 @@ button:not(:disabled):active {
 .learning-dialog input[type=file] { width:100%; max-width:220px; display:block; font-size:.8rem; }
 .learning-score-note { color:#b9c4d4; font-size:.75rem; line-height:1.6; margin:-.3rem .4rem 1rem; }
 .learning-review-note { display:block; font-size:.78rem; color:#c1ccda; margin-top:.6rem; line-height:1.6; }
+.hand-result { border:1px solid #5279ad; border-radius:14px; padding:1rem; margin-top:1rem; background:linear-gradient(140deg,#1b2d48,#121c2b); }
+.hand-result h3 { margin:0 0 .6rem; }
+.hand-result p,.training-scope-note { color:#c3cfdf; line-height:1.65; font-size:.9rem; }

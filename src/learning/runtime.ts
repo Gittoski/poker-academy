@@ -32,6 +32,7 @@ export interface NativePrompt extends Prompt {
   kinds?: string[]
 }
 export interface NativeState {
+  resultShown?: boolean
   hand: HandState
   play?: PostflopPlay | null
   phase: 'npc' | 'hero' | 'verdict'
@@ -206,6 +207,7 @@ export class JournalRuntime {
     if (!this.active) throw Error('No active hand')
     return {
       version: 1,
+      resultShown: state.resultShown ?? false,
       handId: this.active.id,
       hand: packHand(state.hand, this.source.id),
       play: state.play ?? null,

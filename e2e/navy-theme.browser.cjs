@@ -188,16 +188,24 @@ test('6/8/9-seat range inspection and full-hand board overlay remain usable', as
       sawBoard = true
       break
     }
-    await page.getByRole('button', { name: /^(Continue|Next hand)$/ }).click()
+    await page
+      .getByRole('button', { name: /^(Continue|View hand result|Next hand)$/ })
+      .click()
   }
   expect(sawBoard).toBe(true)
 })
 
-test('complete five-card runout stays inside the table and clear of seats on a narrow phone', async ({ page }, testInfo) => {
+test('complete five-card runout stays inside the table and clear of seats on a narrow phone', async ({
+  page,
+}, testInfo) => {
   const fs = require('node:fs')
-  const index = JSON.parse(fs.readFileSync('public/full-hands/index.json', 'utf8'))
-  const fixture = index.hands.find(h => h.id === '3bp-BTN-BB/7s6h3d-5')
-  await page.route('**/full-hands/index.json', route => route.fulfill({ json: { ...index, hands: [fixture] } }))
+  const index = JSON.parse(
+    fs.readFileSync('public/full-hands/index.json', 'utf8'),
+  )
+  const fixture = index.hands.find((h) => h.id === '3bp-BTN-BB/7s6h3d-5')
+  await page.route('**/full-hands/index.json', (route) =>
+    route.fulfill({ json: { ...index, hands: [fixture] } }),
+  )
   await page.setViewportSize({ width: 320, height: 844 })
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await seededPlay(page)
@@ -205,28 +213,52 @@ test('complete five-card runout stays inside the table and clear of seats on a n
   for (let i = 0; i < 20; i++) {
     const move = page.getByRole('group', { name: 'Your move', exact: true })
     const next = page.getByRole('button', { name: 'Next hand', exact: true })
-    await expect.poll(async () => await move.isVisible() || await next.isVisible(), { timeout: 20000 }).toBe(true)
-    if (await next.isVisible()) { await next.click(); continue }
+    await expect
+      .poll(async () => (await move.isVisible()) || (await next.isVisible()), {
+        timeout: 20000,
+      })
+      .toBe(true)
+    if (await next.isVisible()) {
+      await next.click()
+      continue
+    }
     const board = page.locator('.board')
     if (await board.count()) {
       const cards = board.locator('.playing-card')
       counts.add(await cards.count())
-      for (const card of await cards.all()) await expect(card).toHaveCSS('opacity', '1')
+      for (const card of await cards.all())
+        await expect(card).toHaveCSS('opacity', '1')
       const box = await board.boundingBox()
-      const overlaps = await page.locator('.seat-surface').evaluateAll((nodes, b) => nodes.filter(n => {
-        const r = n.getBoundingClientRect()
-        return Math.min(r.right, b.x+b.width)-Math.max(r.left,b.x)>1 && Math.min(r.bottom,b.y+b.height)-Math.max(r.top,b.y)>1
-      }).length, box)
+      const overlaps = await page.locator('.seat-surface').evaluateAll(
+        (nodes, b) =>
+          nodes.filter((n) => {
+            const r = n.getBoundingClientRect()
+            return (
+              Math.min(r.right, b.x + b.width) - Math.max(r.left, b.x) > 1 &&
+              Math.min(r.bottom, b.y + b.height) - Math.max(r.top, b.y) > 1
+            )
+          }).length,
+        box,
+      )
       expect(overlaps).toBe(0)
-      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true)
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth + 1,
+        ),
+      ).toBe(true)
       if (counts.has(5)) {
-        await page.screenshot({ path: testInfo.outputPath('navy-river-320.png'), fullPage: true })
+        await page.screenshot({
+          path: testInfo.outputPath('navy-river-320.png'),
+          fullPage: true,
+        })
         break
       }
     }
     await move.getByRole('button').first().click()
     await page.locator('.verdict').waitFor()
-    await page.getByRole('button', { name: /^(Continue|Next hand)$/ }).click()
+    await page
+      .getByRole('button', { name: /^(Continue|View hand result|Next hand)$/ })
+      .click()
   }
-  expect([...counts].sort()).toEqual([3,4,5])
+  expect([...counts].sort()).toEqual([3, 4, 5])
 })

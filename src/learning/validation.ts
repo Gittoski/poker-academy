@@ -81,6 +81,7 @@ export function validateCursor(c: Cursor, sources: Map<string, SourceRecord>) {
   if (
     !c ||
     c.version !== 1 ||
+    (c.resultShown !== undefined && typeof c.resultShown !== 'boolean') ||
     !text(c.handId) ||
     !['npc', 'hero', 'verdict'].includes(c.phase) ||
     !integer(c.ordinal) ||

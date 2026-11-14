@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto'
 import { describe, expect, it } from 'vitest'
 import { DECK, type HoleCards } from '@/lib/cards'
-import { startHand, decisionFor } from '@/lib/handSim'
+import { startHand, decisionFor, act } from '@/lib/handSim'
 import { preflopPrompt, EMPTY_SCORE } from '@/lib/trainer'
 import type { RangeEntry } from '@/data/types'
 import { createSource } from './sources'
@@ -857,4 +857,44 @@ it('pending recovery from an adopted hand includes its immutable reference sourc
     true,
   )
   expect(recovery.events).toHaveLength(1)
+})
+
+it('persists result acknowledgement without duplicating the final decision and rejects invalid flags', async () => {
+  const { source, event } = fixture(),
+    repo = await repository()
+  await repo.cache(source)
+  const native = unpackHand(event.hand.initial, source),
+    decision = decisionFor(
+      native,
+      event.hand.config,
+      source.kind === 'ranges' ? source.payload : [],
+    )!
+  const ended = act(native, event.hand.config, 'fold', decision)
+  await repo.submit({
+    ...event,
+    cursor: {
+      ...event.cursor,
+      hand: packHand(ended, source.id),
+      resultShown: false,
+    },
+  })
+  await repo.submit({
+    ...event,
+    id: 'result-viewed',
+    revision: 2,
+    decision: undefined,
+    cursor: {
+      ...event.cursor,
+      hand: packHand(ended, source.id),
+      resultShown: true,
+    },
+  })
+  const backup = await repo.backup()
+  expect(backup.decisions).toHaveLength(1)
+  expect(backup.meta.cursor?.resultShown).toBe(true)
+  expect(validateBackup(backup).meta.cursor?.resultShown).toBe(true)
+  const malformed = structuredClone(backup)
+  malformed.meta.cursor!.resultShown = 'yes' as unknown as boolean
+  expect(() => validateBackup(malformed)).toThrow(/checkpoint/i)
+  repo.close()
 })

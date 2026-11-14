@@ -55,6 +55,7 @@ export interface StoredVerdict {
   learning: LearningResult
 }
 export interface Cursor {
+  resultShown?: boolean
   version: 1
   handId: string
   hand: PackedHand

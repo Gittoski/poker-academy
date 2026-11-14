@@ -208,6 +208,11 @@ test('adaptive mistake returns as a whole hand and is revealed only after its ta
     fullPage: true,
   })
   for (let i = 0; i < 25; i++) {
+    const result = page.getByRole('button', {
+      name: 'View hand result',
+      exact: true,
+    })
+    if (await result.isVisible()) await result.click()
     const next = page.getByRole('button', { name: 'Next hand', exact: true })
     if (await next.isVisible()) break
     const proceed = page.getByRole('button', { name: 'Continue', exact: true })
@@ -416,7 +421,9 @@ test('postflop retry restores the exact visible board and reference without futu
     }
     await move.getByRole('button').first().click()
     await expect(page.locator('.verdict')).toBeVisible()
-    await page.getByRole('button', { name: /^(Continue|Next hand)$/ }).click()
+    await page
+      .getByRole('button', { name: /^(Continue|View hand result|Next hand)$/ })
+      .click()
   }
   expect(saved?.prompt.street).toBe('flop')
 })
