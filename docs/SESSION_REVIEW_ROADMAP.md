@@ -85,7 +85,7 @@ Done when normal long-term use stays bounded and recovery/storage management is 
 - [x] Update README, active roadmap, migration/retention notes and verified limitations; commit and push verified changes to the configured user repository.
 - [ ] Run actual iPhone/Safari checks when available; otherwise keep that external release gate explicitly open and identify the missing evidence.
 
-Delivery evidence: 119 unit tests, TypeScript, unchanged engine/data/calculation/palette integrity, production build and all 19 browser journeys pass. [Usage guide](SESSION_REVIEW_GUIDE.md), [verification report](implementation/SESSION_REVIEW_VERIFICATION.md) and [actual-app captures](design/session-review/README.md) are included.
+Delivery evidence: 120 unit tests, TypeScript, unchanged engine/data/calculation/palette integrity, production build and all 19 browser journeys pass. [Usage guide](SESSION_REVIEW_GUIDE.md), [verification report](implementation/SESSION_REVIEW_VERIFICATION.md) and [actual-app captures](design/session-review/README.md) are included.
 
 Available automated completion does not imply actual-device validation or proof of strategy optimality. The only open release gate is actual iPhone/Safari/VoiceOver/device-animation evidence.
 

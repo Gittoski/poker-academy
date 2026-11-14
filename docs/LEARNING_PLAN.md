@@ -8,7 +8,7 @@ This is a plan, not a list of features already implemented. The active build che
 
 - Next.js web app with range viewing, preflop play and scripted full-hand practice.
 - Six-, eight- and nine-position preflop/range configurations; full-hand scripts are currently cash, 100 BB, six-max PTO.
-- Local chart-theme/custom-range preferences. Decision scores and streaks live in component state; there is no persistent learning journal, saved retry queue or curriculum.
+- Local chart-theme/custom-range preferences. A local session journal, exact reviews/retries and adaptive practice are now implemented; there is no guided curriculum yet. See SESSION_REVIEW_GUIDE.md.
 - `gradeIndex` marks the most frequent reference action correct, another positive-frequency action partial and zero-frequency actions wrong. This is a reference-frequency exercise, not a calculated EV-loss score. A valid mixed action is not inherently a poker mistake.
 - Full-hand play follows supplied lines, including correction after a wrong choice. It does not solve arbitrary alternative actions or provide unrestricted branching play.
 - The navy interface has a verified baseline of 86 unit tests, nine browser checks, a production build and simulator-integrity checks. Actual iPhone/Safari validation remains open.
@@ -31,7 +31,7 @@ Each lesson uses **one concept → worked example → guided decisions → indep
 
 ## Development milestones
 
-### M01 — Persistent learning journal (next)
+### M01 — Persistent learning journal (implemented)
 
 Record real decisions from both current trainer modes without changing how their actions are resolved. Save format, positions, effective stack/context where available, range/script ID and version, current street/node, suit mapping, visible cards, available actions, original frequencies, chosen action, supplied grade and whether it was a first try or practice. Preserve unknown source fields as unknown.
 
@@ -39,7 +39,7 @@ Use a versioned local store, bounded history, migration support, explicit export
 
 Done when results survive navigation/reload, restore from a valid backup and tolerate malformed/unavailable storage. Duplicate submissions and interrupted saves have regression tests. Existing seeded trainer behavior remains the same.
 
-### M02 — Saved reviews, exact retries and a mistake book
+### M02 — Saved reviews, exact retries and a mistake book (implemented)
 
 Open a completed hand and move through the information available at each decision. Automatically collect unsupported choices and user-marked questions; retain supported mixed alternatives separately. Keep a dedicated Replay/Practice action, restore the exact question and let the user return to their paused live session.
 
@@ -119,7 +119,7 @@ Done when assessments do not leak answers or mix retries into first-try results,
 
 ## Sensible first release
 
-Deliver **M01 + M02** before adding many more modules. That creates the useful loop the current app lacks:
+**M01 + M02** are implemented through the focused session-review roadmap. Preserve this loop before adding many more modules:
 
 **Play → understand feedback → save the decision → retry it → review it later.**
 

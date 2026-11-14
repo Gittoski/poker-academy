@@ -2,7 +2,7 @@
 
 A fresh start based on [jensbaagaard/poker-practice](https://github.com/jensbaagaard/poker-practice), pinned to `449993f78d995c77b72d0bcac418a8507dd6f783`. The previous Expo academy and custom simulator have been removed from this branch. Their last version is preserved on `backup/academy-before-poker-practice`.
 
-The imported Next.js app provides a range viewer, preflop training and scripted full-hand training. Its poker logic, chart data and supplied hand scripts are unchanged. The approved black/graphite interface now uses navy accents, plain white cards and subtle CSS motion. Full-hand training follows pre-generated lines and corrects choices along those lines; it is not an unrestricted poker engine.
+The imported Next.js app provides a range viewer, preflop training and scripted full-hand training. Its poker engine, grading functions, chart data and supplied hand scripts are unchanged; reviewed controller seams now add local learning history and recovery. The approved black/graphite interface now uses navy accents, plain white cards and subtle CSS motion. Full-hand training follows pre-generated lines and corrects choices along those lines; it is not an unrestricted poker engine.
 
 ## Run
 
@@ -23,7 +23,7 @@ npm run build
 npm run test:browser
 ```
 
-The upstream test suite has 86 tests across eight files. Nine browser checks cover chart loading, both trainer modes, continuation, responsive layouts, navy styling, accessibility and reduced motion. The browser runner uses a production build on its own port; install Chromium once with `npx playwright install chromium`, or set `CHROMIUM_PATH` to an existing system browser. The production build regenerates the range files from the included source data; it does not need a solver installation. Solver scripts are optional offline development tools, not a requirement for running the supplied app.
+The test suite has 120 unit tests across ten files and 19 browser journeys covering original play plus saving, recovery, exact retries, adaptive return, failure handling, responsive layouts, keyboard/focus, accessibility and reduced motion. The browser runner uses a production build on its own port; install Chromium once with `npx playwright install chromium`, or set `CHROMIUM_PATH` to an existing system browser. The production build regenerates the range files from the included source data; it does not need a solver installation. Solver scripts are optional offline development tools, not a requirement for running the supplied app.
 
 ## Source and next steps
 
@@ -33,6 +33,12 @@ See [three visual directions](docs/design/visual-directions.png) and the [propos
 
 ## Learning roadmap
 
-The next upgrades focus on lasting progress, exact mistake review and a staged Basics → preflop → postflop → exploitative → advanced learning path. See the [active checklist](ROADMAP.md) and [full learning plan](docs/LEARNING_PLAN.md). These are planned features; the current working trainer is preserved.
+The next upgrades focus on lasting progress, exact mistake review and a staged Basics → preflop → postflop → exploitative → advanced learning path. See the [active checklist](ROADMAP.md) and [full learning plan](docs/LEARNING_PLAN.md). The current working trainer is preserved. The journal/review loop is implemented; the wider curriculum and offline-installation roadmap remain future work.
 
-The immediate simulator-focused feature is now specified: [automatic sessions, mistake reviews and adjustable recurring practice](docs/SESSION_REVIEW_SPEC.md), with a [bounded implementation checklist](docs/SESSION_REVIEW_ROADMAP.md). This feature is planned, not implemented.
+The simulator now includes [automatic sessions, mistake reviews and adjustable recurring practice](docs/SESSION_REVIEW_SPEC.md), with a [bounded implementation checklist](docs/SESSION_REVIEW_ROADMAP.md). See the [usage guide](docs/SESSION_REVIEW_GUIDE.md), [verification evidence](docs/implementation/SESSION_REVIEW_VERIFICATION.md) and [actual-app screenshots](docs/design/session-review/README.md).
+
+## Use the session reviewer
+
+Play normally: answers save automatically before Continue. Open **Review mistakes** for session summaries, grouped errors, original references, reflections/pins and **Retry this decision / Play this hand**. Manual practice pauses and preserves your live hand. Under **Practice settings**, toggle **Mix in my mistakes** and choose approximately one review per 2–20 hands. Adaptive returns start from preflop and identify themselves only after the target answer.
+
+Supported mixed alternatives stay separate from zero-support reference errors. History stays in this browser origin (address and port) on this device; use export/import for transfer. Storage failures are shown explicitly. Actual iPhone/Safari verification remains outstanding.

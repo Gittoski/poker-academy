@@ -1,0 +1,16 @@
+{
+  "decisionBytes": 2360,
+  "handBytes": 1437,
+  "sourceSizes": [
+    {
+      "kind": "ranges",
+      "payloadBytes": 53032,
+      "recordBytes": 53298
+    },
+    {
+      "kind": "script",
+      "payloadBytes": 1476,
+      "recordBytes": 1748
+    }
+  ]
+}
