@@ -23,7 +23,7 @@ npm run build
 npm run test:browser
 ```
 
-The test suite has 147 unit tests across fifteen files and 28 browser journeys covering original play plus saving, recovery, exact retries, adaptive return, failure handling, responsive layouts, keyboard/focus, accessibility and reduced motion. The browser runner uses a production build on its own port; install Chromium once with `npx playwright install chromium`, or set `CHROMIUM_PATH` to an existing system browser. The production build regenerates the range files from the included source data; it does not need a solver installation. Solver scripts are optional offline development tools, not a requirement for running the supplied app.
+The test suite has 147 unit tests across fifteen files and 39 browser journeys covering original play plus saving, recovery, exact retries, adaptive return, failure handling, responsive layouts, keyboard/focus, accessibility and reduced motion. The browser runner uses a production build on its own port; install Chromium once with `npx playwright install chromium`, or set `CHROMIUM_PATH` to an existing system browser. The production build regenerates the range files from the included source data; it does not need a solver installation. Solver scripts are optional offline development tools, not a requirement for running the supplied app.
 
 ## Source and next steps
 
@@ -54,3 +54,9 @@ The app now offers an explicit complete offline download from Learn in a product
 Learn teaches pot odds → outs and draw probabilities → hand/range equity → expected value → bluff break-even and fold equity, with short lessons, worked examples, untimed practice and optional timing. The hand-ranking refresher reuses the archived evaluator. Local progress separates unfamiliar questions from repeats, keeps calculation explanations and supports validated backups.
 
 Supported simulator mistakes now offer **Practice this skill**, with fresh examples and return to the same saved hand. Related links do not diagnose every chart deviation as a math error. Feedback identifies exact calculations, supplied strategy references and opponent assumptions; it does not invent solver EV losses. See the [usage guide](docs/FUNDAMENTALS_GUIDE.md), [provenance and verification audit](docs/implementation/FUNDAMENTALS_VERIFICATION.md) and [remaining fundamentals roadmap](docs/FUNDAMENTALS_ROADMAP.md).
+
+## Mobile simulator focus
+
+On phones, Play now dedicates the screen to the simulator. **Settings & review** opens the existing setup, session and review controls. Errors automatically open the explanation overlay; its Chart tab contains the existing range/strategy grids. Scroll within the overlay while Retry and Continue remain at the bottom. Correct/supported answers keep compact feedback. Closing feedback does not advance the hand. Exact retries preserve your live hand as separate manual practice. The hand-result panel also keeps Next hand reachable.
+
+See [scope, verification and phone testing limits](docs/implementation/MOBILE_FOCUS.md). This step leaves the table styling, home screen and Learn design for later approval. Installed offline packs need updating to load a new app build after deployment.

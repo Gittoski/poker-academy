@@ -4,11 +4,20 @@ Goal: progressively improve real-life six-max Hold’em decisions, especially ag
 
 This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PLAN.md) explains lesson progression, feature scope and completion criteria. [Foundation history](docs/FOUNDATION_HISTORY.md) retains the completed import/theme work.
 
+## Current approved step: mobile simulator focus
+
+- [x] Implement a viewport-sized simulator with compact navigation and settings/review panel.
+- [x] Automatically open full error explanations; scroll only overlay content while keeping Retry/Continue visible. Supported answers retain compact feedback.
+- [x] Preserve exact manual retries, live-hand recovery, chart access and complete-hand result acknowledgement; keep Next hand reachable on small screens.
+- [x] Finish automated verification and delivery; see [the implementation audit](docs/implementation/MOBILE_FOCUS.md).
+- [ ] User test on iPhone 13/Home Screen, including error/retry, long charts, final result and rotation.
+- [ ] Next approval: table styling preview, then a separately approved home screen. Leave Learn unchanged for now.
+
 ## Current verified foundation
 
 - [x] Replace the retired academy with jensbaagaard/poker-practice; preserve attribution and a Git backup.
 - [x] Deliver the navy theme without changing the engine, grading, training controllers or chart data.
-- [x] Last verified: 147 unit tests, 28 browser journeys, TypeScript, production build and simulator/strategy-calculation integrity checks.
+- [x] Last verified: 147 unit tests, 39 browser journeys, TypeScript, production build and simulator/strategy-calculation integrity checks.
 - [x] Retain range viewing, preflop training, scripted full-hand practice and existing custom-range/theme settings.
 - [ ] Actual iPhone/Safari, VoiceOver and device animation verification. Chromium phone-sized tests do not close this release gate.
 

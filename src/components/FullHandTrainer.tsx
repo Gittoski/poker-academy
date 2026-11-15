@@ -56,6 +56,8 @@ import { RangeGrid } from './RangeGrid'
 import { StrategyGrid } from './StrategyGrid'
 import { TableDiagram } from './TableDiagram'
 import { ActionPrompt } from './trainer/ActionPrompt'
+import { TrainerSurface, PlayOptions, MobileCharts } from './trainer/PlayFrame'
+import { HandResult } from './trainer/HandResult'
 import { ScoreBar } from './trainer/ScoreBar'
 import { useAnswerKeys } from './trainer/useAnswerKeys'
 import { VerdictView, type Verdict } from './trainer/VerdictView'
@@ -542,13 +544,14 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
   }
 
   return (
-    <>
-      <ScoreBar score={score} unit="decisions" />
-      <p className="learning-score-note">
-        Frequency drill · most-frequent action agreement
-      </p>
-
-      <section className="card">
+    <TrainerSurface>
+      <PlayOptions>
+        <ScoreBar score={score} unit="decisions" />
+        <p className="learning-score-note">
+          Frequency drill · most-frequent action agreement
+        </p>
+      </PlayOptions>
+      <section className="card trainer-table">
         <div className="range-card__head">
           <div className="range-card__title">
             <h2>{title}</h2>
@@ -605,7 +608,18 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
         )}
 
         {resultShown && handOverMessage ? (
-          <section className="hand-result" aria-label="Hand result">
+          <HandResult
+            action={
+              <button
+                type="button"
+                className="btn btn--primary verdict__next"
+                disabled={!resultReady}
+                onClick={proceed}
+              >
+                Next hand
+              </button>
+            }
+          >
             <h3>Hand complete</h3>
             <p>{handOverMessage}</p>
             {journal.feedback &&
@@ -624,15 +638,7 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
                   . This result follows the scripted action.
                 </p>
               )}
-            <button
-              type="button"
-              className="btn btn--primary verdict__next"
-              disabled={!resultReady}
-              onClick={proceed}
-            >
-              Next hand
-            </button>
-          </section>
+          </HandResult>
         ) : prompt ? (
           <ActionPrompt prompt={prompt} onAnswer={answer} />
         ) : verdict ? (
@@ -667,47 +673,49 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
         )}
       </section>
 
-      {verdict && hero && chartWeights && (
-        <section className="card">
-          <div className="range-card__head">
-            <div className="range-card__title">
-              <h2>Chart</h2>
-              <span>{verdict.prompt.title}</span>
-            </div>
-          </div>
-          <RangeGrid weights={chartWeights} highlight={hero.hand.label} />
-        </section>
-      )}
-
-      {verdict &&
-        hero &&
-        verdict.prompt.grid &&
-        verdict.prompt.kinds &&
-        verdict.prompt.street !== 'preflop' && (
+      <MobileCharts>
+        {verdict && hero && chartWeights && (
           <section className="card">
             <div className="range-card__head">
               <div className="range-card__title">
-                <h2>{STREET_LABELS[verdict.prompt.street]} strategy</h2>
+                <h2>Chart</h2>
                 <span>{verdict.prompt.title}</span>
               </div>
             </div>
-            <StrategyGrid
-              kinds={verdict.prompt.kinds}
-              labels={verdict.prompt.options.map((o) => o.label)}
-              cells={verdict.prompt.grid}
-              highlight={hero.hand.label}
-            />
-            <div className="notes">
-              <p>
-                Supplied recorded strategy for your whole range, averaged over
-                suit combinations per hand. Your exact combo can differ.
-                Imported source data describes TexasSolver generation; these
-                frequencies are not an independently verified GTO claim or a
-                calculated EV loss.
-              </p>
-            </div>
+            <RangeGrid weights={chartWeights} highlight={hero.hand.label} />
           </section>
         )}
-    </>
+
+        {verdict &&
+          hero &&
+          verdict.prompt.grid &&
+          verdict.prompt.kinds &&
+          verdict.prompt.street !== 'preflop' && (
+            <section className="card">
+              <div className="range-card__head">
+                <div className="range-card__title">
+                  <h2>{STREET_LABELS[verdict.prompt.street]} strategy</h2>
+                  <span>{verdict.prompt.title}</span>
+                </div>
+              </div>
+              <StrategyGrid
+                kinds={verdict.prompt.kinds}
+                labels={verdict.prompt.options.map((o) => o.label)}
+                cells={verdict.prompt.grid}
+                highlight={hero.hand.label}
+              />
+              <div className="notes">
+                <p>
+                  Supplied recorded strategy for your whole range, averaged over
+                  suit combinations per hand. Your exact combo can differ.
+                  Imported source data describes TexasSolver generation; these
+                  frequencies are not an independently verified GTO claim or a
+                  calculated EV loss.
+                </p>
+              </div>
+            </section>
+          )}
+      </MobileCharts>
+    </TrainerSurface>
   )
 }

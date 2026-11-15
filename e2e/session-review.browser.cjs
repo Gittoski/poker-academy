@@ -1,4 +1,6 @@
 const { test, expect } = require('@playwright/test')
+// Legacy inline controls are the desktop flow; mobile focus flows have dedicated coverage.
+test.use({viewport:{width:1365,height:950}})
 const AxeBuilder = require('@axe-core/playwright').default
 async function boot(page, mode = 'full-hands', seat = 'LJ') {
   await page.addInitScript(() => {
@@ -154,6 +156,7 @@ test('review controls, mobile dialog, focus, accessibility and another tab', asy
     path: testInfo.outputPath('session-review-phone.png'),
     fullPage: true,
   })
+  await page.setViewportSize({width:1365,height:950})
   await page.keyboard.press('Escape')
   await expect(dialog).toBeHidden()
   await expect(

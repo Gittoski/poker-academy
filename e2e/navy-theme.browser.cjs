@@ -1,4 +1,6 @@
 const { test, expect } = require('@playwright/test')
+// Legacy inline controls are the desktop flow; mobile focus flows have dedicated coverage.
+test.use({viewport:{width:1365,height:950}})
 const AxeBuilder = require('@axe-core/playwright').default
 
 async function seededPlay(page) {
@@ -228,6 +230,7 @@ test('complete five-card runout stays inside the table and clear of seats on a n
       counts.add(await cards.count())
       for (const card of await cards.all())
         await expect(card).toHaveCSS('opacity', '1')
+      if(counts.has(5)) await page.setViewportSize({width:844,height:390})
       const box = await board.boundingBox()
       const overlaps = await page.locator('.seat-surface').evaluateAll(
         (nodes, b) =>
@@ -255,7 +258,7 @@ test('complete five-card runout stays inside the table and clear of seats on a n
       }
     }
     await move.getByRole('button').first().click()
-    await page.locator('.verdict').waitFor()
+    await page.locator('.verdict:visible').waitFor()
     await page
       .getByRole('button', { name: /^(Continue|View hand result|Next hand)$/ })
       .click()

@@ -19,11 +19,16 @@ import { claimTab } from './ownership'
 import { createSource } from './sources'
 import { JournalRuntime } from './runtime'
 import { ReviewArea } from './ReviewArea'
+import { PlayOptions, usePlayUI } from '@/components/trainer/PlayFrame'
+import { newId } from './identity'
+import { EMPTY_SCORE } from '@/lib/trainer'
+import type { HandRecord } from './types'
 import type { LearningConfig, SchedulerState } from './types'
 
 const Context = createContext<{
   journal: JournalRuntime
   paused: boolean
+  retryDecision: () => Promise<void>
 } | null>(null)
 export function useJournal() {
   const value = useContext(Context)
@@ -92,7 +97,7 @@ export function JournalShell({
           repo.close()
           return
         }
-        if (!(await repo.acquire(Date.now(),claim.exclusive)))
+        if (!(await repo.acquire(Date.now(), claim.exclusive)))
           throw Error(
             'Another tab is playing. Close that tab, then reload to resume safely.',
           )
@@ -152,13 +157,81 @@ export function JournalShell({
     // The shell is keyed by configuration. Don't restart recovery on UI status updates.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [signature, entries, notify, mode])
+  const playUI = usePlayUI()
+  useEffect(() => {
+    playUI?.reportStatus(status)
+  }, [status, playUI?.reportStatus])
+  async function retryDecision(runtime: JournalRuntime) {
+    const repo = runtime.repo,
+      a = runtime.feedback,
+      original = runtime.active
+    if (!repo || !a || !original)
+      throw Error(
+        'Save this decision before retrying. Open Settings & review for recovery controls.',
+      )
+    await runtime.flush()
+    const hand: HandRecord = {
+      ...structuredClone(original),
+      id: newId('manual'),
+      sessionId: newId('session'),
+      revision: 0,
+      origin: 'manual',
+      createdAt: Date.now(),
+      completedAt: null,
+      decisions: 0,
+      actions: [],
+      target: a.problemId
+        ? {
+            problemId: a.problemId,
+            nodeKey: a.nodeKey,
+            variant: 'exact',
+          }
+        : null,
+      targetAnswered: false,
+    }
+    const cursor = {
+      ...structuredClone(a.before),
+      handId: hand.id,
+      phase: 'hero' as const,
+      verdict: null,
+      resultShown: false,
+      score: EMPTY_SCORE,
+      ordinal: 0,
+      decisions: 0,
+    }
+    const next = new JournalRuntime(
+      repo,
+      original.config,
+      runtime.source,
+      notify,
+      true,
+    )
+    next.adopt(await next.restore(hand, cursor))
+    const meta = await repo.meta()
+    await repo.setMeta({ ...meta, resume: meta.resume ?? meta.cursor })
+    setManual(next)
+  }
   const context = useMemo(
-    () => (journal ? { journal, paused: review || !!manual } : null),
-    [journal, review, manual],
+    () =>
+      journal
+        ? {
+            journal,
+            paused: review || !!manual || !!playUI?.settings,
+            retryDecision: () => retryDecision(journal),
+          }
+        : null,
+    [journal, review, manual, playUI?.settings],
   )
   const manualContext = useMemo(
-    () => (manual ? { journal: manual, paused: review } : null),
-    [manual, review],
+    () =>
+      manual
+        ? {
+            journal: manual,
+            paused: review || !!playUI?.settings,
+            retryDecision: () => retryDecision(manual),
+          }
+        : null,
+    [manual, review, playUI?.settings],
   )
   async function controls(enabled: boolean, interval: number) {
     if (!journal?.repo || !scheduler) return
@@ -243,83 +316,85 @@ export function JournalShell({
     )
   return (
     <>
-      <section className="card learning-bar" aria-label="Session and review">
-        <div>
-          <strong>{manual ? 'Manual practice' : 'Your session'}</strong>
-          <span role="status">{status}</span>
-        </div>
-        <button
-          id="open-review"
-          className="btn"
-          onClick={() => setReview(true)}
-        >
-          Review mistakes
-        </button>
-        {status.startsWith('Not saved') && (
-          <>
-            <button
-              className="btn"
-              disabled={!journal.repo}
-              onClick={() =>
-                void journal.retryPending().catch((e) => journal.failed(e))
-              }
-            >
-              Retry saving
-            </button>
-            <button
-              className="btn"
-              onClick={() =>
-                downloadJson(
-                  journal.pendingExport(),
-                  'poker-pending-recovery.json',
-                )
-              }
-            >
-              Export pending work
-            </button>
-          </>
-        )}
-        {scheduler && (
-          <details>
-            <summary>Practice settings</summary>
-            <label className="learning-toggle">
+      <PlayOptions>
+        <section className="card learning-bar" aria-label="Session and review">
+          <div>
+            <strong>{manual ? 'Manual practice' : 'Your session'}</strong>
+            <span role="status">{status}</span>
+          </div>
+          <button
+            id="open-review"
+            className="btn"
+            onClick={() => setReview(true)}
+          >
+            Review mistakes
+          </button>
+          {status.startsWith('Not saved') && (
+            <>
+              <button
+                className="btn"
+                disabled={!journal.repo}
+                onClick={() =>
+                  void journal.retryPending().catch((e) => journal.failed(e))
+                }
+              >
+                Retry saving
+              </button>
+              <button
+                className="btn"
+                onClick={() =>
+                  downloadJson(
+                    journal.pendingExport(),
+                    'poker-pending-recovery.json',
+                  )
+                }
+              >
+                Export pending work
+              </button>
+            </>
+          )}
+          {scheduler && (
+            <details>
+              <summary>Practice settings</summary>
+              <label className="learning-toggle">
+                <input
+                  type="checkbox"
+                  checked={scheduler.enabled}
+                  onChange={(e) =>
+                    void controls(e.target.checked, scheduler.interval)
+                  }
+                />
+                Mix in my mistakes
+              </label>
+              <label htmlFor="review-rate">
+                About 1 review hand in every {scheduler.interval} hands
+              </label>
               <input
-                type="checkbox"
-                checked={scheduler.enabled}
+                id="review-rate"
+                type="range"
+                min="2"
+                max="20"
+                step="1"
+                value={scheduler.interval}
                 onChange={(e) =>
-                  void controls(e.target.checked, scheduler.interval)
+                  void controls(scheduler.enabled, Number(e.target.value))
                 }
               />
-              Mix in my mistakes
-            </label>
-            <label htmlFor="review-rate">
-              About 1 review hand in every {scheduler.interval} hands
-            </label>
-            <input
-              id="review-rate"
-              type="range"
-              min="2"
-              max="20"
-              step="1"
-              value={scheduler.interval}
-              onChange={(e) =>
-                void controls(scheduler.enabled, Number(e.target.value))
-              }
-            />
-            <p>
-              Changes apply to the next hand. Errors still save when this is
-              off. The actual share can be lower when no compatible review is
-              due.
-            </p>
-          </details>
-        )}
-      </section>
+              <p>
+                Changes apply to the next hand. Errors still save when this is
+                off. The actual share can be lower when no compatible review is
+                due.
+              </p>
+            </details>
+          )}
+        </section>
+      </PlayOptions>
       <Context.Provider value={context}>
         <div hidden={review || !!manual}>{children}</div>
       </Context.Provider>
       {manual && manualContext && (
         <Context.Provider value={manualContext}>
-          <section className="card">
+          <section className="card manual-return">
             <button className="btn" onClick={() => void returnToLive()}>
               Return to live hand
             </button>
@@ -327,6 +402,7 @@ export function JournalShell({
           </section>
           {manual.config.mode === 'full-hands' && index ? (
             <FullHandTrainer
+              key={manual.active?.id}
               entries={
                 manual.source.kind === 'ranges' ? manual.source.payload : []
               }
@@ -335,6 +411,7 @@ export function JournalShell({
             />
           ) : (
             <HandTrainer
+              key={manual.active?.id}
               entries={
                 manual.source.kind === 'ranges' ? manual.source.payload : []
               }

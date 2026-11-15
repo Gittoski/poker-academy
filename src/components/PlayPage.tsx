@@ -25,6 +25,7 @@ import { JournalShell } from '@/learning/Journal'
 import { FullHandTrainer } from './FullHandTrainer'
 import { HandTrainer } from './HandTrainer'
 import { Segmented } from './Segmented'
+import { PlayFrame, PlayOptions } from './trainer/PlayFrame'
 import { TopNav } from './TopNav'
 import { TrainerSetupPanel } from './TrainerSetupPanel'
 
@@ -143,26 +144,27 @@ export function PlayPage() {
   const setLabel = set ? rangeSetLabel(set) : ''
 
   return (
-    <main className="page">
-      <TopNav active="play" setupParams={setupParams} />
+    <PlayFrame>
+      <PlayOptions>
+        <TopNav active="play" setupParams={setupParams} />
 
-      {GAME_MODES.length > 1 && (
-        <section className="card">
-          <div className="field">
-            <div className="field__label">Game mode</div>
-            <Segmented<GameMode>
-              ariaLabel="Game mode"
-              options={GAME_MODES.map((m) => ({
-                value: m,
-                label: GAME_MODE_INFO[m].label,
-              }))}
-              value={mode}
-              onChange={setMode}
-            />
-          </div>
-        </section>
-      )}
-
+        {GAME_MODES.length > 1 && (
+          <section className="card">
+            <div className="field">
+              <div className="field__label">Game mode</div>
+              <Segmented<GameMode>
+                ariaLabel="Game mode"
+                options={GAME_MODES.map((m) => ({
+                  value: m,
+                  label: GAME_MODE_INFO[m].label,
+                }))}
+                value={mode}
+                onChange={setMode}
+              />
+            </div>
+          </section>
+        )}
+      </PlayOptions>
       {loadError ? (
         <section className="card">
           <div className="empty">
@@ -204,17 +206,19 @@ export function PlayPage() {
         </section>
       )}
 
-      <TrainerSetupPanel
-        setup={effectiveSetup}
-        onChange={updateSetup}
-        seatOnly={fullHands}
-      />
+      <PlayOptions>
+        <TrainerSetupPanel
+          setup={effectiveSetup}
+          onChange={updateSetup}
+          seatOnly={fullHands}
+        />
 
-      <footer className="footer">
-        {GAME_MODE_INFO[mode].description}
-        <br />
-        Answers are graded against the {setLabel} charts.
-      </footer>
-    </main>
+        <footer className="footer">
+          {GAME_MODE_INFO[mode].description}
+          <br />
+          Answers are graded against the {setLabel} charts.
+        </footer>
+      </PlayOptions>
+    </PlayFrame>
   )
 }

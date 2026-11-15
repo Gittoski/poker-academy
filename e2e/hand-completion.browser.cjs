@@ -1,4 +1,6 @@
 const { test, expect } = require('@playwright/test')
+// Legacy inline controls are the desktop flow; mobile focus flows have dedicated coverage.
+test.use({viewport:{width:1365,height:950}})
 const fs = require('node:fs')
 async function current(page) {
   return page.evaluate(async () => {

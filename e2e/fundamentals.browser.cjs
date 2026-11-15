@@ -223,7 +223,7 @@ test('a complete offline pack supports cold-start fundamentals and supplied simu
     .getByRole('button')
     .first()
     .click()
-  await expect(page.locator('.verdict')).toBeVisible()
+  await expect(page.locator('.verdict:visible')).toBeVisible()
   await page.goto('/learn')
   await page.getByText('Use offline on this device', { exact: true }).click()
   await expect(page.getByTestId('offline-status')).toContainText(
@@ -254,6 +254,7 @@ test('a complete offline pack supports cold-start fundamentals and supplied simu
 test('simulator errors open related fresh practice and preserve the paused hand', async ({
   page,
 }) => {
+  await page.setViewportSize({width:1365,height:950})
   const fs = require('node:fs'),
     index = JSON.parse(fs.readFileSync('public/full-hands/index.json', 'utf8')),
     fixture = index.hands.find((h) => h.id === '3bp-BTN-BB/7s6h3d-5')
@@ -277,7 +278,7 @@ test('simulator errors open related fresh practice and preserve the paused hand'
     await move.getByRole('button').first().click()
     await page.getByRole('button', { name: 'Continue', exact: true }).click()
   }
-  await expect(page.locator('.verdict')).toBeVisible()
+  await expect(page.locator('.verdict:visible')).toBeVisible()
   await expect(page.getByRole('status').first()).toContainText('Saved')
   const handId = await page.evaluate(async () => {
     const db = await new Promise((resolve) => {
@@ -309,7 +310,7 @@ test('simulator errors open related fresh practice and preserve the paused hand'
   await page
     .getByRole('link', { name: 'Back to simulator', exact: true })
     .click()
-  await expect(page.locator('.verdict')).toBeVisible()
+  await expect(page.locator('.verdict:visible')).toBeVisible()
   const restored = await page.evaluate(async () => {
     const db = await new Promise((resolve) => {
       const r = indexedDB.open('poker-learning-v1')

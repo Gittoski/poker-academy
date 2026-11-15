@@ -797,3 +797,102 @@ button:not(:disabled):active {
 .fundamentals :focus-visible { outline:3px solid #a8cafb; outline-offset:3px; }
 
 .learning-dialog .btn { white-space:normal; max-width:100%; overflow-wrap:anywhere; }
+
+/* Approved mobile simulator focus layout. Desktop retains the existing trainer. */
+.sim-header { display:none; }
+.sim-sheet { color:var(--text); background:linear-gradient(145deg,#192231,#0c111b); border:1px solid #42516b; border-radius:22px 22px 0 0; box-shadow:0 -12px 60px #0009; padding:16px; width:min(100%,760px); max-width:100%; box-sizing:border-box; }
+.sim-sheet::backdrop { background:#02050ab3; }
+.sim-sheet[open] { display:flex; flex-direction:column; gap:12px; }
+.sim-sheet header { display:flex; align-items:center; justify-content:space-between; gap:12px; flex:none; }
+.sim-sheet h2 { margin:0; font-size:1.15rem; }
+.sim-sheet nav { display:flex; gap:8px; }
+.sim-sheet nav .btn { flex:1; }
+.sim-sheet [aria-pressed=true] { background:#244976; border-color:#8eb5ef; }
+.sim-sheet__scroll { overflow:auto; overscroll-behavior:contain; min-height:0; flex:1; overflow-wrap:anywhere; }
+.sim-sheet__scroll [hidden] { display:none!important; }
+.sim-sheet__actions { display:flex; flex:none; gap:12px; border-top:1px solid #3a475e; padding-top:12px; }
+.sim-sheet__actions .btn { flex:1; margin:0; min-height:48px; }
+.sim-sheet .btn { white-space:normal; }
+@media(max-width:768px), (max-width:1024px) and (max-height:600px) {
+  body.simulator-focus { overflow:hidden; overscroll-behavior:none; }
+  .play-page { height:100vh; height:100svh; width:100%; max-width:none; margin:0; padding: max(6px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left)); box-sizing:border-box; display:flex; flex-direction:column; gap:6px; overflow:hidden; }
+  @supports(height:100dvh) { .play-page { height:100dvh; } }
+  .sim-header { display:flex; gap:8px; align-items:center; flex:none; min-height:44px; }
+  .sim-header strong { flex:1; }
+  .sim-header .btn { min-height:44px; padding:8px; font-size:12px; }
+  .play-page > div:not([hidden]),.trainer-surface { min-height:0; flex:1; display:flex; flex-direction:column; }
+  .play-page [hidden] { display:none!important; }
+  .play-page .trainer-table { flex:1; min-height:0; margin:0; padding:10px; display:grid; grid-template-rows:50px minmax(90px,1fr) 76px 144px; gap:4px; overflow:hidden; }
+  .trainer-table > .range-card__head { grid-area:1/1; margin:0; min-width:0; }
+  .trainer-table h2 { font-size:clamp(14px,3.5vw,20px); }
+  .trainer-table .range-card__title > span { font-size:11px; }
+  .trainer-table > .table-wrap { grid-area:2/1; padding:0; min-height:0; display:flex; align-items:center; justify-content:center; }
+  .trainer-table > .table-wrap svg { height:100%; width:100%; max-height:100%; }
+  .trainer-table > .table-wrap + .board { grid-area:2/1; transform:none; margin:0; }
+  .trainer-table > .hole-cards { grid-area:3/1; padding:0; margin:0; align-self:center; }
+  .trainer-table .playing-card { width:43px; height:62px; gap:3px; }
+  .trainer-table .playing-card__rank { font-size:25px; }
+  .trainer-table .playing-card__suit { font-size:22px; }
+  .trainer-table .playing-card--small { width:29px; height:40px; }
+  .trainer-table .playing-card--small .playing-card__rank { font-size:17px; }
+  .trainer-table .playing-card--small .playing-card__suit { font-size:15px; }
+  .trainer-table > .actions,.trainer-table > .verdict,.trainer-table > .hand-result { grid-area:4/1; margin:0; align-self:stretch; position:static; min-height:0; overflow:auto; }
+  .trainer-table > .actions { align-content:center; padding:0; gap:6px; }
+  .trainer-table .action-btn { min-height:56px; padding:8px 4px; font-size:12px; }
+  .trainer-table .actions--wrap .action-btn { min-width:60px; }
+  .trainer-table .keyboard-hints,.trainer-table .training-scope-note { display:none; }
+  .sim-compact { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:10px; font-size:12px; }
+  .sim-compact > span { width:100%; }
+  .sim-compact .btn { flex:1; margin:0; min-height:44px; padding:8px; font-size:12px; }
+  .sim-sheet { position:fixed; inset:auto 0 0; margin:0 auto; height: min(85dvh,850px); max-height:calc(100dvh - env(safe-area-inset-top) - 10px); padding-bottom:max(12px,env(safe-area-inset-bottom)); }
+  .sim-settings { height:90dvh; }
+  .sim-sheet .verdict { margin:0; animation:none; opacity:1; transform:none; font-size:14px; line-height:1.6; }
+  .sim-sheet .actions { position:static; }
+  .sim-sheet .action-btn { min-height:66px; font-size:12px; padding:8px 4px; }
+  .sim-sheet__scroll > .card { margin-bottom:12px; }
+  .trainer-table .showdown { grid-area:3/1; justify-self:end; align-self:center; font-size:10px; }
+  .trainer-table .showdown .playing-card { width:24px; height:34px; }
+  .trainer-table .showdown .hole-cards { gap:3px; margin:0; padding:0; }
+  .manual-return { padding:6px; margin:0; flex:none; }
+  .manual-return p { display:none; }
+  .manual-return .btn { padding:6px 10px; min-height:40px; }
+}
+@media(max-width:1024px) and (max-height:600px) {
+  .play-page .trainer-table { grid-template-rows:36px minmax(65px,1fr) 54px 116px; padding:6px; }
+  .trainer-table .playing-card { width:33px; height:48px; }
+  .trainer-table .playing-card__rank { font-size:20px; }
+  .trainer-table .playing-card__suit { font-size:17px; }
+}
+.sim-save-status { font-size:10px; color:#b5c7df; max-width:90px; overflow-wrap:anywhere; }
+.sim-feedback .sim-sheet__scroll > .verdict { display:block; }
+.sim-feedback .sim-sheet__scroll > .verdict > p { margin:12px 0; }
+.sim-feedback .sim-sheet__scroll > .verdict h3 { margin:18px 0 8px; font-size:14px; }
+@media(max-width:768px), (max-width:1024px) and (max-height:600px) {
+  .trainer-table > .hand-result { display:flex; flex-direction:column; padding:8px; }
+  .trainer-table .hand-result > .verdict__next { flex:none; margin:4px 0 0; min-height:44px; }
+}
+@media(max-width:768px), (max-width:1024px) and (max-height:600px) {
+  .trainer-table .range-card__title { min-width:0; flex:1; }
+  .trainer-table .range-card__title > span { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .trainer-table .range-card__head > .pill { flex:none; max-width:43%; }
+}
+/* Short landscape windows use the available width instead of shrinking the table. */
+@media(min-width:500px) and (max-width:1024px) and (max-height:600px) {
+  .play-page .trainer-table { grid-template-columns:minmax(0,1fr) minmax(190px,34%); grid-template-rows:36px minmax(90px,1fr) 54px; }
+  .trainer-table > .range-card__head { grid-area:1/1/2/-1; }
+  .trainer-table > .table-wrap { grid-area:2/1; }
+  .trainer-table > .table-wrap + .board { grid-area:2/1; }
+  .trainer-table > .hole-cards,.trainer-table > .showdown { grid-area:3/1; }
+  .trainer-table > .actions,.trainer-table > .verdict,.trainer-table > .hand-result { grid-area:2/2/4/3; }
+}
+@media(max-width:768px), (max-width:1024px) and (max-height:600px) {
+  .trainer-table > .hand-result { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:auto 48px; align-content:center; gap:4px; }
+  .trainer-table > .hand-result > h3 { grid-column:1/-1; margin:0; font-size:14px; }
+  .trainer-table > .hand-result > .btn { margin:0; min-height:44px; padding:6px 8px; font-size:12px; }
+}
+@media(min-width:500px) and (max-width:1024px) and (max-height:600px) {
+  .trainer-table .board__cards { gap:4px; }
+  .trainer-table .playing-card--small { width:26px; height:36px; gap:1px; padding:2px; }
+  .trainer-table .playing-card--small .playing-card__rank { font-size:16px; }
+  .trainer-table .playing-card--small .playing-card__suit { font-size:14px; }
+}

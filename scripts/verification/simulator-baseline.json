@@ -19,15 +19,15 @@
     },
     "src/components/FullHandTrainer.tsx": {
       "files": 1,
-      "sha256": "30b522dd76dd06f1dbe9784ef190f1d9a8cf5a3c4d9f19d9559734420e5f99a5"
+      "sha256": "651baefed26a6e4036048fc9143c6ab1994acb1bc9c727340f9f1d284873ae33"
     },
     "src/components/HandTrainer.tsx": {
       "files": 1,
-      "sha256": "500a4050a055e19a29cc8c6c8c4d1f4b3c03f73c9cb4032268beaf2709bdb9ff"
+      "sha256": "852230c8a800d40f988452d38f1b30b86aee8b2c345b348ba96ebcc837a10d6f"
     },
     "src/components/PlayPage.tsx": {
       "files": 1,
-      "sha256": "d3d3ff8364cfd2ff04d06ce67a14e5da066951a84ed71d99c46da84dc5341c59"
+      "sha256": "445f0b67709eedbba14e3c0051e75b45e35bce068f96cb60b1a263c0612915b5"
     },
     "src/components/RangeViewer.tsx": {
       "files": 1,
@@ -55,11 +55,11 @@
     },
     "src/components/trainer/VerdictView.tsx": {
       "files": 1,
-      "sha256": "3e5a46d2915d355e7351dc407b112cec9e75a874b46351188d07dd6870abff8e"
+      "sha256": "c0dbcd021f4e535fd7a91dfb9741a54fbd0306e18a89aee259c466170508bc5a"
     },
     "src/components/trainer/useAnswerKeys.ts": {
       "files": 1,
-      "sha256": "4b41163434374367651d4287dedfa79c9b21ffbbbe9ee84351ca18207654bf4d"
+      "sha256": "07a468ecc846183578ad2e1f260d040c70b5494bd3fa79e7fc346f509a1c3507"
     },
     "src/app/globals.css": {
       "files": 1,
@@ -104,5 +104,16 @@
     "scope": "Feedback source labels only in FullHandTrainer and VerdictView; no grading or simulation changes.",
     "audit": "docs/implementation/FUNDAMENTALS_VERIFICATION.md",
     "regression": "28 browser journeys passed after disclosure and responsive navigation integration; engine/data/chart hashes unchanged."
+  },
+  "mobileFocusIntegration": {
+    "paths": [
+      "src/components/FullHandTrainer.tsx",
+      "src/components/HandTrainer.tsx",
+      "src/components/PlayPage.tsx",
+      "src/components/trainer/VerdictView.tsx",
+      "src/components/trainer/useAnswerKeys.ts"
+    ],
+    "scope": "Presentation wrappers, modal feedback, preflop seat-inspection navigation and modal/focused-control keyboard routing. Engine, grading functions, chart functions, colors and reference/source data unchanged.",
+    "audit": "docs/implementation/MOBILE_FOCUS.md"
   }
 }

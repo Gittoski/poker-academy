@@ -28,6 +28,13 @@ export function useAnswerKeys({
         if (e.key === 'Enter' || e.key === ' ') e.preventDefault()
         return
       }
+      // Native dialog/focused-control activation must not also drive the hand.
+      if (
+        e.target instanceof Element &&
+        (e.target.closest('dialog[open]') ||
+          e.target.closest('button,a,summary'))
+      )
+        return
       if (e.key === 'Enter' || e.key === ' ') {
         if (canProceed) {
           e.preventDefault()

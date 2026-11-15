@@ -28,6 +28,12 @@ import { HoleCards } from './HoleCards'
 import { RangeGrid } from './RangeGrid'
 import { TableDiagram } from './TableDiagram'
 import { ActionPrompt } from './trainer/ActionPrompt'
+import {
+  TrainerSurface,
+  PlayOptions,
+  MobileCharts,
+  usePlayUI,
+} from './trainer/PlayFrame'
 import { ScoreBar } from './trainer/ScoreBar'
 import { useAnswerKeys } from './trainer/useAnswerKeys'
 import { VerdictView, type Verdict } from './trainer/VerdictView'
@@ -52,6 +58,7 @@ interface PreflopVerdict extends Verdict {
 /** Preflop only: opponents play their cards from the charts and every decision of the player is graded. */
 export function HandTrainer({ entries, setup }: Props) {
   const { journal, paused } = useJournal()
+  const playUI = usePlayUI()
   const restored = journal.restored
   const answered = useRef(false)
   const dealing = useRef(false)
@@ -327,13 +334,14 @@ export function HandTrainer({ entries, setup }: Props) {
   }
 
   return (
-    <>
-      <ScoreBar score={score} unit="answered" />
-      <p className="learning-score-note">
-        Frequency drill · most-frequent action agreement
-      </p>
-
-      <section className="card">
+    <TrainerSurface>
+      <PlayOptions>
+        <ScoreBar score={score} unit="answered" />
+        <p className="learning-score-note">
+          Frequency drill · most-frequent action agreement
+        </p>
+      </PlayOptions>
+      <section className="card trainer-table">
         <div className="range-card__head">
           <div className="range-card__title">
             <h2>{title}</h2>
@@ -354,7 +362,10 @@ export function HandTrainer({ entries, setup }: Props) {
           labels={labels}
           clickable={inspectable}
           selected={inspectedSeat?.position}
-          onSeatClick={toggleInspected}
+          onSeatClick={(position) => {
+            toggleInspected(position)
+            if (playUI?.mobile) playUI.openSettings()
+          }}
         />
         <HoleCards cards={hero.cards} />
 
@@ -403,57 +414,60 @@ export function HandTrainer({ entries, setup }: Props) {
         )}
       </section>
 
-      {inspectedSeat?.lastDecision && inspectedWeights && (
-        <section className="card">
-          <div className="range-card__head">
-            <div className="range-card__title">
-              <h2>{POSITION_LABELS[inspectedSeat.position]} range</h2>
-              <span>
-                {
-                  headline(
-                    inspectedSeat.lastDecision.scenario,
-                    setup,
-                    inspectedSeat.position,
-                    inspectedSeat.lastDecision.villain,
-                  ).title
-                }
-                {inspectedSeat.lastAction
-                  ? ` · played ${inspectedSeat.lastAction}`
-                  : ''}
-              </span>
+      <PlayOptions>
+        {inspectedSeat?.lastDecision && inspectedWeights && (
+          <section className="card">
+            <div className="range-card__head">
+              <div className="range-card__title">
+                <h2>{POSITION_LABELS[inspectedSeat.position]} range</h2>
+                <span>
+                  {
+                    headline(
+                      inspectedSeat.lastDecision.scenario,
+                      setup,
+                      inspectedSeat.position,
+                      inspectedSeat.lastDecision.villain,
+                    ).title
+                  }
+                  {inspectedSeat.lastAction
+                    ? ` · played ${inspectedSeat.lastAction}`
+                    : ''}
+                </span>
+              </div>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => setInspected(null)}
+              >
+                Close
+              </button>
             </div>
-            <button
-              type="button"
-              className="btn"
-              onClick={() => setInspected(null)}
-            >
-              Close
-            </button>
-          </div>
-          <RangeGrid
-            weights={inspectedWeights}
-            highlight={
-              hand.ended &&
-              !['hero-folded', 'walk'].includes(hand.ended.kind) &&
-              !inspectedSeat.folded
-                ? inspectedSeat.hand.label
-                : undefined
-            }
-          />
-        </section>
-      )}
-
-      {verdict && chartWeights && (
-        <section className="card">
-          <div className="range-card__head">
-            <div className="range-card__title">
-              <h2>Chart</h2>
-              <span>{verdict.prompt.title}</span>
+            <RangeGrid
+              weights={inspectedWeights}
+              highlight={
+                hand.ended &&
+                !['hero-folded', 'walk'].includes(hand.ended.kind) &&
+                !inspectedSeat.folded
+                  ? inspectedSeat.hand.label
+                  : undefined
+              }
+            />
+          </section>
+        )}
+      </PlayOptions>
+      <MobileCharts>
+        {verdict && chartWeights && (
+          <section className="card">
+            <div className="range-card__head">
+              <div className="range-card__title">
+                <h2>Chart</h2>
+                <span>{verdict.prompt.title}</span>
+              </div>
             </div>
-          </div>
-          <RangeGrid weights={chartWeights} highlight={hero.hand.label} />
-        </section>
-      )}
-    </>
+            <RangeGrid weights={chartWeights} highlight={hero.hand.label} />
+          </section>
+        )}
+      </MobileCharts>
+    </TrainerSurface>
   )
 }
