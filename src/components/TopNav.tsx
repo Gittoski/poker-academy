@@ -1,7 +1,6 @@
 import { InterfaceIcon } from './InterfaceIcon'
-import Link from 'next/link'
 
-export type NavPage = 'viewer' | 'play'
+export type NavPage = 'viewer' | 'play' | 'learn'
 
 interface Props {
   active: NavPage
@@ -12,6 +11,7 @@ interface Props {
 const PAGES: { id: NavPage; label: string; href: string }[] = [
   { id: 'viewer', label: 'Ranges', href: '/' },
   { id: 'play', label: 'Play', href: '/play' },
+  { id: 'learn', label: 'Learn', href: '/learn' },
 ]
 
 export function TopNav({ active, setupParams }: Props) {
@@ -26,7 +26,7 @@ export function TopNav({ active, setupParams }: Props) {
       </div>
       <nav className="topbar" aria-label="Pages">
         {PAGES.map((page) => (
-          <Link
+          <a
             key={page.id}
             href={query ? `${page.href}?${query}` : page.href}
             className={`topbar__link${page.id === active ? ' topbar__link--active' : ''}`}
@@ -34,7 +34,7 @@ export function TopNav({ active, setupParams }: Props) {
           >
             <InterfaceIcon name={page.id === 'play' ? 'play' : 'ranges'} />
             <span>{page.label}</span>
-          </Link>
+          </a>
         ))}
       </nav>
     </header>

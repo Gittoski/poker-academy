@@ -14,6 +14,8 @@ import {
 import type { Position } from '@/lib/positions'
 import { EMPTY_SCORE } from '@/lib/trainer'
 import { unpackDecision } from './checkpoints'
+import { LESSONS, isTopic } from '@/fundamentals/content'
+import { supportedSkills } from '@/fundamentals/links'
 import { validateSource } from './sources'
 import { newId } from './identity'
 import { JournalRuntime } from './runtime'
@@ -261,6 +263,10 @@ export function ReviewArea({
           a.before.play.nodeIndex
         ]
       : null
+  const related =
+    detail && a
+      ? supportedSkills(a, detail.script, detail.hand?.suitMap ?? null)
+      : null
   const ready =
     !!detail?.source &&
     !!detail?.hand &&
@@ -309,6 +315,12 @@ export function ReviewArea({
         >
           Sessions
         </button>
+        <a
+          className="btn"
+          href={`/learn?view=progress&return=${encodeURIComponent(window.location.pathname + window.location.search)}`}
+        >
+          Learning errors and progress
+        </a>
       </nav>
       {!repo && (
         <p>
@@ -392,6 +404,44 @@ export function ReviewArea({
                 ? 'Your action has positive support. A less frequent supported action is not automatically an error.'
                 : 'These frequencies describe the supplied reference, not a measured EV loss or proof about every live opponent.'}
           </p>
+          {related && (
+            <aside className="fundamentals-note">
+              <strong>Reference skill: {related.tag}</strong>
+              {related.price && (
+                <p>
+                  Public call price: {related.price.cost} / ({related.price.pot}{' '}
+                  + {related.price.cost}) ={' '}
+                  {formatFrequency(related.price.threshold)}. This is a
+                  break-even price, not an equity estimate or a solver EV loss.
+                </p>
+              )}
+              {related.links.length ? (
+                <>
+                  <p>
+                    Related practice, not a diagnosis that your chart deviation
+                    was a mathematics error:
+                  </p>
+                  {related.links.map((link) => (
+                    <div key={link.topic}>
+                      <p>{link.reason}</p>
+                      <a
+                        className="btn"
+                        href={`/learn?topic=${link.topic}&from=${encodeURIComponent(a.id)}&return=${encodeURIComponent(window.location.pathname + window.location.search)}`}
+                      >
+                        Practice this skill: {link.label}
+                      </a>
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <p>
+                  No verified fundamentals link applies to this saved context.
+                  Dedicated range/strategy drills remain on the roadmap;
+                  retrying this reference decision is available below.
+                </p>
+              )}
+            </aside>
+          )}
           <details>
             <summary>Public state at this decision</summary>
             {a.history && (
@@ -539,6 +589,15 @@ export function ReviewArea({
                           {p.hero} · {p.street} · {p.errors} misses ·{' '}
                           {p.reviews} reviews · {p.status}
                           {p.pinned ? ' · pinned' : ''}
+                          {p.fundamentalSkills?.length ? (
+                            <span>
+                              Related skills:{' '}
+                              {p.fundamentalSkills
+                                .filter(isTopic)
+                                .map((t) => LESSONS[t].title)
+                                .join(', ')}
+                            </span>
+                          ) : null}
                         </span>
                       </button>
                     </li>

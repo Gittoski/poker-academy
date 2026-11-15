@@ -638,7 +638,7 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
         ) : verdict ? (
           <VerdictView
             verdict={verdict}
-            source={verdict.prompt.street === 'preflop' ? 'chart' : 'solver'}
+            source={verdict.prompt.street === 'preflop' ? 'chart' : 'reference'}
             continues
             handOver={
               handOver
@@ -699,8 +699,11 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
             />
             <div className="notes">
               <p>
-                Solver output for your whole range in this spot, averaged over
+                Supplied recorded strategy for your whole range, averaged over
                 suit combinations per hand. Your exact combo can differ.
+                Imported source data describes TexasSolver generation; these
+                frequencies are not an independently verified GTO claim or a
+                calculated EV loss.
               </p>
             </div>
           </section>

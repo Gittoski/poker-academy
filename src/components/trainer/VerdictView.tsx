@@ -23,7 +23,7 @@ interface Props {
   proceedLabel?: string
   verdict: Verdict
   /** Where the answer came from, for the explanation. */
-  source: 'chart' | 'solver'
+  source: 'chart' | 'reference'
   /** Whether the hand carries on along the expected option after a wrong answer. */
   continues: boolean
   /** Set when the hand is over: shown after the explanation and turns the button into "Next hand". */
@@ -105,6 +105,18 @@ export function VerdictView({
           {text}
           {handOver ? ` ${handOver}` : ''}
         </span>
+        <details className="feedback-basis">
+          <summary>Where this answer comes from</summary>
+          <p>
+            {source === 'chart'
+              ? 'Supplied preflop chart weights for the selected configuration and your hand.'
+              : 'Supplied postflop frequencies at this recorded decision node.'}{' '}
+            Your choice is compared with those reference frequencies, not the
+            actual hidden opponent cards or later winner. This does not
+            calculate an EV loss. Learning priorities and spacing are
+            heuristics, separate from the strategy reference.
+          </p>
+        </details>
         {children}
         <button
           type="button"

@@ -1,3 +1,4 @@
+import { isTopic } from '@/fundamentals/content'
 import { isGameMode } from '@/lib/gameModes'
 import { isPlayerCount, isPosition, positionsFor } from '@/lib/positions'
 import { isFormat, isOpenSize, isRangeType, isStack } from '@/lib/scenarios'
@@ -215,6 +216,13 @@ export function validateRecords(d: LearningBackup) {
       throw Error('Invalid review target')
   }
   for (const a of d.decisions) {
+    if (
+      a.fundamentalSkills !== undefined &&
+      (!Array.isArray(a.fundamentalSkills) ||
+        a.fundamentalSkills.length > 6 ||
+        a.fundamentalSkills.some((s) => !isTopic(s)))
+    )
+      throw Error('Invalid practice skill tags')
     validateConfig(a.config)
     validatePrompt(a.prompt)
     validateCursor(a.before, sources)
@@ -239,6 +247,13 @@ export function validateRecords(d: LearningBackup) {
       throw Error('Inconsistent version-one classification')
   }
   for (const p of d.problems) {
+    if (
+      p.fundamentalSkills !== undefined &&
+      (!Array.isArray(p.fundamentalSkills) ||
+        p.fundamentalSkills.length > 6 ||
+        p.fundamentalSkills.some((s) => !isTopic(s)))
+    )
+      throw Error('Invalid practice skill tags')
     validateConfig(p.config)
     if (
       !text(p.title) ||

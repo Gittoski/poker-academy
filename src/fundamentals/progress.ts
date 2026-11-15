@@ -485,6 +485,7 @@ export function validatePracticeBackup(value: unknown): PracticeBackup {
       typeof s.lessonRead !== 'boolean' ||
       !Array.isArray(s.families) ||
       s.families.length > 20 ||
+      s.families.some((f) => typeof f !== 'string') ||
       !s.errors ||
       Object.values(s.errors).some((n) => !number(n))
     )
@@ -492,6 +493,7 @@ export function validatePracticeBackup(value: unknown): PracticeBackup {
     for (const c of [s.untimed, s.timed])
       if (
         !c ||
+        ![c.answered, c.correct, c.fresh, c.freshCorrect].every(number) ||
         Object.values(c).some((n) => !number(n)) ||
         c.correct > c.answered ||
         c.fresh > c.answered ||
@@ -519,8 +521,11 @@ export function validatePracticeBackup(value: unknown): PracticeBackup {
   }
   for (const a of b.attempts) {
     if (
+      typeof a.id !== 'string' ||
       !isTopic(a.topic) ||
       a.version !== 1 ||
+      (a.withinTime !== null && typeof a.withinTime !== 'boolean') ||
+      (a.from !== null && typeof a.from !== 'string') ||
       !['fresh', 'repeat', 'unknown'].includes(a.novelty) ||
       !['untimed', 'timed'].includes(a.mode) ||
       !Number.isFinite(a.at)
@@ -539,6 +544,8 @@ export function validatePracticeBackup(value: unknown): PracticeBackup {
   for (const s of b.seen)
     if (
       typeof s.id !== 'string' ||
+      (s.firstAttemptId !== undefined &&
+        typeof s.firstAttemptId !== 'string') ||
       !isTopic(s.topic) ||
       !number(s.count) ||
       !number(s.errors) ||

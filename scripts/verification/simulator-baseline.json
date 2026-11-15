@@ -19,7 +19,7 @@
     },
     "src/components/FullHandTrainer.tsx": {
       "files": 1,
-      "sha256": "c2e3d41f308013a3adc16eb2c76644134940688d715b7fa52d8ba9cde8131123"
+      "sha256": "30b522dd76dd06f1dbe9784ef190f1d9a8cf5a3c4d9f19d9559734420e5f99a5"
     },
     "src/components/HandTrainer.tsx": {
       "files": 1,
@@ -55,7 +55,7 @@
     },
     "src/components/trainer/VerdictView.tsx": {
       "files": 1,
-      "sha256": "b75dde4a8c7049500f857c4566b107f3fb4adb978f6cce5423ef1fd4c2e44c22"
+      "sha256": "3e5a46d2915d355e7351dc407b112cec9e75a874b46351188d07dd6870abff8e"
     },
     "src/components/trainer/useAnswerKeys.ts": {
       "files": 1,
@@ -99,5 +99,10 @@
     ],
     "reason": "Explicit final-result acknowledgement, decision-street presentation, persisted result view, repeated-key/duplicate-transition protection and clear preflop-only scope. Engine, grading functions and supplied script/chart data remain unchanged.",
     "evidence": "docs/implementation/HAND_COMPLETION.md"
+  },
+  "fundamentalsIntegration": {
+    "scope": "Feedback source labels only in FullHandTrainer and VerdictView; no grading or simulation changes.",
+    "audit": "docs/implementation/FUNDAMENTALS_VERIFICATION.md",
+    "regression": "28 browser journeys passed after disclosure and responsive navigation integration; engine/data/chart hashes unchanged."
   }
 }

@@ -76,7 +76,7 @@ export function question(topic: Topic, seed: number): Question {
   const n = (a: number, b: number) => a + Math.floor(random() * (b - a + 1))
   const variant = seed % 3,
     pot = n(3, 40) * 5,
-    cost = n(1, 20) * 5
+    cost = Math.min(pot - 5, n(1, 20) * 5)
   let family = '',
     prompt = '',
     steps: string[] = [],

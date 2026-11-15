@@ -5,10 +5,10 @@ Current objective: preserve the six-max cash simulator, error log and charts; te
 - [x] F01: audit active/archived drills and feedback provenance; reuse validated arithmetic, draw probabilities and ranking evaluator, with independent tests.
 - [x] F02: pot odds → outs/draw probability → equity against hands/ranges → expected value → bluff break-even/fold equity. Each needs a plain-English lesson, worked example, untimed questions and calculation-based explanations. Reuse the hand-ranking refresher.
 - [x] F03: local durable practice progress, accuracy/error review, unfamiliar-question tracking and optional timing after untimed competence. Keep timing outcomes separate from mathematical accuracy.
-- [ ] F04: public-information-only skill tags and relevant Practice this skill links from the error log. Never infer a math error solely from a chart deviation. Show recommendation basis and assumptions.
-- [ ] F05: mobile/offline fundamentals flow, regression tests, backup/recovery, documentation and delivery. Actual iPhone/Safari remains an external device gate.
+- [x] F04: public-information-only skill tags and relevant Practice this skill links from the error log. Never infer a math error solely from a chart deviation. Show recommendation basis and assumptions.
+- [x] F05: mobile/offline fundamentals flow, regression tests, backup/recovery, documentation and delivery. Actual iPhone/Safari remains an external device gate.
 
-The repository currently has local saved reviews but no installed offline app. Whole-app offline capability must be verified rather than assumed. No deployment or App Store publication is authorized by this checklist.
+Explicit complete-pack installation is implemented and verified in Chromium offline cold starts, including supplied simulator hands. Real-device offline installation remains unverified. No deployment or App Store publication is authorized by this checklist.
 
 ## Audit and reuse
 
@@ -29,4 +29,6 @@ Population tendencies require an identified dataset or an explicit assumption la
 
 F01 evidence: integrity/TypeScript and 132 unit tests pass. The reused evaluator also matches standard counts across all 2,598,960 five-card combinations. The five/seven-card evaluator remains separate from the protected simulator engine.
 
-F02/F03 evidence: 144 unit tests and TypeScript pass. Questions are versioned and deterministic, freshness uses first recorded presentation rather than shuffle/seed alone, and local writes/recovery/imports are tested. Initial browser journeys pass lesson/save/reload, timed gating, linked practice/live-hand return and offline cold start. Final integration/regression checks remain F04/F05.
+F02/F03 evidence: 144 unit tests and TypeScript pass. Questions are versioned and deterministic, freshness uses first recorded presentation rather than shuffle/seed alone, and local writes/recovery/imports are tested. Initial browser journeys pass lesson/save/reload, timed gating, linked practice/live-hand return and offline cold start. F04/F05 integration and regression checks are now verified below.
+
+F04/F05 evidence: 147 unit tests, 28 production-browser journeys, TypeScript, production build and the narrow reviewed simulator-integrity guard pass. This includes existing features, mobile dialog wrapping, fresh-practice links returning to a paused hand, offline cold starts and interrupted updates. Check [the guide](FUNDAMENTALS_GUIDE.md) and [verification/source audit](implementation/FUNDAMENTALS_VERIFICATION.md). Real iPhone/Safari, VoiceOver and hosting remain open external gates; completion here refers to implementation and available automated checks.

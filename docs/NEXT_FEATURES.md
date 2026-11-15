@@ -1,6 +1,8 @@
 # Next improvements: simulator first, phone independence, then short lessons
 
-This is a future plan. It does not publish the app, create an App Store build or claim offline support already exists. Existing session reviews and the navy theme remain the foundation.
+Historical planning note: the complete-hand result screen and fundamentals/offline-pack implementation are now implemented in the repository. See [the current guide](FUNDAMENTALS_GUIDE.md) and [active roadmap](../ROADMAP.md); actual iPhone/Safari and hosting remain open.
+
+This was the future plan. It does not publish the app, create an App Store build or claim offline support already exists. Existing session reviews and the navy theme remain the foundation.
 
 ## 1. Finish and clearly show every supplied hand
 

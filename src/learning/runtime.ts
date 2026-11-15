@@ -1,3 +1,4 @@
+import { supportedSkills } from '@/fundamentals/links'
 import { shortActionLabel, positionOf } from '@/lib/fullHands'
 import type { HandState } from '@/lib/handSim'
 import type { HandScript, PostflopPlay, SuitMap } from '@/lib/fullHands'
@@ -370,6 +371,11 @@ export class JournalRuntime {
     // Exposure is established transactionally against prior records by the repository.
     record.nodeKey = key
     record.exampleKey = family.exampleKey
+    record.fundamentalSkills = supportedSkills(
+      record,
+      this.script,
+      this.active.suitMap,
+    ).links.map((l) => l.topic)
     this.feedback = record
     this.ordinal++
     this.verdict = {

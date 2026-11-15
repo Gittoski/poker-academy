@@ -13,7 +13,7 @@ npm ci
 npm run dev
 ```
 
-Open http://localhost:3000. **Ranges** opens the charts; **Play** opens the trainer. This foundation is a web app, so Expo Go is no longer used. Computer browser checks do not establish iPhone/Safari behavior.
+Open http://localhost:3000. **Ranges** opens the charts; **Play** opens the trainer; **Learn** opens the guided fundamentals. This foundation is a web app, so Expo Go is no longer used. Computer browser checks do not establish iPhone/Safari behavior.
 
 ## Verify
 
@@ -23,7 +23,7 @@ npm run build
 npm run test:browser
 ```
 
-The test suite has 127 unit tests across eleven files and 23 browser journeys covering original play plus saving, recovery, exact retries, adaptive return, failure handling, responsive layouts, keyboard/focus, accessibility and reduced motion. The browser runner uses a production build on its own port; install Chromium once with `npx playwright install chromium`, or set `CHROMIUM_PATH` to an existing system browser. The production build regenerates the range files from the included source data; it does not need a solver installation. Solver scripts are optional offline development tools, not a requirement for running the supplied app.
+The test suite has 147 unit tests across fifteen files and 28 browser journeys covering original play plus saving, recovery, exact retries, adaptive return, failure handling, responsive layouts, keyboard/focus, accessibility and reduced motion. The browser runner uses a production build on its own port; install Chromium once with `npx playwright install chromium`, or set `CHROMIUM_PATH` to an existing system browser. The production build regenerates the range files from the included source data; it does not need a solver installation. Solver scripts are optional offline development tools, not a requirement for running the supplied app.
 
 ## Source and next steps
 
@@ -33,7 +33,7 @@ See [three visual directions](docs/design/visual-directions.png) and the [propos
 
 ## Learning roadmap
 
-The next upgrades focus on lasting progress, exact mistake review and a staged Basics → preflop → postflop → exploitative → advanced learning path. See the [active checklist](ROADMAP.md) and [full learning plan](docs/LEARNING_PLAN.md). The current working trainer is preserved. The journal/review loop is implemented; the wider curriculum and offline-installation roadmap remain future work.
+The next upgrades focus on lasting progress, exact mistake review and a staged Basics → preflop → postflop → exploitative → advanced learning path. See the [active checklist](ROADMAP.md) and [full learning plan](docs/LEARNING_PLAN.md). The current working trainer is preserved. The journal/review loop is implemented; the five-topic fundamentals release and explicit offline-pack installation are implemented. Actual-device offline verification and the wider curriculum remain on the roadmap.
 
 The simulator now includes [automatic sessions, mistake reviews and adjustable recurring practice](docs/SESSION_REVIEW_SPEC.md), with a [bounded implementation checklist](docs/SESSION_REVIEW_ROADMAP.md). See the [usage guide](docs/SESSION_REVIEW_GUIDE.md), [verification evidence](docs/implementation/SESSION_REVIEW_VERIFICATION.md) and [actual-app screenshots](docs/design/session-review/README.md).
 
@@ -47,4 +47,10 @@ Supported mixed alternatives stay separate from zero-support reference errors. H
 
 Full hands now finish with a distinct **Hand complete** screen. After your final decision, choose **View hand result**, inspect the stored showdown runout or actual fold outcome, then **Next hand**. Results survive reload. The screen names both your selection and the scripted action when they differ; a supported Call is not the same as playing a new calling branch in this scripted trainer. Preflop mode explicitly stops before postflop. See [the completion audit](docs/implementation/HAND_COMPLETION.md).
 
-The next planned feature is an installable offline PWA, followed by math practice, short capsules and focused sessions. The current project ZIP is not an iPhone app and Expo Go cannot run it. A hosted site would remove the PC requirement; fully offline use additionally needs app/content caching and real-device verification. No hosting or App Store publication has been performed. See [the future feature and distribution plan](docs/NEXT_FEATURES.md).
+The app now offers an explicit complete offline download from Learn in a production build over HTTPS or localhost. Cached app pages, charts and supplied hands work in Chromium offline cold-start tests. A hosted HTTPS build would remove the PC requirement; no hosting or App Store publication has been performed. Actual iPhone/Safari installation remains unverified. The project ZIP is not an iPhone app and Expo Go cannot run it. See the [fundamentals and offline guide](docs/FUNDAMENTALS_GUIDE.md).
+
+## Guided fundamentals and linked practice
+
+Learn teaches pot odds → outs and draw probabilities → hand/range equity → expected value → bluff break-even and fold equity, with short lessons, worked examples, untimed practice and optional timing. The hand-ranking refresher reuses the archived evaluator. Local progress separates unfamiliar questions from repeats, keeps calculation explanations and supports validated backups.
+
+Supported simulator mistakes now offer **Practice this skill**, with fresh examples and return to the same saved hand. Related links do not diagnose every chart deviation as a math error. Feedback identifies exact calculations, supplied strategy references and opponent assumptions; it does not invent solver EV losses. See the [usage guide](docs/FUNDAMENTALS_GUIDE.md), [provenance and verification audit](docs/implementation/FUNDAMENTALS_VERIFICATION.md) and [remaining fundamentals roadmap](docs/FUNDAMENTALS_ROADMAP.md).

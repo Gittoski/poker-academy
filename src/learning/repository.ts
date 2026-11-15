@@ -489,6 +489,7 @@ export class LearningRepository {
             id: d.problemId,
             nodeKey: d.nodeKey,
             skillKey: d.skillKey,
+            fundamentalSkills: d.fundamentalSkills ?? [],
             exampleKey: d.exampleKey,
             config: d.config,
             hero: d.before.hand.hero,

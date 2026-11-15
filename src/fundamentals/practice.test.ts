@@ -67,6 +67,7 @@ it('pot/EV questions agree with independent arithmetic on the declared terminal 
   for (let seed = 0; seed < 60; seed++) {
     const p = question('pot-odds', seed),
       values = p.prompt.match(/\d+(?:\.\d+)?/g)!.map(Number)
+    expect(values[1]).toBeLessThan(values[0])
     if (seed % 3 === 0)
       expect(p.choices[p.answer]).toBe(
         `${((values[1] / (values[0] + values[1])) * 100).toFixed(1)}%`,
@@ -149,6 +150,11 @@ it('quota rollback leaves a recoverable attempt; backup/import validates calcula
   bad.attempts[0].correct = !bad.attempts[0].correct
   await expect(r.restore(bad)).rejects.toThrow()
   expect((await r.backup()).attempts).toHaveLength(1)
+  const missingCounts = structuredClone(b)
+  delete (missingCounts.skills[0].untimed as Partial<{ answered: number }>)
+    .answered
+  await expect(r.restore(missingCounts)).rejects.toThrow('accuracy counters')
+  expect((await r.skill(a.topic)).untimed.answered).toBe(1)
   const restored = await repo()
   await restored.restore(b)
   expect(await restored.skills()).toEqual(await r.skills())
@@ -187,5 +193,37 @@ it('resuming the same first exposure preserves its first-attempt classification'
     q = question(resumed.topic, resumed.seed)
   expect(resumed.attemptId).toBe(first.attemptId)
   expect((await r.answer(resumed, q.answer)).novelty).toBe('fresh')
+  r.close()
+})
+
+it('detail retention preserves aggregates and rejects recounting a compacted old submission', async () => {
+  const r = await repo(),
+    a = active('pot-odds', 0),
+    q = question(a.topic, a.seed)
+  await r.answer(a, q.answer, 100)
+  const backup = await r.backup(),
+    template = backup.attempts[0]
+  backup.attempts = Array.from({ length: 1000 }, (_, i) => ({
+    ...template,
+    id: `history-${i}`,
+    at: 100 + i,
+  }))
+  backup.skills[0].untimed = {
+    answered: 1000,
+    correct: 1000,
+    fresh: 1,
+    freshCorrect: 1,
+  }
+  await r.restore(backup)
+  const current = { ...a, attemptId: 'new-after-retention', startedAt: 2000 }
+  await r.answer(current, q.answer, 2001)
+  const kept = await r.backup()
+  expect(kept.attempts).toHaveLength(1000)
+  expect(kept.attempts.some((x) => x.id === 'history-0')).toBe(false)
+  expect(kept.skills[0].untimed.answered).toBe(1001)
+  await expect(
+    r.answer({ ...a, attemptId: 'history-0', startedAt: 99 }, q.answer, 100),
+  ).rejects.toThrow('predates retained detail')
+  expect((await r.skill(a.topic)).untimed.answered).toBe(1001)
   r.close()
 })

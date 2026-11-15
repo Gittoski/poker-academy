@@ -94,6 +94,7 @@ export interface HandRecord {
   actions: { position: string; action: string }[]
 }
 export interface DecisionRecord {
+  fundamentalSkills?: string[]
   history?: { position: string; action: string }[]
   version: 1
   id: string
@@ -138,6 +139,7 @@ export interface SessionRecord {
   counts: Record<Origin, Counts>
 }
 export interface ProblemRecord {
+  fundamentalSkills?: string[]
   pinnedExample?: string | null
   version: 1
   id: string

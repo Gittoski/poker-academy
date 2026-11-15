@@ -758,7 +758,7 @@ button:not(:disabled):active {
 .learning-dialog__head { display:flex; flex-wrap:wrap; gap:1rem; align-items:center; justify-content:space-between; margin-bottom:1.2rem; }
 .learning-dialog h2,.learning-dialog h3 { margin:.5rem 0; }
 .learning-dialog p { line-height:1.65; color:#c1ccda; }
-.learning-dialog nav { display:flex; gap:.5rem; margin:1rem 0; }
+.learning-dialog nav { display:flex; flex-wrap:wrap; gap:.5rem; margin:1rem 0; }
 .learning-dialog nav [aria-pressed=true] { background:#263f66; border-color:#739ee7; }
 .learning-dialog select,.learning-dialog textarea { display:block; max-width:100%; background:#111c2b; color:#f2f5fa; border:1px solid #465875; border-radius:8px; padding:.7rem; font:inherit; margin:.5rem 0; }
 .learning-dialog textarea { width:100%; min-height:100px; box-sizing:border-box; }
@@ -777,3 +777,23 @@ button:not(:disabled):active {
 .hand-result { border:1px solid #5279ad; border-radius:14px; padding:1rem; margin-top:1rem; background:linear-gradient(140deg,#1b2d48,#121c2b); }
 .hand-result h3 { margin:0 0 .6rem; }
 .hand-result p,.training-scope-note { color:#c3cfdf; line-height:1.65; font-size:.9rem; }
+.app-header { flex-wrap:wrap; }
+.topbar { flex-wrap:wrap; }
+.fundamentals h1 { font-size:clamp(1.4rem,4vw,2rem); margin:0; }
+.fundamentals h2 { line-height:1.5; font-size:1.25rem; }
+.fundamentals p,.fundamentals li { line-height:1.75; color:#c4cfdf; }
+.fundamentals li { margin:.5rem 0; }
+.fundamentals summary { cursor:pointer; padding:.8rem 0; }
+.fundamentals details { margin:.8rem 0; }
+.fundamentals a:not(.btn) { color:#a8cafb; }
+.fundamentals .range-card__head { flex-wrap:wrap; }
+.fundamentals-answers { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:.7rem; margin:1rem 0; }
+.fundamentals-answers .btn { min-height:56px; white-space:normal; text-align:left; line-height:1.5; }
+.fundamentals-explanation,.fundamentals-note { padding:1rem; border-radius:12px; border:1px solid #3b5273; background:#152238; margin:1rem 0; }
+.fundamentals-correct { background:#16382e !important; border:1px solid #62b199 !important; color:#e5fff6 !important; }
+.fundamentals-wrong { background:#3c202a !important; border:1px solid #df8da0 !important; color:#fff0f5 !important; }
+.fundamentals-progress { border-bottom:1px solid #344259; padding:1rem 0; }
+.fundamentals input[type=file] { max-width:100%; }
+.fundamentals :focus-visible { outline:3px solid #a8cafb; outline-offset:3px; }
+
+.learning-dialog .btn { white-space:normal; max-width:100%; overflow-wrap:anywhere; }

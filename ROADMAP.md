@@ -8,11 +8,11 @@ This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PL
 
 - [x] Replace the retired academy with jensbaagaard/poker-practice; preserve attribution and a Git backup.
 - [x] Deliver the navy theme without changing the engine, grading, training controllers or chart data.
-- [x] Last verified: 127 unit tests, 23 browser journeys, TypeScript, production build and simulator/strategy-calculation integrity checks.
+- [x] Last verified: 147 unit tests, 28 browser journeys, TypeScript, production build and simulator/strategy-calculation integrity checks.
 - [x] Retain range viewing, preflop training, scripted full-hand practice and existing custom-range/theme settings.
 - [ ] Actual iPhone/Safari, VoiceOver and device animation verification. Chromium phone-sized tests do not close this release gate.
 
-Current limitations: no guided curriculum or whole-app offline installation; full-hand play follows supplied scripts. The grade favors the most frequent reference action and is not an EV-loss score. Existing source/provenance limits remain documented in [UPSTREAM.md](docs/UPSTREAM.md).
+Current limitations: full-hand play follows supplied scripts; whole-app offline packs have Chromium coverage but actual iPhone installation remains unverified. Guided fundamentals and linked practice are implemented. The grade favors the most frequent reference action and is not an EV-loss score. Existing source/provenance limits remain documented in [UPSTREAM.md](docs/UPSTREAM.md).
 
 ## Current release: guided fundamentals and linked practice
 
@@ -24,7 +24,8 @@ After this release: active preflop drills → range-reading → postflop decisio
 
 - [x] Verify explicit Full-hands result acknowledgement, complete stored all-in runouts, reload recovery and protection against accidental extra inputs. See the [completion audit](docs/implementation/HAND_COMPLETION.md).
 - [x] Plan phone-only offline installation, math drills, short capsules and focused simulator sessions in [NEXT_FEATURES.md](docs/NEXT_FEATURES.md).
-- [ ] M03 is the next feature: an offline PWA with downloaded packs and actual-device evidence; hosting/App Store publication remains separately authorized.
+- [x] Implement explicit complete offline packs and verify Chromium cold starts, supplied hands and interrupted updates.
+- [ ] M03 remaining gate: actual iPhone/Safari installation, storage and offline relaunch; hosting/App Store publication remains separately authorized.
 
 ## Learning progression
 
@@ -39,7 +40,7 @@ Teach one concept, show an example, practice it, check it independently and revi
 | [x] | M01 | Persistent learning journal and honest progress metrics | Current decision/context audit | Save/reload/migration/export tests; no duplicate records; existing play unchanged |
 | [x] | M02 | Saved hand reviews, exact retries and mistake book | M01, versioned source IDs | Same-decision restoration, hidden-information safety, separate first tries/practice, live-session preservation |
 | [ ] | M03 | Phone reliability and installed offline practice | M01–M02 | Tested device cold starts, complete pack caching, resume and storage/update recovery |
-| [ ] | M04 | Guided Basics path plus math/hand-reading drills | M01; reviewed exact examples | One-concept progression, independent answer fixtures, retained completion and later review |
+| [x] | M04 | Guided Basics path plus math/hand-reading drills | M01; reviewed exact examples | One-concept progression, independent answer fixtures, retained completion and later review |
 | [ ] | M05 | Focused preflop and fair mixed-strategy practice | M01–M02; objective/metric versioning | Supported actions distinguished from most-frequent drills; configuration/edge-case regressions |
 | [ ] | M06 | Postflop concepts and scoped explanations | M04–M05; covered reference spots | Different-board exercises; arithmetic/source/heuristic distinctions; unsupported spots clearly handled |
 | [ ] | M07 | Exploitative recreational-player scenarios | M04–M06 | Explicit tendencies/evidence, uncertainty and counter-risks; no invented model probabilities or EVs |
@@ -73,4 +74,4 @@ The focused R01–R08 implementation and available automated verification are co
 - [ ] Keep the navy interface focused and phone-friendly. Existing chart palettes need no redesign for this plan.
 - [ ] Keep data/metric versions compatible with saved reviews and progress. No account is required for local learning.
 
-All future milestones above are planned, not implemented. No dates or poker-strength guarantees are assigned without evidence.
+Unchecked milestones above remain planned; the guided M04 foundation is implemented, while broader advanced curriculum and device release gates remain open. No dates or poker-strength guarantees are assigned without evidence.
