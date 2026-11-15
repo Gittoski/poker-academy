@@ -66,6 +66,16 @@ for (const [width, height] of [
     await page.setViewportSize({ width, height })
     await boot(page)
     await expect(page.locator('body')).toHaveClass(/simulator-focus/)
+    await expect(page.locator('.trainer-table')).toHaveCSS(
+      'border-top-width',
+      '0px',
+    )
+    await expect(page.locator('.trainer-table')).toHaveCSS(
+      'border-radius',
+      '0px',
+    )
+    await fits(page, page.getByRole('link', { name: 'Leave simulator' }))
+    await fits(page, page.getByRole('button', { name: 'Settings & review' }))
     await fits(
       page,
       page.getByRole('group', { name: 'Your move', exact: true }),
@@ -164,6 +174,12 @@ test('correct feedback is compact and mobile controls remain accessible', async 
   await page.getByRole('button', { name: 'Settings & review' }).click()
   const settings = page.getByRole('dialog', { name: 'Simulator settings' })
   await expect(settings).toBeVisible()
+  await expect(settings.getByRole('navigation', { name: 'Pages' })).toHaveCount(
+    0,
+  )
+  await expect(
+    settings.getByRole('link', { name: /^(Ranges|Play|Learn)$/ }),
+  ).toHaveCount(0)
   await settings.getByRole('button', { name: 'Review mistakes' }).click()
   await expect(
     page.getByRole('dialog', { name: 'Review your play' }),
@@ -270,10 +286,20 @@ test('small-phone hand completion keeps Next hand reachable without page scrolli
   await fits(page, next)
   expect(await page.evaluate(() => scrollY)).toBe(0)
   await page.screenshot({ path: info.outputPath('small-phone-result.png') })
-  await page.getByRole('button', { name: 'Back to table', exact: true }).click()
+  await expect(
+    page.getByRole('dialog', { name: 'Hand result', exact: true }),
+  ).toHaveCount(0)
+  await expect(
+    page.getByRole('button', { name: 'Result & showdown' }),
+  ).toHaveCount(0)
+  await expect(page.locator('.board .playing-card')).toHaveCount(5)
+  await page.reload()
+  await expect(next).toBeEnabled()
   await fits(page, next)
-  await page.getByRole('button', { name: 'Result & showdown' }).click()
-  await fits(page, next)
+  expect((await state(page)).meta.cursor.handId).toBe(initial)
+  await expect(
+    page.getByRole('dialog', { name: 'Hand result', exact: true }),
+  ).toHaveCount(0)
   await next.focus()
   expect(
     await next.evaluate((el) =>

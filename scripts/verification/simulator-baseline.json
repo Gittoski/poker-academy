@@ -27,7 +27,7 @@
     },
     "src/components/PlayPage.tsx": {
       "files": 1,
-      "sha256": "445f0b67709eedbba14e3c0051e75b45e35bce068f96cb60b1a263c0612915b5"
+      "sha256": "5b0cb19c3a929eb61d25a7c68501950ea7d77657f749f90744cdb78b1509f6c9"
     },
     "src/components/RangeViewer.tsx": {
       "files": 1,
@@ -113,7 +113,7 @@
       "src/components/trainer/VerdictView.tsx",
       "src/components/trainer/useAnswerKeys.ts"
     ],
-    "scope": "Presentation wrappers, modal feedback, preflop seat-inspection navigation and modal/focused-control keyboard routing. Engine, grading functions, chart functions, colors and reference/source data unchanged.",
+    "scope": "Presentation wrappers, modal feedback, preflop seat-inspection navigation and modal/focused-control keyboard routing. Engine, grading functions, chart functions, colors and reference/source data unchanged. Mobile settings omit global page navigation; desktop navigation is preserved.",
     "audit": "docs/implementation/MOBILE_FOCUS.md"
   }
 }

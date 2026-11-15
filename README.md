@@ -60,3 +60,5 @@ Supported simulator mistakes now offer **Practice this skill**, with fresh examp
 On phones, Play now dedicates the screen to the simulator. **Settings & review** opens the existing setup, session and review controls. Errors automatically open the explanation overlay; its Chart tab contains the existing range/strategy grids. Scroll within the overlay while Retry and Continue remain at the bottom. Correct/supported answers keep compact feedback. Closing feedback does not advance the hand. Exact retries preserve your live hand as separate manual practice. The hand-result panel also keeps Next hand reachable.
 
 See [scope, verification and phone testing limits](docs/implementation/MOBILE_FOCUS.md). This step leaves the table styling, home screen and Learn design for later approval. Installed offline packs need updating to load a new app build after deployment.
+
+Mobile polish follow-up: the play surface is seamless, header controls/text are aligned, and simulator settings no longer include global page navigation. The final hand-review popup has been removed; the completed table/runout and Next hand remain available.

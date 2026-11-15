@@ -10,7 +10,9 @@ This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PL
 - [x] Automatically open full error explanations; scroll only overlay content while keeping Retry/Continue visible. Supported answers retain compact feedback.
 - [x] Preserve exact manual retries, live-hand recovery, chart access and complete-hand result acknowledgement; keep Next hand reachable on small screens.
 - [x] Finish automated verification and delivery; see [the implementation audit](docs/implementation/MOBILE_FOCUS.md).
-- [ ] User test on iPhone 13/Home Screen, including error/retry, long charts, final result and rotation.
+- [x] User approved the mobile layout; remove the final hand-review popup while retaining the completed table/runout and Next hand.
+- [x] Remove the mobile outer frame; align header/status text and improve the back/settings controls; remove global navigation from simulator settings.
+- [ ] Follow-up iPhone/Home Screen test of the simplified finish, seamless layout and rotation.
 - [ ] Next approval: table styling preview, then a separately approved home screen. Leave Learn unchanged for now.
 
 ## Current verified foundation

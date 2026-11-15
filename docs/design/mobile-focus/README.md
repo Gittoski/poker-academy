@@ -12,7 +12,7 @@ Captured from the production app in headless Chromium, not generated mockups. Ph
 
 ## Final result — 320 × 568
 
-![Final hand summary with fixed Next hand](small-phone-result.png)
+![Hand complete at the table with Next hand](small-phone-result.png)
 
-Back to table closes the result overlay without advancing; Result & showdown reopens it. In short landscape layouts, the table/cards occupy the left column and action controls occupy the right.
+The final-review popup and its reopen action have been removed; the table remains visible with Next hand. In short landscape layouts, the table/cards occupy the left column and action controls occupy the right.
 

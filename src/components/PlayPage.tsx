@@ -25,7 +25,7 @@ import { JournalShell } from '@/learning/Journal'
 import { FullHandTrainer } from './FullHandTrainer'
 import { HandTrainer } from './HandTrainer'
 import { Segmented } from './Segmented'
-import { PlayFrame, PlayOptions } from './trainer/PlayFrame'
+import { PlayFrame, PlayOptions, DesktopOnly } from './trainer/PlayFrame'
 import { TopNav } from './TopNav'
 import { TrainerSetupPanel } from './TrainerSetupPanel'
 
@@ -146,7 +146,9 @@ export function PlayPage() {
   return (
     <PlayFrame>
       <PlayOptions>
-        <TopNav active="play" setupParams={setupParams} />
+        <DesktopOnly>
+          <TopNav active="play" setupParams={setupParams} />
+        </DesktopOnly>
 
         {GAME_MODES.length > 1 && (
           <section className="card">

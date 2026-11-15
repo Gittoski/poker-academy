@@ -61,20 +61,49 @@ export function PlayFrame({ children }: { children: ReactNode }) {
     >
       <main className="page play-page">
         <header className="sim-header">
-          <a className="btn" href="/" aria-label="Leave simulator">
-            ‹
+          <a className="sim-back" href="/" aria-label="Leave simulator">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m14 6-6 6 6 6" />
+            </svg>
           </a>
-          <strong>Simulator</strong>
-          <span role="status" className="sim-save-status">
-            {status}
-          </span>
+          <div className="sim-header__title">
+            <strong>Simulator</strong>
+            <span role="status" className="sim-save-status" title={status}>
+              {status === 'Saved on this device' ? 'Saved on device' : status}
+            </span>
+          </div>
           <button
-            className="btn"
+            className="btn sim-menu"
             ref={trigger}
             onClick={() => setSettings(true)}
             aria-haspopup="dialog"
+            aria-label="Settings & review"
           >
-            Settings & review
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
+              <path d="M4 7h16M4 17h16" />
+              <circle cx="9" cy="7" r="2.5" fill="var(--bg)" />
+              <circle cx="15" cy="17" r="2.5" fill="var(--bg)" />
+            </svg>
+            <span>Settings</span>
           </button>
         </header>
         {children}
@@ -127,4 +156,10 @@ export function MobileCharts({ children }: { children: ReactNode }) {
   ) : (
     <>{children}</>
   )
+}
+
+/** Global page navigation stays outside the focused simulator's settings. */
+export function DesktopOnly({ children }: { children: ReactNode }) {
+  const ui = usePlayUI()
+  return ui?.mobile ? null : <>{children}</>
 }
