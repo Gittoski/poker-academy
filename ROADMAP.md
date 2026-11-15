@@ -14,6 +14,12 @@ This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PL
 
 Current limitations: no guided curriculum or whole-app offline installation; full-hand play follows supplied scripts. The grade favors the most frequent reference action and is not an EV-loss score. Existing source/provenance limits remain documented in [UPSTREAM.md](docs/UPSTREAM.md).
 
+## Current release: guided fundamentals and linked practice
+
+Follow [FUNDAMENTALS_ROADMAP.md](docs/FUNDAMENTALS_ROADMAP.md). The current release takes priority over the earlier phone-only milestone: reuse archived drills, teach pot odds → outs/draws → hand/range equity → EV → bluff break-even/fold equity, save learning progress and link supported simulator mistakes to relevant practice. Preserve the six-max cash foundation and existing reviews/charts.
+
+After this release: active preflop drills → range-reading → postflop decisions/bet sizing → opponent-tendency/exploit drills → live/multiway situations → advanced concepts/session habits. Population assumptions stay distinct from observations of a specific player.
+
 ## Current follow-up: complete-hand results and independent phone use
 
 - [x] Verify explicit Full-hands result acknowledgement, complete stored all-in runouts, reload recovery and protection against accidental extra inputs. See the [completion audit](docs/implementation/HAND_COMPLETION.md).
