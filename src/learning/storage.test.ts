@@ -910,6 +910,7 @@ it('daily activity is atomic, idempotent and survives condensation and old-backu
   const history = structuredClone(backup)
   history.meta.cursor = null
   history.meta.resume = null
+  delete history.meta.modeCursors // This fixture explicitly archives the hand.
   history.problems = []
   history.hands[0].completedAt = 102
   const compacted = compactBackup(history, 0)
@@ -933,5 +934,88 @@ it('a failed decision transaction rolls back the daily counter along with the an
   event.hand.decisions = 1
   await repo.submit(event)
   expect(Object.values((await repo.meta()).activity!.days)).toEqual([1])
+  repo.close()
+})
+
+it('switches between two saved modes, preserving checkpoints, counts, backups and compaction protection', async () => {
+  const { source, event } = fixture(),
+    repo = await repository()
+  await repo.cache(source)
+  await repo.submit(event)
+  expect(await repo.switchMode('preflop', 'full-hands')).toBeNull()
+  expect((await repo.meta()).cursor).toBeNull()
+  const full = structuredClone(event)
+  full.id = 'full-event'
+  full.hand = {
+    ...full.hand,
+    id: 'full-hand',
+    config: { ...full.hand.config, mode: 'full-hands' },
+    decisions: 0,
+  }
+  full.cursor = {
+    ...full.cursor,
+    handId: full.hand.id,
+    phase: 'hero',
+    verdict: null,
+    ordinal: 0,
+    decisions: 0,
+  }
+  delete full.decision
+  await repo.submit(full)
+  expect((await repo.switchMode('full-hands', 'preflop'))?.mode).toBe('preflop')
+  expect((await repo.meta()).cursor).toEqual(event.cursor)
+  expect((await repo.switchMode('preflop', 'full-hands'))?.mode).toBe(
+    'full-hands',
+  )
+  expect((await repo.meta()).cursor).toEqual(full.cursor)
+  const backup = await repo.backup()
+  expect(backup.decisions).toHaveLength(1)
+  expect(backup.sessions[0].counts.regular.decisions).toBe(1)
+  expect(validateBackup(backup).meta.modeCursors).toEqual(
+    backup.meta.modeCursors,
+  )
+  const compacted = compactBackup(backup, 0, 1)
+  expect(compacted.data.hands.map((h) => h.id).sort()).toEqual([
+    'full-hand',
+    'hand',
+  ])
+  const wrongMode = structuredClone(backup)
+  wrongMode.meta.modeCursors!['preflop'] = full.cursor
+  expect(() => validateBackup(wrongMode)).toThrow('saved mode hand')
+  await repo.restore(backup)
+  expect((await repo.switchMode('full-hands', 'preflop'))?.seat).toBe('LJ')
+  expect((await repo.meta()).cursor).toEqual(event.cursor)
+  repo.close()
+})
+it('mode switching waits for queued saves and keeps the original state on an invalid transition', async () => {
+  const { source, event } = fixture(),
+    repo = await repository()
+  await repo.cache(source)
+  const write = repo.submit(event),
+    switching = repo.switchMode('preflop', 'full-hands')
+  await write
+  await switching
+  expect((await repo.meta()).modeCursors?.preflop).toEqual(event.cursor)
+  await repo.switchMode('full-hands', 'preflop')
+  const before = await repo.meta()
+  await expect(repo.switchMode('full-hands', 'preflop')).rejects.toThrow(
+    'current live hand',
+  )
+  expect(await repo.meta()).toEqual(before)
+  repo.close()
+})
+it('switching during a manual retry parks the preserved live hand rather than the retry', async () => {
+  const { source, event } = fixture(),
+    repo = await repository()
+  await repo.cache(source)
+  await repo.submit(event)
+  const live = event.cursor,
+    manual = { ...structuredClone(live), handId: 'manual-temporary' }
+  await repo.setMeta({ ...(await repo.meta()), resume: live, cursor: manual })
+  await repo.switchMode('preflop', 'full-hands')
+  expect((await repo.meta()).modeCursors?.preflop).toEqual(live)
+  expect((await repo.meta()).resume).toBeNull()
+  await repo.switchMode('full-hands', 'preflop')
+  expect((await repo.meta()).cursor).toEqual(live)
   repo.close()
 })

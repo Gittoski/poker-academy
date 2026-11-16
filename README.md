@@ -23,7 +23,7 @@ npm run build
 npm run test:browser
 ```
 
-The test suite has 154 unit tests across sixteen files and 51 browser journeys covering original play plus saving, recovery, exact retries, adaptive return, failure handling, responsive layouts, keyboard/focus, accessibility and reduced motion. The browser runner uses a production build on its own port; install Chromium once with `npx playwright install chromium`, or set `CHROMIUM_PATH` to an existing system browser. The production build regenerates the range files from the included source data; it does not need a solver installation. Solver scripts are optional offline development tools, not a requirement for running the supplied app.
+The test suite has 157 unit tests across sixteen files and 56 browser journeys covering original play plus saving, recovery, exact retries, adaptive return, failure handling, responsive layouts, keyboard/focus, accessibility and reduced motion. The browser runner uses a production build on its own port; install Chromium once with `npx playwright install chromium`, or set `CHROMIUM_PATH` to an existing system browser. The production build regenerates the range files from the included source data; it does not need a solver installation. Solver scripts are optional offline development tools, not a requirement for running the supplied app.
 
 ## Source and next steps
 
@@ -84,3 +84,7 @@ Activity counts saved decisions and fundamentals answers, including retries; it 
 ## App logo
 
 The approved silver spade on midnight navy replaces the old text marks and letter-A icons. Home, shared navigation, browser/PWA metadata and the Apple Home Screen icon use the same local artwork. [Branding details and actual-app captures](docs/design/branding/README.md) describe the rendered sizes and offline behavior. Already downloaded packs require an update in Settings to use the new build; an existing iPhone icon can also remain cached by iOS.
+
+## Switch simulator modes
+
+Use the navy switch in the simulator header: **off = Full hands**, **on = Preflop**. Both modes already existed; switching is now directly accessible. Each keeps its saved live hand, and returning restores its original supported setup. Saves finish before switching; unavailable packs or storage/ownership failures keep the current hand. The switch supports keyboard input and reduced motion. [Implementation and verification](docs/implementation/MODE_SWITCH.md).

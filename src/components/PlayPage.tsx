@@ -6,7 +6,6 @@ import type { RangeEntry } from '@/data/types'
 import {
   DEFAULT_GAME_MODE,
   GAME_MODE_INFO,
-  GAME_MODES,
   isGameMode,
   type GameMode,
 } from '@/lib/gameModes'
@@ -24,7 +23,7 @@ import { loadHandIndex, type HandIndex } from '@/lib/fullHands'
 import { JournalShell } from '@/learning/Journal'
 import { FullHandTrainer } from './FullHandTrainer'
 import { HandTrainer } from './HandTrainer'
-import { Segmented } from './Segmented'
+import { normalizePreferences, savePreferences } from '@/home/preferences'
 import { PlayFrame, PlayOptions } from './trainer/PlayFrame'
 import { TrainerSetupPanel } from './TrainerSetupPanel'
 
@@ -67,7 +66,9 @@ function setupParamsOf(setup: TrainerSetup): URLSearchParams {
 
 export function PlayPage() {
   const searchParams = useSearchParams()
-  const [initialReview] = useState(() => searchParams.get('review') === '1')
+  const [initialReview, setInitialReview] = useState(
+    () => searchParams.get('review') === '1',
+  )
   const [mode, setMode] = useState<GameMode>(() => {
     const value = searchParams.get('mode')
     return isGameMode(value) ? value : DEFAULT_GAME_MODE
@@ -139,30 +140,25 @@ export function PlayPage() {
       )
     })
   }
+  function changeMode(next: GameMode, parkedSetup?: TrainerSetup) {
+    const preferences = normalizePreferences({
+      mode: next,
+      setup: parkedSetup ?? setup,
+    })
+    setSetup(preferences.setup)
+    setMode(next)
+    setInitialReview(false)
+    // URL and the live cursor also preserve mode when preference storage is denied.
+    try {
+      savePreferences(preferences)
+    } catch {}
+  }
 
   const entries = loaded && loaded.id === setId ? loaded.entries : null
   const setLabel = set ? rangeSetLabel(set) : ''
 
   return (
-    <PlayFrame>
-      <PlayOptions>
-        {GAME_MODES.length > 1 && (
-          <section className="card">
-            <div className="field">
-              <div className="field__label">Game mode</div>
-              <Segmented<GameMode>
-                ariaLabel="Game mode"
-                options={GAME_MODES.map((m) => ({
-                  value: m,
-                  label: GAME_MODE_INFO[m].label,
-                }))}
-                value={mode}
-                onChange={setMode}
-              />
-            </div>
-          </section>
-        )}
-      </PlayOptions>
+    <PlayFrame mode={mode} onModeChange={changeMode}>
       {loadError ? (
         <section className="card">
           <div className="empty">

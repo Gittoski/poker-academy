@@ -1,6 +1,6 @@
 # Sessions, mistakes and recurring practice
 
-Open **Play** and use either Full hands or Preflop. A session starts automatically. Submit an answer as usual; saving happens before Continue. A full hand’s last decision now offers View hand result, followed by a persistent Hand complete screen and a separate Next hand action. The simulator header reports **Saving**, **Saved on this device**, or an explicit failure. No Save/End session action is required.
+Open **Play** and use the navy header switch: off selects Full hands; on selects Preflop. Each mode keeps its saved live hand. A session starts automatically. Submit an answer as usual; saving happens before Continue. A full hand’s last decision now offers View hand result, followed by a persistent Hand complete screen and a separate Next hand action. The simulator header reports **Saving**, **Saved on this device**, or an explicit failure. No Save/End session action is required.
 
 ## Review without losing your hand
 

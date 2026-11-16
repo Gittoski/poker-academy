@@ -19,6 +19,7 @@ import type { LearningConfig } from './types'
 import { configureScheduler } from './scheduler'
 import { compactBackup } from './retention'
 import { activityFrom, countAnswer } from '@/activity/calendar'
+import { isGameMode, type GameMode } from '@/lib/gameModes'
 
 const TABLES = [
   'sources',
@@ -339,6 +340,58 @@ export class LearningRepository {
       throw e
     }
   }
+  /** Atomic parking/restoration of at most two live hands. Manual practice
+   * parks its preserved live cursor, never a retry masquerading as live play. */
+  async switchMode(
+    current: GameMode,
+    next: GameMode,
+  ): Promise<LearningConfig | null> {
+    if (!isGameMode(current) || !isGameMode(next) || current === next)
+      throw Error('Invalid mode change')
+    await this.queue
+    const tx = this.tx(['meta', 'hands'], 'readwrite'),
+      completion = done(tx)
+    try {
+      await this.fence(tx)
+      const store = tx.objectStore('meta'),
+        hands = tx.objectStore('hands')
+      const state: LearningMeta = (await req(store.get(META))) ?? defaultMeta()
+      const parked = { ...state.modeCursors },
+        live = state.resume ?? state.cursor
+      if (live) {
+        const hand: HandRecord | undefined = await req(hands.get(live.handId))
+        if (!hand || hand.origin === 'manual' || hand.config.mode !== current)
+          throw Error('Save the current live hand before changing modes.')
+        parked[current] = live
+      }
+      const target = parked[next] ?? null
+      const hand: HandRecord | undefined = target
+        ? await req(hands.get(target.handId))
+        : undefined
+      if (
+        target &&
+        (!hand || hand.config.mode !== next || hand.origin === 'manual')
+      )
+        throw Error(
+          'The saved hand for this mode is unavailable. Your current hand has been kept.',
+        )
+      store.put({
+        ...state,
+        modeCursors: parked,
+        cursor: target,
+        resume: null,
+        id: META,
+      })
+      await completion
+      return hand?.config ?? null
+    } catch (e) {
+      try {
+        tx.abort()
+      } catch {}
+      await completion.catch(() => {})
+      throw e
+    }
+  }
   private readPending(): WriteEvent[] {
     const raw = this.pending?.getItem(this.walKey)
     if (!raw) return []
@@ -626,7 +679,14 @@ export class LearningRepository {
       hs.put(hand)
       ss.put(session)
       state.sessionId = session.id
-      if (!stale) state.cursor = event.cursor
+      if (!stale) {
+        state.cursor = event.cursor
+        if (hand.origin !== 'manual')
+          state.modeCursors = {
+            ...state.modeCursors,
+            [hand.config.mode]: event.cursor,
+          }
+      }
       m.put({ ...state, id: META })
       await completion
     } catch (e) {

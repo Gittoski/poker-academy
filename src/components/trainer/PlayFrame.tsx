@@ -1,6 +1,7 @@
 'use client'
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -8,21 +9,77 @@ import {
   type ReactNode,
 } from 'react'
 import { createPortal } from 'react-dom'
+import type { GameMode } from '@/lib/gameModes'
+import type { TrainerSetup } from '@/lib/trainer'
+import { GameModeSwitch } from './GameModeSwitch'
+type ModeHandler = (next: GameMode) => Promise<TrainerSetup | undefined>
 const UI = createContext<{
   mobile: boolean
   settings: boolean
   target: HTMLDivElement | null
   openSettings: () => void
   reportStatus: (text: string) => void
+  changingMode: boolean
+  registerModeChange: (handler: ModeHandler) => () => void
 } | null>(null)
 export const usePlayUI = () => useContext(UI)
-export function PlayFrame({ children }: { children: ReactNode }) {
+export function PlayFrame({
+  children,
+  mode,
+  onModeChange,
+}: {
+  children: ReactNode
+  mode: GameMode
+  onModeChange: (mode: GameMode, setup?: TrainerSetup) => void
+}) {
   const [status, setStatus] = useState('Loading…')
   const [mobile, setMobile] = useState(false),
     [settings, setSettings] = useState(false),
     [target, setTarget] = useState<HTMLDivElement | null>(null)
   const dialog = useRef<HTMLDialogElement>(null),
     trigger = useRef<HTMLButtonElement>(null)
+  const modeHandler = useRef<ModeHandler | null>(null),
+    busy = useRef(false)
+  const [modeReady, setModeReady] = useState(false),
+    [changingMode, setChangingMode] = useState(false),
+    [modeError, setModeError] = useState('')
+  const registerModeChange = useCallback((handler: ModeHandler) => {
+    modeHandler.current = handler
+    setModeReady(true)
+    return () => {
+      if (modeHandler.current === handler) {
+        modeHandler.current = null
+        setModeReady(false)
+      }
+    }
+  }, [])
+  async function changeMode(next: GameMode) {
+    const prepare = modeHandler.current
+    if (!prepare || busy.current || next === mode) return
+    busy.current = true
+    setChangingMode(true)
+    setModeError('')
+    try {
+      // Let the paused context stop NPC timers before flushing the checkpoint.
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve()),
+      )
+      const setup = await prepare(next)
+      modeHandler.current = null
+      setModeReady(false)
+      setStatus('Loading saved play…')
+      onModeChange(next, setup)
+    } catch (e) {
+      setModeError(
+        e instanceof Error
+          ? e.message
+          : 'Could not switch modes. Your current hand has been kept.',
+      )
+    } finally {
+      busy.current = false
+      setChangingMode(false)
+    }
+  }
   useEffect(() => {
     const media = matchMedia(
       '(max-width: 768px), (max-width: 1024px) and (max-height: 600px)',
@@ -57,6 +114,8 @@ export function PlayFrame({ children }: { children: ReactNode }) {
         target,
         openSettings: () => setSettings(true),
         reportStatus: setStatus,
+        changingMode,
+        registerModeChange,
       }}
     >
       <main className="page play-page">
@@ -79,9 +138,20 @@ export function PlayFrame({ children }: { children: ReactNode }) {
           <div className="sim-header__title">
             <strong>Simulator</strong>
             <span role="status" className="sim-save-status" title={status}>
-              {status === 'Saved on this device' ? 'Saved on device' : status}
+              {changingMode
+                ? 'Switching mode…'
+                : status === 'Saved on this device'
+                  ? 'Saved on device'
+                  : status}
             </span>
           </div>
+          <GameModeSwitch
+            mode={mode}
+            disabled={
+              !modeReady || changingMode || status !== 'Saved on this device'
+            }
+            onChange={(next) => void changeMode(next)}
+          />
           {status.startsWith('Not saved') && (
             <button
               className="btn sim-menu"
@@ -93,6 +163,11 @@ export function PlayFrame({ children }: { children: ReactNode }) {
             </button>
           )}
         </header>
+        {modeError && (
+          <p role="alert" className="sim-mode-error">
+            {modeError}
+          </p>
+        )}
         {children}
         <dialog
           ref={dialog}

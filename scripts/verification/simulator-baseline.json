@@ -27,7 +27,7 @@
     },
     "src/components/PlayPage.tsx": {
       "files": 1,
-      "sha256": "93d4677f5777349c8bf7e4ee9526c7f2d605d68186288a3531e63414643ef3bb"
+      "sha256": "7a9f9b054966dfa40b13d66d151edd6f70d1c549495d64cb663a448da8c7e675"
     },
     "src/components/RangeViewer.tsx": {
       "files": 1,
@@ -138,5 +138,12 @@
     ],
     "reason": "Remove global simulator navigation and open existing saved reviews from Home via a captured initialReview flag. No changes to setup parsing, range loading, engine, grading or source data. Preflop seat-inspection callback opens its existing details sheet on desktop as well as mobile now that advanced controls are portaled. No decision or inspection content changes.",
     "evidence": "docs/implementation/HOME.md"
+  },
+  "modeSwitchIntegration": {
+    "paths": [
+      "src/components/PlayPage.tsx"
+    ],
+    "scope": "Expose the two existing modes through a header switch and normalize/persist their existing setup. The journal parks/restores mode-specific checkpoints. No engine, grading, chart/palette or supplied-data changes.",
+    "audit": "docs/implementation/MODE_SWITCH.md"
   }
 }

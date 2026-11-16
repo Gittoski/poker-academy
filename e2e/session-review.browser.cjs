@@ -354,6 +354,7 @@ test('storage denial gives an honest unsaved mode with export instead of breakin
   await move.getByRole('button').last().click()
   await expect(page.locator('.verdict')).toBeVisible()
   await expect(page.getByRole('status').first()).toContainText('Not saved')
+  await expect(page.getByRole('switch', { name: 'Preflop mode' })).toBeDisabled()
   await page
     .getByRole('button', { name: 'Save needs attention', exact: true })
     .click()

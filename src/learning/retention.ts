@@ -22,7 +22,11 @@ export function compactBackup(
     byHand.set(d.handId, group)
     if (d.pinned) protectedHands.add(d.handId)
   }
-  for (const cursor of [data.meta.cursor, data.meta.resume])
+  for (const cursor of [
+    data.meta.cursor,
+    data.meta.resume,
+    ...Object.values(data.meta.modeCursors ?? {}),
+  ])
     if (cursor) protectedHands.add(cursor.handId)
   for (const p of data.problems)
     for (const id of p.pinned ? p.examples : p.examples.slice(-1)) {

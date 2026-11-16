@@ -392,6 +392,13 @@ export class JournalRuntime {
   async flush() {
     await this.chain
   }
+  async requireSaved() {
+    await this.flush()
+    if (!this.repo || this.unsaved.size)
+      throw Error(
+        'Save pending work before switching modes. Use Save needs attention for recovery.',
+      )
+  }
   async retryPending() {
     if (!this.repo) return
     for (const event of this.unsaved.values()) {

@@ -204,6 +204,14 @@ test('Home includes fundamentals answers and preserves activity offline across c
   await expect(
     page.getByRole('group', { name: 'Your move', exact: true }),
   ).toBeVisible({ timeout: 20000 })
+  const modeSwitch = page.getByRole('switch', { name: 'Preflop mode' })
+  await expect(modeSwitch).toBeEnabled()
+  await modeSwitch.click()
+  await expect(modeSwitch).toBeChecked()
+  await expect(modeSwitch).toBeEnabled()
+  await modeSwitch.click()
+  await expect(modeSwitch).not.toBeChecked()
+  await expect(modeSwitch).toBeEnabled()
   await context.setOffline(false)
 })
 test('Home settings persist while Resume keeps the existing configuration and scheduled reviews', async ({

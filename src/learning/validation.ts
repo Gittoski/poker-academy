@@ -281,4 +281,26 @@ export function validateRecords(d: LearningBackup) {
   if (d.meta.nextScheduler) validateScheduler(d.meta.nextScheduler)
   if (d.meta.cursor) validateCursor(d.meta.cursor, sources)
   if (d.meta.resume) validateCursor(d.meta.resume, sources)
+  if (d.meta.modeCursors !== undefined) {
+    const cursors = d.meta.modeCursors
+    if (
+      !cursors ||
+      typeof cursors !== 'object' ||
+      Array.isArray(cursors) ||
+      Object.keys(cursors).some((k) => !isGameMode(k))
+    )
+      throw Error('Invalid mode bookmarks')
+    for (const [mode, cursor] of Object.entries(cursors)) {
+      validateCursor(cursor, sources)
+      const hand = d.hands.find((h) => h.id === cursor.handId)
+      if (
+        !hand ||
+        hand.config.mode !== mode ||
+        hand.origin === 'manual' ||
+        hand.config.rangesId !== cursor.hand.rangesId ||
+        hand.initial.hero !== cursor.hand.hero
+      )
+        throw Error('Invalid saved mode hand')
+    }
+  }
 }

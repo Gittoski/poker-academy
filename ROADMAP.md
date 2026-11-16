@@ -4,6 +4,14 @@ Goal: progressively improve real-life six-max Hold’em decisions, especially ag
 
 This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PLAN.md) explains lesson progression, feature scope and completion criteria. [Foundation history](docs/FOUNDATION_HISTORY.md) retains the completed import/theme work.
 
+## Current approved step: discoverable simulator mode switch
+
+- [x] Expose the existing Full hands / Preflop modes with a navy iOS-style header switch and short sliding animation.
+- [x] Preserve each mode's live hand/configuration, save before switching, handle manual retries and retain source/ownership checks.
+- [x] Include bounded mode bookmarks in backup validation and retention; keep engine, grading and data unchanged.
+- [x] Finish automated switch, mobile layout, failure-path and regression checks; see [the implementation audit](docs/implementation/MODE_SWITCH.md).
+- [ ] Actual iPhone Safari/Home Screen animation, touch, safe areas and VoiceOver check.
+
 ## Current approved step: spade logo
 
 - [x] User approved the raised silver spade on navy; replace existing logos only.
@@ -47,7 +55,7 @@ This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PL
 
 - [x] Replace the retired academy with jensbaagaard/poker-practice; preserve attribution and a Git backup.
 - [x] Deliver the navy theme while preserving engine, grading and chart data; document reviewed UI/controller integration.
-- [x] Last verified: 154 unit tests, 51 browser journeys, TypeScript, production build and simulator/strategy-calculation integrity checks.
+- [x] Last verified: 157 unit tests, 56 browser journeys, TypeScript, production build and simulator/strategy-calculation integrity checks.
 - [x] Retain range viewing, preflop training, scripted full-hand practice and existing custom-range/theme settings.
 - [ ] Actual iPhone/Safari, VoiceOver and device animation verification. Chromium phone-sized tests do not close this release gate.
 

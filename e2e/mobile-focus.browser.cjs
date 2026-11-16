@@ -76,6 +76,7 @@ for (const [width, height] of [
       '0px',
     )
     await fits(page, page.getByRole('link', { name: 'Leave simulator' }))
+    await fits(page, page.getByRole('switch', { name: 'Preflop mode' }))
     await expect(
       page.getByRole('button', { name: 'Settings & review' }),
     ).toHaveCount(0)

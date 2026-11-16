@@ -175,6 +175,7 @@ export interface SchedulerState {
   slot: number
 }
 export interface LearningMeta {
+  modeCursors?: Partial<Record<GameMode, Cursor>>
   activity?: Activity
   version: 1
   cursor: Cursor | null

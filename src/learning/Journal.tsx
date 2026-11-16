@@ -12,6 +12,9 @@ import type { RangeEntry } from '@/data/types'
 import type { TrainerSetup } from '@/lib/trainer'
 import type { GameMode } from '@/lib/gameModes'
 import type { HandIndex } from '@/lib/fullHands'
+import { loadHandIndex } from '@/lib/fullHands'
+import { loadRangeSet, rangeSetFor } from '@/lib/rangeSets'
+import { normalizePreferences } from '@/home/preferences'
 import { FullHandTrainer } from '@/components/FullHandTrainer'
 import { HandTrainer } from '@/components/HandTrainer'
 import { LearningRepository, defaultMeta } from './repository'
@@ -165,6 +168,42 @@ export function JournalShell({
   useEffect(() => {
     playUI?.reportStatus(status)
   }, [status, playUI?.reportStatus])
+  useEffect(() => {
+    if (!journal?.repo || !playUI) return
+    return playUI.registerModeChange(async (next) => {
+      if (manual) await manual.requireSaved()
+      await journal.requireSaved()
+      const meta = await journal.repo!.meta(),
+        cursor = meta.modeCursors?.[next]
+      const hand = cursor
+        ? await journal.repo!.get<HandRecord>('hands', cursor.handId)
+        : null
+      const target = normalizePreferences({
+        mode: next,
+        setup: hand?.config ?? setup,
+      }).setup
+      const pack = rangeSetFor(target)
+      if (!pack)
+        throw Error(
+          'No chart pack covers this mode setup. Your current hand has been kept.',
+        )
+      const nextEntries = await loadRangeSet(pack.id)
+      if (
+        hand &&
+        createSource('ranges', 'current-range-pack', nextEntries).id !==
+          hand.config.rangesId
+      )
+        throw Error(
+          'The saved reference for that mode has changed. Review it from Home; your current hand has been kept.',
+        )
+      if (next === 'full-hands' && !(await loadHandIndex()).hands.length)
+        throw Error(
+          'Full hands are unavailable. Load a complete pack while connected; your current hand has been kept.',
+        )
+      const config = await journal.repo!.switchMode(mode, next)
+      return config ?? undefined
+    })
+  }, [journal, manual, mode, playUI?.registerModeChange])
   async function retryDecision(runtime: JournalRuntime) {
     const repo = runtime.repo,
       a = runtime.feedback,
@@ -220,22 +259,26 @@ export function JournalShell({
       journal
         ? {
             journal,
-            paused: review || !!manual || !!playUI?.settings,
+            paused:
+              review ||
+              !!manual ||
+              !!playUI?.settings ||
+              !!playUI?.changingMode,
             retryDecision: () => retryDecision(journal),
           }
         : null,
-    [journal, review, manual, playUI?.settings],
+    [journal, review, manual, playUI?.settings, playUI?.changingMode],
   )
   const manualContext = useMemo(
     () =>
       manual
         ? {
             journal: manual,
-            paused: review || !!playUI?.settings,
+            paused: review || !!playUI?.settings || !!playUI?.changingMode,
             retryDecision: () => retryDecision(manual),
           }
         : null,
-    [manual, review, playUI?.settings],
+    [manual, review, playUI?.settings, playUI?.changingMode],
   )
   async function controls(enabled: boolean, interval: number) {
     if (!journal?.repo || !scheduler) return
