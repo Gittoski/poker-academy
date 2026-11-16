@@ -7,6 +7,7 @@ This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PL
 ## Current approved step: discoverable simulator mode switch
 
 - [x] Expose the existing Full hands / Preflop modes with a navy iOS-style header switch and short sliding animation.
+- [x] Refine the thumb to a centered oval and use a lighter, clearer blue navy track, following user feedback.
 - [x] Preserve each mode's live hand/configuration, save before switching, handle manual retries and retain source/ownership checks.
 - [x] Include bounded mode bookmarks in backup validation and retention; keep engine, grading and data unchanged.
 - [x] Finish automated switch, mobile layout, failure-path and regression checks; see [the implementation audit](docs/implementation/MODE_SWITCH.md).

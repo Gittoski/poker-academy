@@ -40,9 +40,9 @@
   display: block;
   width: 52px;
   height: 32px;
-  border: 1px solid #64789480;
+  border: 1px solid #759fc580;
   border-radius: 999px;
-  background: linear-gradient(180deg, #182130, #29384c);
+  background: linear-gradient(180deg, #213c5e, #345a80);
   box-shadow:
     inset 0 2px 4px #0008,
     inset 0 -1px 0 #d0e3ff10,
@@ -52,15 +52,15 @@
   content: '';
   position: absolute;
   inset: -1px;
-  border: 1px solid #80a9e1b0;
+  border: 1px solid #9ac9f5c0;
   border-radius: inherit;
   background:
-    radial-gradient(ellipse at 60% 10%, #548cc640, transparent 90%),
-    linear-gradient(180deg, #1b3d6a, #2a5689);
+    radial-gradient(ellipse at 60% 10%, #8bc8ff40, transparent 90%),
+    linear-gradient(180deg, #28568f, #3d7cbb);
   box-shadow:
-    inset 0 1px 2px #aecbff30,
-    inset 0 -2px 3px #061c3470,
-    0 0 10px #3164a128;
+    inset 0 1px 2px #c1e2ff40,
+    inset 0 -2px 3px #0c315570,
+    0 0 10px #468fce28;
   opacity: 0;
   transition: opacity 220ms ease;
 }
@@ -69,14 +69,14 @@
 }
 .sim-mode__thumb {
   position: absolute;
-  top: 2px;
+  top: 4px;
   left: 2px;
   display: block;
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 22px;
   border: 1px solid #f3f8ff;
-  border-radius: 50%;
-  background: linear-gradient(155deg, #fff 8%, #edf3fb 60%, #c4d4e8);
+  border-radius: 999px;
+  background: linear-gradient(155deg, #fff 8%, #f2f8ff 60%, #d4e5f6);
   box-shadow:
     inset 0 1px 1px #fff,
     inset 0 -1px 1px #a2b5ce50,
@@ -89,7 +89,7 @@
   will-change: transform;
 }
 .sim-mode--preflop .sim-mode__thumb {
-  transform: translateX(20px);
+  transform: translateX(14px);
 }
 .sim-mode__switch:focus-visible {
   outline: 2px solid #b9d6ff;

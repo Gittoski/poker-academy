@@ -39,6 +39,19 @@ test('header switch animates, preserves both modes through reload and does not r
   const toggle = page.getByRole('switch', { name: 'Preflop mode' }),
     before = await snapshot(page)
   await expect(toggle).not.toBeChecked()
+  const track = page.locator('.sim-mode__track'),
+    thumb = page.locator('.sim-mode__thumb')
+  const offTrack = await track.boundingBox(),
+    offThumb = await thumb.boundingBox()
+  expect(offThumb.width).toBeGreaterThan(offThumb.height * 1.25)
+  expect(
+    Math.abs(
+      offThumb.y + offThumb.height / 2 - (offTrack.y + offTrack.height / 2),
+    ),
+  ).toBeLessThan(1)
+  expect(offThumb.x + offThumb.width / 2).toBeLessThan(
+    offTrack.x + offTrack.width / 2,
+  )
   await page.screenshot({ path: info.outputPath('full-hands-switch.png') })
   await toggle.evaluate((el) => {
     el.click()
@@ -49,10 +62,19 @@ test('header switch animates, preserves both modes through reload and does not r
   await expect(
     page.getByRole('group', { name: 'Your move', exact: true }),
   ).toBeVisible()
-  await expect(page.locator('.sim-mode__thumb')).toHaveCSS(
-    'transform',
-    'matrix(1, 0, 0, 1, 20, 0)',
+  await thumb.evaluate(async (el) => {
+    await Promise.all(el.getAnimations().map((animation) => animation.finished))
+  })
+  const onTrack = await track.boundingBox(),
+    onThumb = await thumb.boundingBox()
+  expect(onThumb.x + onThumb.width / 2).toBeGreaterThan(
+    onTrack.x + onTrack.width / 2,
   )
+  expect(onThumb.x).toBeGreaterThan(onTrack.x)
+  expect(onThumb.x + onThumb.width).toBeLessThan(onTrack.x + onTrack.width)
+  expect(
+    Math.abs(onThumb.y + onThumb.height / 2 - (onTrack.y + onTrack.height / 2)),
+  ).toBeLessThan(1)
   expect(
     await page
       .locator('.sim-mode__thumb')
