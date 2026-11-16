@@ -54,7 +54,7 @@ test('navy presentation preserves both chart palettes and saved chart theme', as
   }
 })
 
-test('navy controls fit phone/tablet/desktop, retain neutral choices and safe action sizes', async ({
+test('navy controls fit phone/tablet/desktop with action-category colors and safe sizes', async ({
   page,
 }, testInfo) => {
   await seededPlay(page)
@@ -81,7 +81,7 @@ test('navy controls fit phone/tablet/desktop, retain neutral choices and safe ac
     for (const button of appearance) {
       expect(button.height).toBeGreaterThanOrEqual(44)
       expect(button.width).toBeGreaterThanOrEqual(44)
-      expect(button.background).toBe(appearance[0].background)
+      expect(button.background).toContain('linear-gradient')
       expect(button.color).toBe(appearance[0].color)
     }
     expect(await buttons.allTextContents()).toEqual(labels)

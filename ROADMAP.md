@@ -13,13 +13,17 @@ This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PL
 - [x] User approved the mobile layout; remove the final hand-review popup while retaining the completed table/runout and Next hand.
 - [x] Remove the mobile outer frame; align header/status text and improve the back/settings controls; remove global navigation from simulator settings.
 - [ ] Follow-up iPhone/Home Screen test of the simplified finish, seamless layout and rotation.
-- [ ] Next approval: table styling preview, then a separately approved home screen. Leave Learn unchanged for now.
+- [x] Approve option B: midnight navy felt, charcoal rail, seat shadows, classic cards and action colors.
+- [x] Implement the simulator treatment and share classic card faces with saved reviews.
+- [x] Finish option B verification, screenshot evidence and delivery; see [the audit](docs/implementation/NAVY_TABLE.md).
+- [ ] Actual iPhone/Home Screen review of option B, especially board readability, reveal positions and rotation.
+- [ ] Next approval: home screen, then extend the shared theme where appropriate. Leave Learn layout unchanged for now.
 
 ## Current verified foundation
 
 - [x] Replace the retired academy with jensbaagaard/poker-practice; preserve attribution and a Git backup.
-- [x] Deliver the navy theme without changing the engine, grading, training controllers or chart data.
-- [x] Last verified: 147 unit tests, 39 browser journeys, TypeScript, production build and simulator/strategy-calculation integrity checks.
+- [x] Deliver the navy theme while preserving engine, grading and chart data; document reviewed UI/controller integration.
+- [x] Last verified: 147 unit tests, 41 browser journeys, TypeScript, production build and simulator/strategy-calculation integrity checks.
 - [x] Retain range viewing, preflop training, scripted full-hand practice and existing custom-range/theme settings.
 - [ ] Actual iPhone/Safari, VoiceOver and device animation verification. Chromium phone-sized tests do not close this release gate.
 

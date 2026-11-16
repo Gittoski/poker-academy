@@ -19,11 +19,11 @@
     },
     "src/components/FullHandTrainer.tsx": {
       "files": 1,
-      "sha256": "651baefed26a6e4036048fc9143c6ab1994acb1bc9c727340f9f1d284873ae33"
+      "sha256": "1bc0d9f4af429af4b1633b22278b17e8f31d35cbf419f136911efd65d8fbc0fd"
     },
     "src/components/HandTrainer.tsx": {
       "files": 1,
-      "sha256": "852230c8a800d40f988452d38f1b30b86aee8b2c345b348ba96ebcc837a10d6f"
+      "sha256": "353a2768165ab3e4b5771283cf9c711e598197e0e788e977398a01fa1428f807"
     },
     "src/components/PlayPage.tsx": {
       "files": 1,
@@ -115,5 +115,13 @@
     ],
     "scope": "Presentation wrappers, modal feedback, preflop seat-inspection navigation and modal/focused-control keyboard routing. Engine, grading functions, chart functions, colors and reference/source data unchanged. Mobile settings omit global page navigation; desktop navigation is preserved.",
     "audit": "docs/implementation/MOBILE_FOCUS.md"
+  },
+  "navyTableIntegration": {
+    "paths": [
+      "src/components/FullHandTrainer.tsx",
+      "src/components/HandTrainer.tsx"
+    ],
+    "scope": "Presentation-only table replacement, guarded reveal relocation and public pot/preflop stack display; engine, grading and chart/source data unchanged.",
+    "audit": "docs/implementation/NAVY_TABLE.md"
   }
 }

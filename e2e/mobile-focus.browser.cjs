@@ -80,7 +80,7 @@ for (const [width, height] of [
       page,
       page.getByRole('group', { name: 'Your move', exact: true }),
     )
-    await fits(page, page.locator('.trainer-table > .hole-cards'))
+    await fits(page, page.locator('.trainer-table .table-hero-hand .hole-cards'))
     expect(
       await page.evaluate(() => ({
         x: scrollX,

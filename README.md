@@ -23,7 +23,7 @@ npm run build
 npm run test:browser
 ```
 
-The test suite has 147 unit tests across fifteen files and 39 browser journeys covering original play plus saving, recovery, exact retries, adaptive return, failure handling, responsive layouts, keyboard/focus, accessibility and reduced motion. The browser runner uses a production build on its own port; install Chromium once with `npx playwright install chromium`, or set `CHROMIUM_PATH` to an existing system browser. The production build regenerates the range files from the included source data; it does not need a solver installation. Solver scripts are optional offline development tools, not a requirement for running the supplied app.
+The test suite has 147 unit tests across fifteen files and 41 browser journeys covering original play plus saving, recovery, exact retries, adaptive return, failure handling, responsive layouts, keyboard/focus, accessibility and reduced motion. The browser runner uses a production build on its own port; install Chromium once with `npx playwright install chromium`, or set `CHROMIUM_PATH` to an existing system browser. The production build regenerates the range files from the included source data; it does not need a solver installation. Solver scripts are optional offline development tools, not a requirement for running the supplied app.
 
 ## Source and next steps
 
@@ -62,3 +62,9 @@ On phones, Play now dedicates the screen to the simulator. **Settings & review**
 See [scope, verification and phone testing limits](docs/implementation/MOBILE_FOCUS.md). This step leaves the table styling, home screen and Learn design for later approval. Installed offline packs need updating to load a new app build after deployment.
 
 Mobile polish follow-up: the play surface is seamless, header controls/text are aligned, and simulator settings no longer include global page navigation. The final hand-review popup has been removed; the completed table/runout and Next hand remain available.
+
+## Midnight navy table — option B
+
+The approved table style is implemented in the simulator: textured navy felt, charcoal rail, shaded seat badges, card backs, dealer button, contribution markers and classic white faces. The same card faces are shared with saved reviews. Blue Fold/Check, green Call and coral Bet/Raise buttons identify action categories, not correctness. No-page-scroll play, automatic error explanations, retries, offline support and the simplified hand finish remain intact.
+
+See [the implementation and source-state audit](docs/implementation/NAVY_TABLE.md) and [actual production screenshots](docs/design/navy-table/README.md). Public pot labels include current bets; postflop bankroll amounts are not invented. Shared visual tokens support the next home-screen/theme step without recoloring strategy charts. Actual iPhone/Safari confirmation remains outstanding.

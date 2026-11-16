@@ -24,9 +24,8 @@ import {
   preflopPrompt,
   type TrainerSetup,
 } from '@/lib/trainer'
-import { HoleCards } from './HoleCards'
 import { RangeGrid } from './RangeGrid'
-import { TableDiagram } from './TableDiagram'
+import { SimulatorTable } from './SimulatorTable'
 import { ActionPrompt } from './trainer/ActionPrompt'
 import {
   TrainerSurface,
@@ -352,7 +351,12 @@ export function HandTrainer({ entries, setup }: Props) {
           </span>
         </div>
 
-        <TableDiagram
+        <SimulatorTable
+          cards={hero.cards}
+          stacks={Object.fromEntries(
+            hand.seats.map((s) => [s.position, setup.stack - s.committed]),
+          )}
+          pot={hand.seats.reduce((sum, s) => sum + s.committed, 0)}
           players={setup.players}
           hero={hand.hero}
           villain={shownDecision?.villain}
@@ -367,7 +371,6 @@ export function HandTrainer({ entries, setup }: Props) {
             if (playUI?.mobile) playUI.openSettings()
           }}
         />
-        <HoleCards cards={hero.cards} />
 
         {hand.ended?.kind === 'flop' && (
           <p className="training-scope-note">

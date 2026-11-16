@@ -51,10 +51,10 @@ import {
   type Prompt,
   type TrainerSetup,
 } from '@/lib/trainer'
-import { BoardCards, CardFace, HoleCards } from './HoleCards'
+import { CardFace } from './HoleCards'
 import { RangeGrid } from './RangeGrid'
 import { StrategyGrid } from './StrategyGrid'
-import { TableDiagram } from './TableDiagram'
+import { SimulatorTable } from './SimulatorTable'
 import { ActionPrompt } from './trainer/ActionPrompt'
 import { TrainerSurface, PlayOptions, MobileCharts } from './trainer/PlayFrame'
 import { HandResult } from './trainer/HandResult'
@@ -567,7 +567,40 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
 
         {live && hero && (
           <>
-            <TableDiagram
+            <SimulatorTable
+              showdown={
+                resultShown &&
+                handOver &&
+                !foldedPreflop &&
+                live.script.result.kind === 'showdown' && (
+                  <div className="showdown">
+                    <span className="showdown__label">Villain</span>
+                    <div className="hole-cards hole-cards--small">
+                      {mapHole(live.script.villainCards, live.suitMap).map(
+                        (c) => (
+                          <CardFace key={c.rank + c.suit} card={c} small />
+                        ),
+                      )}
+                    </div>
+                  </div>
+                )
+              }
+              cards={hero.cards}
+              board={
+                live.play
+                  ? boardShown(live.script, presentationPlay, live.suitMap)
+                  : []
+              }
+              stacks={
+                !live.play
+                  ? Object.fromEntries(
+                      live.hand.seats.map((s) => [
+                        s.position,
+                        setup.stack - s.committed,
+                      ]),
+                    )
+                  : undefined
+              }
               players={setup.players}
               hero={live.script.hero}
               villain={live.script.villain}
@@ -579,31 +612,12 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
                 live.play
                   ? resultShown
                     ? live.script.result.pot
-                    : currentStreet(live.script, presentationPlay!)!.pot
-                  : undefined
+                    : currentStreet(live.script, presentationPlay!)!.pot +
+                      presentationPlay!.bets.ip +
+                      presentationPlay!.bets.oop
+                  : live.hand.seats.reduce((sum, s) => sum + s.committed, 0)
               }
             />
-            {live.play && (
-              <BoardCards
-                cards={boardShown(live.script, presentationPlay, live.suitMap)}
-              />
-            )}
-            {resultShown &&
-              handOver &&
-              !foldedPreflop &&
-              live.script.result.kind === 'showdown' && (
-                <div className="showdown">
-                  <span className="showdown__label">Villain</span>
-                  <div className="hole-cards hole-cards--small">
-                    {mapHole(live.script.villainCards, live.suitMap).map(
-                      (c) => (
-                        <CardFace key={c.rank + c.suit} card={c} small />
-                      ),
-                    )}
-                  </div>
-                </div>
-              )}
-            <HoleCards cards={hero.cards} />
           </>
         )}
 
