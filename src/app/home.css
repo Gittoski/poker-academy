@@ -44,13 +44,21 @@
   margin: 4px 0 0;
   font-size: 14px;
 }
-.home-spade {
-  font-size: 49px;
-  line-height: 1;
-  color: #e7efff;
-  text-shadow:
-    0 2px 1px #fff2,
-    0 7px 12px #0009;
+.app-logo {
+  display: block;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 11px;
+  box-shadow:
+    0 3px 8px #0006,
+    0 1px 0 #ffffff0d;
+}
+.app-logo--nav {
+  width: 40px;
+  height: 40px;
+  border-radius: 9px;
 }
 .home-icon-button {
   display: flex;
@@ -543,8 +551,14 @@
   .home-brand h1 {
     font-size: 21px;
   }
-  .home-spade {
-    font-size: 41px;
+  .app-logo--home {
+    width: 42px;
+    height: 42px;
+  }
+  .app-logo--nav {
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
   }
   .activity-footer {
     flex-wrap: wrap;

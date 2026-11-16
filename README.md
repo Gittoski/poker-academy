@@ -23,7 +23,7 @@ npm run build
 npm run test:browser
 ```
 
-The test suite has 154 unit tests across sixteen files and 50 browser journeys covering original play plus saving, recovery, exact retries, adaptive return, failure handling, responsive layouts, keyboard/focus, accessibility and reduced motion. The browser runner uses a production build on its own port; install Chromium once with `npx playwright install chromium`, or set `CHROMIUM_PATH` to an existing system browser. The production build regenerates the range files from the included source data; it does not need a solver installation. Solver scripts are optional offline development tools, not a requirement for running the supplied app.
+The test suite has 154 unit tests across sixteen files and 51 browser journeys covering original play plus saving, recovery, exact retries, adaptive return, failure handling, responsive layouts, keyboard/focus, accessibility and reduced motion. The browser runner uses a production build on its own port; install Chromium once with `npx playwright install chromium`, or set `CHROMIUM_PATH` to an existing system browser. The production build regenerates the range files from the included source data; it does not need a solver installation. Solver scripts are optional offline development tools, not a requirement for running the supplied app.
 
 ## Source and next steps
 
@@ -80,3 +80,7 @@ See [the implementation and source-safety audit](docs/implementation/MATERIAL_DE
 The approved Home screen has only Play/Resume, a twelve-week daily activity grid and Next practice. Ranges / Play / Learn are at the top; Settings holds training setup, recurring practice and offline installation. Home uses the simulator’s navy gradients, layered shadows and raised controls. Returning to the simulator preserves the original live-hand setup and verdict. All reviews retains mistake/session history, exact retries, notes and backups.
 
 Activity counts saved decisions and fundamentals answers, including retries; it is not an accuracy or mastery score. Daily aggregates remain after older detailed attempts are condensed. Older activity is reconstructed only from retained timestamped answers and may be incomplete. Progress stays on this browser origin/device. See [the Home implementation and verification audit](docs/implementation/HOME.md).
+
+## App logo
+
+The approved silver spade on midnight navy replaces the old text marks and letter-A icons. Home, shared navigation, browser/PWA metadata and the Apple Home Screen icon use the same local artwork. [Branding details and actual-app captures](docs/design/branding/README.md) describe the rendered sizes and offline behavior. Already downloaded packs require an update in Settings to use the new build; an existing iPhone icon can also remain cached by iOS.

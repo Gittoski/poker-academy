@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { InterfaceIcon } from '@/components/InterfaceIcon'
+import { AppLogo } from '@/components/AppLogo'
 import { loadTheme } from '@/lib/theme'
 import { LearningRepository } from '@/learning/repository'
 import { PracticeRepository } from '@/fundamentals/progress'
@@ -133,9 +134,7 @@ export function HomePage() {
     <main className="home-page">
       <header className="home-header">
         <div className="home-brand">
-          <span className="home-spade" aria-hidden="true">
-            ♠
-          </span>
+          <AppLogo className="app-logo--home" />
           <div>
             <h1>Poker Trainer</h1>
             <p>by Greg</p>

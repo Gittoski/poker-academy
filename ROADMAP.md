@@ -4,6 +4,14 @@ Goal: progressively improve real-life six-max Hold’em decisions, especially ag
 
 This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PLAN.md) explains lesson progression, feature scope and completion criteria. [Foundation history](docs/FOUNDATION_HISTORY.md) retains the completed import/theme work.
 
+## Current approved step: spade logo
+
+- [x] User approved the raised silver spade on navy; replace existing logos only.
+- [x] Use the same artwork in Home/shared navigation, browser/PWA icon and Apple Home Screen icon, with suitable local render sizes.
+- [x] Add the header mark to complete offline packs; preserve card suits and all poker/data/progress behavior.
+- [x] Verify image endpoints, metadata, small-screen layouts, offline loading and regressions; see [the branding audit](docs/design/branding/README.md).
+- [ ] Actual iPhone/Safari icon refresh and installed Home Screen appearance.
+
 ## Current approved step: Home and organized navigation
 
 - [x] User approved the three-panel Home design and shared navy/graphite lighting, shadows and materials.
@@ -39,7 +47,7 @@ This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PL
 
 - [x] Replace the retired academy with jensbaagaard/poker-practice; preserve attribution and a Git backup.
 - [x] Deliver the navy theme while preserving engine, grading and chart data; document reviewed UI/controller integration.
-- [x] Last verified: 154 unit tests, 50 browser journeys, TypeScript, production build and simulator/strategy-calculation integrity checks.
+- [x] Last verified: 154 unit tests, 51 browser journeys, TypeScript, production build and simulator/strategy-calculation integrity checks.
 - [x] Retain range viewing, preflop training, scripted full-hand practice and existing custom-range/theme settings.
 - [ ] Actual iPhone/Safari, VoiceOver and device animation verification. Chromium phone-sized tests do not close this release gate.
 

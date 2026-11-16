@@ -1,4 +1,5 @@
 import { InterfaceIcon } from './InterfaceIcon'
+import { AppLogo } from './AppLogo'
 
 export type NavPage = 'viewer' | 'play' | 'learn'
 
@@ -19,9 +20,7 @@ export function TopNav({ active, setupParams }: Props) {
   return (
     <header className="app-header">
       <a className="app-brand app-home-link" href="/" aria-label="Home">
-        <span className="app-brand__mark" aria-hidden="true">
-          ♠
-        </span>
+        <AppLogo className="app-logo--nav" />
         <span>
           Poker Trainer<small>by Greg</small>
         </span>

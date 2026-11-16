@@ -64,6 +64,7 @@ export async function GET() {
             '/manifest.webmanifest',
             '/icon',
             '/apple-icon',
+            '/brand-mark',
             ...chunks.map((x) => x.url),
             ...data.map((x) => x.url),
           ]),

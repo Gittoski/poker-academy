@@ -187,6 +187,13 @@ test('Home includes fundamentals answers and preserves activity offline across c
   await page.getByRole('button', { name: 'Done', exact: true }).click()
   await context.setOffline(true)
   await page.reload()
+  await expect
+    .poll(() =>
+      page
+        .locator('img.app-logo')
+        .evaluate((img) => img.complete && img.naturalWidth === 144),
+    )
+    .toBe(true)
   await expect(page.locator('.activity-footer')).toContainText(
     '1 answered today',
   )
