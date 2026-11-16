@@ -80,7 +80,10 @@ for (const [width, height] of [
       page,
       page.getByRole('group', { name: 'Your move', exact: true }),
     )
-    await fits(page, page.locator('.trainer-table .table-hero-hand .hole-cards'))
+    await fits(
+      page,
+      page.locator('.trainer-table .table-hero-hand .hole-cards'),
+    )
     expect(
       await page.evaluate(() => ({
         x: scrollX,
@@ -286,20 +289,21 @@ test('small-phone hand completion keeps Next hand reachable without page scrolli
   await fits(page, next)
   expect(await page.evaluate(() => scrollY)).toBe(0)
   await page.screenshot({ path: info.outputPath('small-phone-result.png') })
-  await expect(
-    page.getByRole('dialog', { name: 'Hand result', exact: true }),
-  ).toHaveCount(0)
-  await expect(
-    page.getByRole('button', { name: 'Result & showdown' }),
-  ).toHaveCount(0)
+  const outcome = page.getByRole('dialog', { name: 'You win', exact: true })
+  await expect(outcome).toBeVisible()
+  await expect(outcome).toContainText('Pair, Queens')
+  await expect(outcome).toContainText('Pair, Sevens')
   await expect(page.locator('.board .playing-card')).toHaveCount(5)
+  await outcome.getByRole('button', { name: 'Back to table' }).click()
+  await expect(outcome).not.toBeVisible()
+  await fits(page, next)
+  await page.getByRole('button', { name: 'Show result', exact: true }).click()
+  await expect(outcome).toBeVisible()
   await page.reload()
+  await expect(outcome).toBeVisible()
   await expect(next).toBeEnabled()
   await fits(page, next)
   expect((await state(page)).meta.cursor.handId).toBe(initial)
-  await expect(
-    page.getByRole('dialog', { name: 'Hand result', exact: true }),
-  ).toHaveCount(0)
   await next.focus()
   expect(
     await next.evaluate((el) =>

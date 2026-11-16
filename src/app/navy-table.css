@@ -350,3 +350,214 @@
   bottom: 2px;
   font-size: 17px;
 }
+/* Material depth: directional felt light, bevelled edges and broad contact shadows. */
+:root {
+  --poker-felt-light: #214e75;
+  --poker-felt: #0b2340;
+  --poker-felt-edge: #020914;
+  --poker-fold-end: #102b53;
+  --poker-call-end: #073827;
+  --poker-raise-end: #602522;
+}
+.navy-table .seat-surface {
+  filter: drop-shadow(0 2px 1px #000a) drop-shadow(0 10px 8px #000b);
+}
+.poker-card,
+.navy-table .poker-card {
+  background: linear-gradient(135deg, #fff 0%, #f9fbff 42%, #dde5f0 100%);
+  border-color: #f5f8ff;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    inset -1px -1px 0 #acb8ca,
+    0 1px 0 #c1ccda,
+    0 2px 0 #9aa9be,
+    0 3px 1px #536174,
+    0 7px 5px #0008,
+    0 16px 18px #0009;
+}
+.play-page [aria-label='Your move'] .action-btn {
+  background:
+    linear-gradient(175deg, #ffffff24 0%, #ffffff04 40%, #0000002b 100%),
+    linear-gradient(145deg, var(--move-start), var(--move-end));
+  border-top-color: #ffffff70;
+  border-bottom-color: #0008;
+  box-shadow:
+    inset 0 1px 0 #ffffff54,
+    inset 0 -1px 0 #0006,
+    0 3px 0 #091321,
+    0 6px 0 #030911,
+    0 10px 9px #0008,
+    0 18px 25px #0005;
+  text-shadow: 0 1px 2px #0006;
+}
+.play-page [aria-label='Your move'] .action-btn:active {
+  box-shadow:
+    inset 0 1px 0 #ffffff30,
+    0 2px 0 #030911,
+    0 5px 8px #0007;
+}
+.hand-outcome-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(540px, calc(100% - 24px));
+  height: auto;
+  max-height: calc(
+    100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 32px
+  );
+  border-radius: 24px;
+  padding: 22px;
+  background:
+    radial-gradient(ellipse at 50% 0, #24486d80, transparent 65%),
+    linear-gradient(150deg, #1b2638, #0b111c);
+  box-shadow:
+    inset 0 1px 0 #d6e8ff18,
+    0 24px 100px #000d;
+}
+.hand-outcome-dialog[open] {
+  display: flex;
+}
+.hand-outcome-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+}
+.hand-outcome-content .sim-sheet__scroll {
+  flex: 1;
+  padding: 0 2px 12px;
+}
+.hand-outcome-content h2 {
+  font-size: clamp(26px, 5vw, 36px);
+  line-height: 1.15;
+  margin: 6px 0 14px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  letter-spacing: -1px;
+}
+.outcome-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: #b6cbe5;
+  margin: 0;
+}
+.outcome-pot {
+  margin: 0 0 18px;
+  font-size: 30px;
+  line-height: 1.2;
+  font-weight: 750;
+  color: #f7faff;
+}
+.outcome-pot span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #c2d1e4;
+}
+.outcome-hands {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0;
+}
+.outcome-hands > div {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #61728a66;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #243147, #121b2a);
+  box-shadow:
+    inset 0 1px 0 #ffffff0c,
+    0 5px 10px #0003;
+}
+.outcome-hands dt {
+  font-size: 11px;
+  color: #bfcee2;
+}
+.outcome-hands dd {
+  margin: 5px 0 0;
+  font-size: 15px;
+  line-height: 1.4;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.outcome-hands .outcome-winner {
+  border-color: #84c4b6;
+  background: linear-gradient(145deg, #204239, #122c2a);
+}
+.outcome-source,
+.hand-outcome-content summary {
+  font-size: 11px;
+  line-height: 1.5;
+  color: #b8c9de;
+}
+.hand-outcome-content summary {
+  padding: 6px 0;
+  cursor: pointer;
+}
+.hand-outcome-content details {
+  margin: 8px 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.hand-outcome-content details h3 {
+  font-size: 14px;
+}
+.hand-outcome-dialog .sim-sheet__actions {
+  margin-top: 8px;
+}
+.hand-outcome-dialog .sim-sheet__actions .btn {
+  font-size: 12px;
+}
+@media (max-width: 768px), (max-width: 1024px) and (max-height: 600px) {
+  .trainer-table > .hand-result.has-outcome > .btn {
+    grid-column: auto;
+  }
+}
+.hand-outcome-dialog {
+  inset: auto;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  margin: 0;
+  height: fit-content;
+  transform: translate(-50%, -50%);
+}
+.play-page [aria-label='Your move'] {
+  overflow: visible;
+}
+.play-page [aria-label='Your move'].actions--wrap {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+}
+.play-page [aria-label='Your move'].actions--wrap .action-btn {
+  min-width: 0;
+}
+.navy-table__board-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+.navy-table .table-board .board {
+  height: auto;
+}
+.navy-table__hero-stage {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  height: 100%;
+  padding-top: 16px;
+  box-sizing: border-box;
+}
+.navy-table .table-hero-hand .hole-cards {
+  height: auto;
+}
+.sim-sheet__actions .btn {
+  box-shadow:
+    inset 0 1px 0 #ffffff22,
+    0 3px 0 #050a12,
+    0 7px 12px #0005;
+}

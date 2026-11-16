@@ -23,7 +23,7 @@ npm run build
 npm run test:browser
 ```
 
-The test suite has 147 unit tests across fifteen files and 41 browser journeys covering original play plus saving, recovery, exact retries, adaptive return, failure handling, responsive layouts, keyboard/focus, accessibility and reduced motion. The browser runner uses a production build on its own port; install Chromium once with `npx playwright install chromium`, or set `CHROMIUM_PATH` to an existing system browser. The production build regenerates the range files from the included source data; it does not need a solver installation. Solver scripts are optional offline development tools, not a requirement for running the supplied app.
+The test suite has 147 unit tests across fifteen files and 44 browser journeys covering original play plus saving, recovery, exact retries, adaptive return, failure handling, responsive layouts, keyboard/focus, accessibility and reduced motion. The browser runner uses a production build on its own port; install Chromium once with `npx playwright install chromium`, or set `CHROMIUM_PATH` to an existing system browser. The production build regenerates the range files from the included source data; it does not need a solver installation. Solver scripts are optional offline development tools, not a requirement for running the supplied app.
 
 ## Source and next steps
 
@@ -61,10 +61,16 @@ On phones, Play now dedicates the screen to the simulator. **Settings & review**
 
 See [scope, verification and phone testing limits](docs/implementation/MOBILE_FOCUS.md). This step leaves the table styling, home screen and Learn design for later approval. Installed offline packs need updating to load a new app build after deployment.
 
-Mobile polish follow-up: the play surface is seamless, header controls/text are aligned, and simulator settings no longer include global page navigation. The final hand-review popup has been removed; the completed table/runout and Next hand remain available.
+Mobile polish follow-up: the play surface is seamless, header controls/text are aligned, and simulator settings no longer include global page navigation. Fold-only finishes stay compact; completed showdowns now use a concise winner popup, with the completed table/runout and Next hand still available.
 
 ## Midnight navy table — option B
 
 The approved table style is implemented in the simulator: textured navy felt, charcoal rail, shaded seat badges, card backs, dealer button, contribution markers and classic white faces. The same card faces are shared with saved reviews. Blue Fold/Check, green Call and coral Bet/Raise buttons identify action categories, not correctness. No-page-scroll play, automatic error explanations, retries, offline support and the simplified hand finish remain intact.
 
 See [the implementation and source-state audit](docs/implementation/NAVY_TABLE.md) and [actual production screenshots](docs/design/navy-table/README.md). Public pot labels include current bets; postflop bankroll amounts are not invented. Shared visual tokens support the next home-screen/theme step without recoloring strategy charts. Actual iPhone/Safari confirmation remains outstanding.
+
+## Material depth and clear showdown outcomes
+
+The actual simulator now uses layered rail/felt lighting, raised seat badges, paper-edge card shadows and stronger button gradients/bevels. Shared card faces carry the depth treatment into saved reviews. Completed showdowns show **You win**, **Villain wins** or **Split pot**, the recorded pot and both hand names. Back to table and Next hand stay available; optional details scroll inside the popup. The table header now says Showdown complete instead of clipping the outcome paragraph.
+
+See [the implementation and source-safety audit](docs/implementation/MATERIAL_DEPTH_OUTCOMES.md). This is implemented SVG/CSS artwork, not another concept-preview round. Engine/grading/reference data are unchanged; actual iPhone/Safari appearance and performance still need device confirmation.

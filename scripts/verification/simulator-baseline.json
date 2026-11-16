@@ -19,7 +19,7 @@
     },
     "src/components/FullHandTrainer.tsx": {
       "files": 1,
-      "sha256": "1bc0d9f4af429af4b1633b22278b17e8f31d35cbf419f136911efd65d8fbc0fd"
+      "sha256": "1b1b2e476eae819da0a70379716df2adff920319ed70d2ce3140213ea50d007c"
     },
     "src/components/HandTrainer.tsx": {
       "files": 1,
@@ -123,5 +123,12 @@
     ],
     "scope": "Presentation-only table replacement, guarded reveal relocation and public pot/preflop stack display; engine, grading and chart/source data unchanged.",
     "audit": "docs/implementation/NAVY_TABLE.md"
+  },
+  "showdownOutcomeIntegration": {
+    "paths": [
+      "src/components/FullHandTrainer.tsx"
+    ],
+    "scope": "Terminal recorded-outcome prop and short result caption only; no decision, grading, source/result data or engine changes.",
+    "audit": "docs/implementation/MATERIAL_DEPTH_OUTCOMES.md"
   }
 }

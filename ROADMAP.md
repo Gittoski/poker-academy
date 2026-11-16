@@ -4,6 +4,13 @@ Goal: progressively improve real-life six-max Hold’em decisions, especially ag
 
 This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PLAN.md) explains lesson progression, feature scope and completion criteria. [Foundation history](docs/FOUNDATION_HISTORY.md) retains the completed import/theme work.
 
+## Current follow-up: material depth and clear showdown outcomes
+
+- [x] Implement deeper rail/seat/felt lighting, raised card edges and button materials in the actual simulator; preserve shared card styling.
+- [x] Add a concise completed-showdown winner/hand popup from recorded results, with fixed Next hand, close/reopen and long-details support. Fold-only finishes stay compact.
+- [x] Finish calculation/source-safety, outcome, layout and regression checks; see [the audit](docs/implementation/MATERIAL_DEPTH_OUTCOMES.md).
+- [ ] Actual iPhone/Home Screen visual and outcome check before the next home-screen goal.
+
 ## Current approved step: mobile simulator focus
 
 - [x] Implement a viewport-sized simulator with compact navigation and settings/review panel.
@@ -23,7 +30,7 @@ This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PL
 
 - [x] Replace the retired academy with jensbaagaard/poker-practice; preserve attribution and a Git backup.
 - [x] Deliver the navy theme while preserving engine, grading and chart data; document reviewed UI/controller integration.
-- [x] Last verified: 147 unit tests, 41 browser journeys, TypeScript, production build and simulator/strategy-calculation integrity checks.
+- [x] Last verified: 147 unit tests, 44 browser journeys, TypeScript, production build and simulator/strategy-calculation integrity checks.
 - [x] Retain range viewing, preflop training, scripted full-hand practice and existing custom-range/theme settings.
 - [ ] Actual iPhone/Safari, VoiceOver and device animation verification. Chromium phone-sized tests do not close this release gate.
 

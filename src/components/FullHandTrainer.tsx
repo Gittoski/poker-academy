@@ -532,7 +532,10 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
           : ''
   } else if (handOverMessage && resultShown) {
     title = 'Hand complete'
-    subtitle = handOverMessage
+    subtitle =
+      live?.play?.done && live.script.result.kind === 'showdown'
+        ? 'Showdown complete'
+        : handOverMessage
   } else if (live) {
     const { script, play } = live
     title = play
@@ -623,6 +626,14 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
 
         {resultShown && handOverMessage ? (
           <HandResult
+            outcome={
+              live &&
+              live.play?.done &&
+              !foldedPreflop &&
+              live.script.result.kind === 'showdown'
+                ? live.script.result
+                : undefined
+            }
             action={
               <button
                 type="button"

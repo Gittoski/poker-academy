@@ -96,21 +96,44 @@ export function SimulatorTable({
         aria-label={`Table with ${players} players, hero ${hero}`}
       >
         <defs>
-          <radialGradient id={`${id}-felt`} cx="48%" cy="40%" r="70%">
+          <filter
+            id={`${id}-felt-inset`}
+            x="-15%"
+            y="-15%"
+            width="130%"
+            height="130%"
+            colorInterpolationFilters="sRGB"
+          >
+            <feGaussianBlur in="SourceAlpha" stdDeviation="6" result="soft" />
+            <feOffset in="soft" dy="5" result="offset" />
+            <feComposite
+              in="SourceAlpha"
+              in2="offset"
+              operator="out"
+              result="inner"
+            />
+            <feFlood floodColor="#000" floodOpacity=".8" />
+            <feComposite in2="inner" operator="in" result="shade" />
+            <feMerge>
+              <feMergeNode in="SourceGraphic" />
+              <feMergeNode in="shade" />
+            </feMerge>
+          </filter>
+          <radialGradient id={`${id}-felt`} cx="46%" cy="34%" r="67%">
             <stop offset="0" stopColor="var(--poker-felt-light)" />
-            <stop offset=".58" stopColor="var(--poker-felt)" />
+            <stop offset=".50" stopColor="var(--poker-felt)" />
             <stop offset="1" stopColor="var(--poker-felt-edge)" />
           </radialGradient>
           <linearGradient id={`${id}-rail`} x2=".2" y2="1">
-            <stop stopColor="#3a404a" />
-            <stop offset=".18" stopColor="#292e36" />
-            <stop offset=".65" stopColor="#141921" />
-            <stop offset="1" stopColor="#29313b" />
+            <stop stopColor="#59616c" />
+            <stop offset=".24" stopColor="#252d38" />
+            <stop offset=".70" stopColor="#0a0f18" />
+            <stop offset="1" stopColor="#343e4c" />
           </linearGradient>
           <linearGradient id={`${id}-seat`} x2=".1" y2="1">
-            <stop stopColor="#353b46" />
-            <stop offset=".45" stopColor="#232a34" />
-            <stop offset="1" stopColor="#151b25" />
+            <stop stopColor="#4c5666" />
+            <stop offset=".40" stopColor="#252f3e" />
+            <stop offset="1" stopColor="#0c121e" />
           </linearGradient>
           <linearGradient id={`${id}-back`} x2="1" y2="1">
             <stop stopColor="#354456" />
@@ -152,37 +175,56 @@ export function SimulatorTable({
           >
             <feDropShadow
               dx="0"
-              dy="4"
-              stdDeviation="4"
+              dy="8"
+              stdDeviation="6"
               floodColor="#000"
-              floodOpacity=".55"
+              floodOpacity=".8"
             />
           </filter>
         </defs>
         <ellipse
+          cx={cx}
+          cy={cy + 9}
+          rx={rx + 14}
+          ry={ry + 14}
+          fill="#000"
+          opacity=".55"
+          filter={`url(#${id}-shadow)`}
+        />
+        <ellipse
           className="navy-table__rail"
           cx={cx}
           cy={cy}
-          rx={rx}
-          ry={ry}
-          fill={`url(#${id}-felt)`}
-          stroke={`url(#${id}-rail)`}
-          strokeWidth="22"
+          rx={rx + 12}
+          ry={ry + 12}
+          fill={`url(#${id}-rail)`}
           filter={`url(#${id}-shadow)`}
         />
+        <ellipse
+          cx={cx}
+          cy={cy - 1}
+          rx={rx + 10}
+          ry={ry + 10}
+          fill="none"
+          stroke="#b6c5d9"
+          strokeOpacity=".23"
+          strokeWidth="1"
+        />
+        <ellipse cx={cx} cy={cy + 2} rx={rx - 7} ry={ry - 7} fill="#020711" />
         <ellipse
           cx={cx}
           cy={cy}
           rx={rx - 12}
           ry={ry - 12}
-          fill="none"
+          fill={`url(#${id}-felt)`}
+          filter={`url(#${id}-felt-inset)`}
           stroke="#000"
-          strokeOpacity=".45"
-          strokeWidth="5"
+          strokeOpacity=".85"
+          strokeWidth="4"
         />
         <ellipse
           cx={cx}
-          cy={cy}
+          cy={cy + 1}
           rx={rx - 14}
           ry={ry - 14}
           fill={`url(#${id}-weave)`}
@@ -190,12 +232,22 @@ export function SimulatorTable({
         <ellipse
           cx={cx}
           cy={cy}
-          rx={rx + 10}
-          ry={ry + 10}
+          rx={rx - 16}
+          ry={ry - 16}
           fill="none"
-          stroke="#a4adb9"
-          strokeOpacity=".18"
-          strokeWidth="1"
+          stroke="#030a13"
+          strokeWidth="8"
+          strokeOpacity=".45"
+        />
+        <ellipse
+          cx={cx}
+          cy={cy - 1}
+          rx={rx - 11}
+          ry={ry - 11}
+          fill="none"
+          stroke="#708aaa"
+          strokeWidth=".8"
+          strokeOpacity=".28"
         />
         <text
           x={cx}
@@ -220,23 +272,27 @@ export function SimulatorTable({
         </text>
         {board.length > 0 && (
           <foreignObject
-            x={cx - 126}
-            y={portrait ? cy - 31 : 166}
-            width="252"
-            height="76"
+            x={cx - 150}
+            y={(portrait ? cy - 31 : 166) - 24}
+            width="300"
+            height="124"
             className="table-board"
           >
-            <BoardCards cards={board} />
+            <div className="navy-table__board-stage">
+              <BoardCards cards={board} />
+            </div>
           </foreignObject>
         )}
         <foreignObject
-          x={cx - 62}
-          y={heroCardY}
-          width="124"
-          height="100"
+          x={cx - 86}
+          y={heroCardY - 16}
+          width="172"
+          height="132"
           className="table-hero-hand"
         >
-          <HoleCards cards={cards} />
+          <div className="navy-table__hero-stage">
+            <HoleCards cards={cards} />
+          </div>
         </foreignObject>
         {showdown && (
           <foreignObject
@@ -352,6 +408,15 @@ export function SimulatorTable({
                 />
               )}
               <rect
+                x={x - seatWidth / 2}
+                y={y - 18}
+                width={seatWidth}
+                height="48"
+                rx="10"
+                fill="#03070e"
+                filter={`url(#${id}-shadow)`}
+              />
+              <rect
                 className="seat-surface"
                 x={x - seatWidth / 2}
                 y={y - 24}
@@ -370,6 +435,16 @@ export function SimulatorTable({
                 }
                 strokeWidth={isHero ? 1.8 : 1}
                 filter={`url(#${id}-shadow)`}
+              />
+              <rect
+                x={x - seatWidth / 2 + 2}
+                y={y - 22}
+                width={seatWidth - 4}
+                height="44"
+                rx="8"
+                fill="none"
+                stroke="#d9e8ff"
+                strokeOpacity=".12"
               />
               <path
                 d={`M${x - seatWidth / 2 + 11} ${y - 22}H${x + seatWidth / 2 - 11}`}
