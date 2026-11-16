@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test')
-// Legacy inline controls are the desktop flow; mobile focus flows have dedicated coverage.
+// Exercise desktop play; Home owns routine settings and review entry. Mobile focus has dedicated coverage.
 test.use({viewport:{width:1365,height:950}})
 const AxeBuilder = require('@axe-core/playwright').default
 
@@ -36,7 +36,7 @@ test('navy presentation preserves both chart palettes and saved chart theme', as
       (value) => localStorage.setItem('open-range-viewer:theme', value),
       theme,
     )
-    await page.goto('/')
+    await page.goto('/ranges')
     await expect(page.getByRole('gridcell')).toHaveCount(169)
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
     const colors = await page.evaluate(() => {
@@ -145,7 +145,7 @@ test('6/8/9-seat range inspection and full-hand board overlay remain usable', as
   page,
 }, testInfo) => {
   for (const players of [6, 8, 9]) {
-    await page.goto(`/?players=${players}`)
+    await page.goto(`/ranges?players=${players}`)
     await expect(page.getByRole('gridcell')).toHaveCount(169)
     await expect(
       page.getByRole('img', {

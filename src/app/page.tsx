@@ -1,10 +1,5 @@
-import { Suspense } from 'react'
-import { RangeViewer } from '@/components/RangeViewer'
+import { HomePage } from '@/home/HomePage'
 
 export default function Page() {
-  return (
-    <Suspense fallback={null}>
-      <RangeViewer />
-    </Suspense>
-  )
+  return <HomePage />
 }

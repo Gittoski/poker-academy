@@ -1,6 +1,7 @@
+const { home, openReviews } = require('./support/navigation.cjs')
 const { test, expect } = require('@playwright/test')
-// Legacy inline controls are the desktop flow; mobile focus flows have dedicated coverage.
-test.use({viewport:{width:1365,height:950}})
+// Exercise desktop play; Home owns routine settings and review entry. Mobile focus has dedicated coverage.
+test.use({ viewport: { width: 1365, height: 950 } })
 const AxeBuilder = require('@axe-core/playwright').default
 async function boot(page, mode = 'full-hands', seat = 'LJ') {
   await page.addInitScript(() => {
@@ -84,7 +85,7 @@ for (const mode of ['preflop', 'full-hands'])
     await expect(page.locator('.verdict')).toBeVisible({ timeout: 15000 })
     expect(await page.locator('.hole-cards').last().innerText()).toBe(cards)
     expect((await state(page)).decisions).toHaveLength(1)
-    await page.getByRole('button', { name: 'Review mistakes' }).click()
+    await openReviews(page)
     const dialog = page.getByRole('dialog')
     await expect(dialog).toBeVisible()
     await dialog.getByRole('button', { name: 'Sessions', exact: true }).click()
@@ -127,13 +128,18 @@ test('review controls, mobile dialog, focus, accessibility and another tab', asy
 }, testInfo) => {
   await boot(page)
   await wrong(page)
-  await page.getByText('Practice settings', { exact: true }).click()
+  await home(page)
+  await page.getByRole('button', { name: 'Settings', exact: true }).click()
   await page.getByLabel('Mix in my mistakes').uncheck()
-  await page.getByLabel('About 1 review hand in every 10 hands').fill('2')
+  await expect
+    .poll(async () => (await state(page)).meta.nextScheduler?.enabled)
+    .toBe(false)
+  await page.locator('#home-review-rate').focus()
+  await page.keyboard.press('Home')
   await expect
     .poll(async () => (await state(page)).meta.nextScheduler?.interval)
     .toBe(2)
-  await page.getByRole('button', { name: 'Review mistakes' }).click()
+  await openReviews(page)
   const dialog = page.getByRole('dialog')
   await expect(dialog).toBeVisible()
   for (const width of [320, 390, 768, 1365]) {
@@ -156,11 +162,11 @@ test('review controls, mobile dialog, focus, accessibility and another tab', asy
     path: testInfo.outputPath('session-review-phone.png'),
     fullPage: true,
   })
-  await page.setViewportSize({width:1365,height:950})
+  await page.setViewportSize({ width: 1365, height: 950 })
   await page.keyboard.press('Escape')
   await expect(dialog).toBeHidden()
   await expect(
-    page.getByRole('button', { name: 'Review mistakes' }),
+    page.getByRole('link', { name: 'Leave simulator' }),
   ).toBeFocused()
   const other = await context.newPage()
   await other.goto('/play')
@@ -290,7 +296,7 @@ test('adaptive mistake returns as a whole hand and is revealed only after its ta
     path: testInfo.outputPath('adaptive-return.png'),
     fullPage: true,
   })
-  await page.getByRole('button', { name: 'Review mistakes' }).click()
+  await openReviews(page)
   const dialog = page.getByRole('dialog')
   await dialog.locator('.learning-list button').first().click()
   await expect(
@@ -348,6 +354,9 @@ test('storage denial gives an honest unsaved mode with export instead of breakin
   await move.getByRole('button').last().click()
   await expect(page.locator('.verdict')).toBeVisible()
   await expect(page.getByRole('status').first()).toContainText('Not saved')
+  await page
+    .getByRole('button', { name: 'Save needs attention', exact: true })
+    .click()
   const download = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Export pending work' }).click()
   const file = await download
@@ -388,7 +397,7 @@ test('postflop retry restores the exact visible board and reference without futu
       saved = (await state(page)).decisions.sort(
         (a, b) => b.createdAt - a.createdAt,
       )[0]
-      await page.getByRole('button', { name: 'Review mistakes' }).click()
+      await openReviews(page)
       const dialog = page.getByRole('dialog')
       await dialog
         .getByRole('button', { name: 'Sessions', exact: true })
@@ -471,7 +480,7 @@ test('reload before answering keeps the hand; NPC progression pauses throughout 
       }
     })
     .toBe(before.meta.cursor.handId)
-  await npc.getByRole('button', { name: 'Review mistakes' }).click()
+  await openReviews(npc)
   await expect(npc.getByRole('dialog')).toBeVisible()
   const paused = await state(npc)
   await npc.waitForTimeout(1200)
@@ -533,7 +542,7 @@ test('missing original reference leaves saved context read-only instead of subst
     await new Promise((resolve) => (tx.oncomplete = resolve))
     db.close()
   }, attempt.config.rangesId)
-  await page.getByRole('button', { name: 'Review mistakes' }).click()
+  await openReviews(page)
   const dialog = page.getByRole('dialog')
   await dialog.locator('.learning-list button').first().click()
   await expect(

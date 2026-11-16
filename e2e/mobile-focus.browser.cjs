@@ -1,3 +1,4 @@
+const { home, openReviews } = require('./support/navigation.cjs')
 const { test, expect } = require('@playwright/test')
 const AxeBuilder = require('@axe-core/playwright').default
 const fs = require('node:fs')
@@ -75,7 +76,9 @@ for (const [width, height] of [
       '0px',
     )
     await fits(page, page.getByRole('link', { name: 'Leave simulator' }))
-    await fits(page, page.getByRole('button', { name: 'Settings & review' }))
+    await expect(
+      page.getByRole('button', { name: 'Settings & review' }),
+    ).toHaveCount(0)
     await fits(
       page,
       page.getByRole('group', { name: 'Your move', exact: true }),
@@ -174,25 +177,11 @@ test('correct feedback is compact and mobile controls remain accessible', async 
       nodes: v.nodes.map((n) => n.target),
     })),
   ).toEqual([])
-  await page.getByRole('button', { name: 'Settings & review' }).click()
-  const settings = page.getByRole('dialog', { name: 'Simulator settings' })
-  await expect(settings).toBeVisible()
-  await expect(settings.getByRole('navigation', { name: 'Pages' })).toHaveCount(
-    0,
-  )
-  await expect(
-    settings.getByRole('link', { name: /^(Ranges|Play|Learn)$/ }),
-  ).toHaveCount(0)
-  await settings.getByRole('button', { name: 'Review mistakes' }).click()
-  await expect(
-    page.getByRole('dialog', { name: 'Review your play' }),
-  ).toBeVisible()
+  await openReviews(page)
   await page
     .getByRole('dialog', { name: 'Review your play' })
     .getByRole('button', { name: 'Back to simulator' })
     .click()
-  await expect(settings).toBeVisible()
-  await settings.getByRole('button', { name: 'Back to hand' }).click()
   await expect(page.locator('.sim-compact')).toBeVisible()
   const live = (await state(page)).meta.cursor.handId
   await page.getByRole('button', { name: 'Explanation & chart' }).click()
@@ -214,19 +203,20 @@ test('correct feedback is compact and mobile controls remain accessible', async 
   ).toBeNull()
   expect((await state(page)).meta.resume.handId).toBe(live)
 })
-test('mobile settings switch modes, pause play and keep preflop controls reachable', async ({
+test('Home settings switch modes and keep preflop controls reachable', async ({
   page,
 }) => {
   await boot(page)
   const original = (await state(page)).meta.cursor.handId
-  await page.getByRole('button', { name: 'Settings & review' }).click()
-  const settings = page.getByRole('dialog', { name: 'Simulator settings' })
+  await home(page)
+  await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  const settings = page.getByRole('dialog', { name: 'Settings', exact: true })
   await expect(settings).toBeVisible()
   expect((await state(page)).meta.cursor.handId).toBe(original)
   await settings.getByRole('radio', { name: 'Preflop', exact: true }).click()
   await settings.getByRole('button', { name: 'Game setup' }).click()
   await settings.getByRole('radio', { name: 'LJ', exact: true }).click()
-  await settings.getByRole('button', { name: 'Back to hand' }).click()
+  await settings.getByRole('link', { name: /Play with these settings/ }).click()
   const move = page.getByRole('group', { name: 'Your move', exact: true })
   await expect(move).toBeVisible({ timeout: 20000 })
   await fits(page, move)

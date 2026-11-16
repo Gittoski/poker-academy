@@ -1,4 +1,10 @@
 import { newId } from '@/learning/identity'
+import {
+  activityFrom,
+  countAnswer,
+  validateActivity,
+  type Activity,
+} from '@/activity/calendar'
 import { isTopic, type Topic } from './content'
 import { question, type Question } from './questions'
 export interface Counts {
@@ -58,6 +64,7 @@ interface Submission {
   at: number
 }
 export interface PracticeBackup {
+  activity?: Activity
   version: 1
   skills: SkillProgress[]
   seen: Exposure[]
@@ -104,15 +111,29 @@ export class PracticeRepository {
       : localStorage,
   ) {}
   async open() {
-    const r = indexedDB.open(this.name, 1)
+    const r = indexedDB.open(this.name, 2)
     r.onupgradeneeded = () => {
-      for (const name of stores) {
-        const s = r.result.createObjectStore(name, { keyPath: 'id' })
-        if (name === 'attempts') s.createIndex('at', 'at')
+      for (const name of [...stores, 'meta']) {
+        if (!r.result.objectStoreNames.contains(name)) {
+          const s = r.result.createObjectStore(name, { keyPath: 'id' })
+          if (name === 'attempts') s.createIndex('at', 'at')
+        }
       }
     }
     this.db = await request(r)
     this.db.onversionchange = () => this.close()
+    const tx = this.tx(['meta', 'attempts'], 'readwrite'),
+      done = completed(tx)
+    if (!(await request(tx.objectStore('meta').get('activity')))) {
+      const attempts: Attempt[] = await request(
+        tx.objectStore('attempts').getAll(),
+      )
+      tx.objectStore('meta').put({
+        id: 'activity',
+        ...activityFrom(attempts.map((a) => a.at)),
+      })
+    }
+    await done
   }
   close() {
     this.db?.close()
@@ -140,6 +161,12 @@ export class PracticeRepository {
       (await request(tx.objectStore('skills').get(topic))) ?? emptySkill(topic)
     tx.objectStore('skills').put({ ...s, lessonRead: true })
     await done
+  }
+  async activity(): Promise<Activity> {
+    const value = await request(
+      this.tx(['meta']).objectStore('meta').get('activity'),
+    )
+    return value ? { version: 1, days: value.days } : activityFrom([])
   }
   async active(topic: Topic): Promise<ActiveQuestion | null> {
     return (
@@ -266,7 +293,7 @@ export class PracticeRepository {
       !Number.isFinite(e.at)
     )
       throw Error('Invalid practice answer')
-    const tx = this.tx(stores, 'readwrite'),
+    const tx = this.tx([...stores, 'meta'], 'readwrite'),
       done = completed(tx)
     try {
       const attempts = tx.objectStore('attempts'),
@@ -319,6 +346,11 @@ export class PracticeRepository {
         from: e.active.from,
       }
       attempts.add(attempt)
+      const activity = await request(tx.objectStore('meta').get('activity'))
+      tx.objectStore('meta').put({
+        id: 'activity',
+        ...countAnswer(activity ?? activityFrom([]), e.at),
+      })
       const c = stats[e.active.mode]
       c.answered++
       if (attempt.withinTime === true) c.onTime = (c.onTime ?? 0) + 1
@@ -399,14 +431,16 @@ export class PracticeRepository {
   }
   async backup(): Promise<PracticeBackup> {
     await this.queue.catch(() => {})
-    const tx = this.tx(stores),
+    const tx = this.tx([...stores, 'meta']),
       done = completed(tx),
       data = await Promise.all(
         stores.map((s) => request(tx.objectStore(s).getAll())),
       )
+    const activity = await request(tx.objectStore('meta').get('activity'))
     await done
     return {
       version: 1,
+      activity: { version: 1, days: activity?.days ?? {} },
       skills: data[0],
       seen: data[1],
       attempts: data[2],
@@ -449,13 +483,17 @@ export class PracticeRepository {
   }
   async restore(input: unknown) {
     const b = validatePracticeBackup(input)
-    const tx = this.tx(stores, 'readwrite'),
+    const tx = this.tx([...stores, 'meta'], 'readwrite'),
       done = completed(tx)
     try {
       for (const s of stores) {
         tx.objectStore(s).clear()
         for (const item of b[s]) tx.objectStore(s).put(item)
       }
+      tx.objectStore('meta').put({
+        id: 'activity',
+        ...(b.activity ?? activityFrom(b.attempts.map((a) => a.at))),
+      })
       await done
       this.wal?.removeItem(`${this.name}:pending`)
     } catch (e) {
@@ -470,6 +508,7 @@ export class PracticeRepository {
 export function validatePracticeBackup(value: unknown): PracticeBackup {
   const b = value as PracticeBackup
   if (!b || b.version !== 1) throw Error('Unsupported learning backup')
+  if (b.activity !== undefined) validateActivity(b.activity)
   for (const s of stores)
     if (
       !Array.isArray(b[s]) ||

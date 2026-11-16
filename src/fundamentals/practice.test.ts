@@ -227,3 +227,48 @@ it('detail retention preserves aggregates and rejects recounting a compacted old
   expect((await r.skill(a.topic)).untimed.answered).toBe(1001)
   r.close()
 })
+
+it('daily practice totals survive duplicate recovery, detail retention, export and old-backup migration', async () => {
+  const r = await repo(),
+    a = active('pot-odds', 4),
+    at = new Date(2026, 10, 16, 9).getTime()
+  await r.answer(a, 0, at)
+  await r.answer(a, 0, at)
+  expect((await r.activity()).days['2026-11-16']).toBe(1)
+  const backup = await r.backup()
+  backup.attempts = [] // aggregates must not depend on retained detail
+  await r.restore(backup)
+  expect((await r.activity()).days['2026-11-16']).toBe(1)
+  const old = await r.backup()
+  delete old.activity
+  await r.restore(old)
+  expect((await r.activity()).days).toEqual({}) // no invented dates from skill totals
+  r.close()
+})
+
+it('upgrades an actual version-one practice database without resetting attempts or inventing dates', async () => {
+  const original = await repo(),
+    a = active('pot-odds', 4)
+  await original.answer(a, 0, new Date(2026, 10, 15, 23, 59).getTime())
+  const backup = await original.backup(),
+    name = `old-practice-${++id}`
+  const db = await new Promise<IDBDatabase>((resolve, reject) => {
+    const open = indexedDB.open(name, 1)
+    open.onupgradeneeded = () => {
+      for (const name of ['skills', 'seen', 'attempts', 'active'] as const) {
+        const store = open.result.createObjectStore(name, { keyPath: 'id' })
+        if (name === 'attempts') store.createIndex('at', 'at')
+        for (const value of backup[name]) store.put(value)
+      }
+    }
+    open.onsuccess = () => resolve(open.result)
+    open.onerror = () => reject(open.error)
+  })
+  db.close()
+  const migrated = new PracticeRepository(name, new Memory())
+  await migrated.open()
+  expect((await migrated.backup()).attempts).toEqual(backup.attempts)
+  expect((await migrated.activity()).days).toEqual({ '2026-11-15': 1 })
+  migrated.close()
+  original.close()
+})

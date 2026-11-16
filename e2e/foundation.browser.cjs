@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test')
-// Legacy inline controls are the desktop flow; mobile focus flows have dedicated coverage.
+// Exercise desktop play; Home owns routine settings and review entry. Mobile focus has dedicated coverage.
 test.use({viewport:{width:1365,height:950}})
 const path = require('node:path')
 const fs = require('node:fs')
@@ -30,7 +30,7 @@ test('range viewer loads supplied charts and preserves scenario/position in the 
   page,
 }) => {
   const errors = watchErrors(page)
-  await page.goto('/')
+  await page.goto('/ranges')
   await expect(page.getByRole('gridcell')).toHaveCount(169)
   await page
     .getByRole('radiogroup', { name: 'Hero position' })
@@ -122,7 +122,7 @@ test('baseline phone and desktop layouts render; save actual-app and concept pre
   page,
 }, testInfo) => {
   await seed(page, 42)
-  await page.goto('/')
+  await page.goto('/ranges')
   await expect(page.getByRole('gridcell')).toHaveCount(169)
   for (const width of [320, 390, 768, 1365]) {
     await page.setViewportSize({ width, height: 844 })

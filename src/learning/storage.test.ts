@@ -898,3 +898,40 @@ it('persists result acknowledgement without duplicating the final decision and r
   expect(() => validateBackup(malformed)).toThrow(/checkpoint/i)
   repo.close()
 })
+
+it('daily activity is atomic, idempotent and survives condensation and old-backup migration', async () => {
+  const { source, event } = fixture(),
+    repo = await repository()
+  await repo.cache(source)
+  await repo.submit(event)
+  await repo.submit(event)
+  expect(Object.values((await repo.meta()).activity!.days)).toEqual([1])
+  const backup = await repo.backup()
+  const history = structuredClone(backup)
+  history.meta.cursor = null
+  history.meta.resume = null
+  history.problems = []
+  history.hands[0].completedAt = 102
+  const compacted = compactBackup(history, 0)
+  expect(compacted.removed).toBe(1)
+  expect(compacted.data.meta.activity).toEqual(backup.meta.activity)
+  // Simulate a pre-activity export with retained detailed decisions.
+  delete backup.meta.activity
+  await repo.restore(backup)
+  expect(Object.values((await repo.meta()).activity!.days)).toEqual([1])
+  repo.close()
+})
+
+it('a failed decision transaction rolls back the daily counter along with the answer', async () => {
+  const { source, event } = fixture(),
+    repo = await repository()
+  await repo.cache(source)
+  event.hand.decisions = 2
+  await expect(repo.submit(event)).rejects.toThrow('earlier answer')
+  expect((await repo.meta()).activity!.days).toEqual({})
+  expect(await repo.list('decisions')).toEqual([])
+  event.hand.decisions = 1
+  await repo.submit(event)
+  expect(Object.values((await repo.meta()).activity!.days)).toEqual([1])
+  repo.close()
+})

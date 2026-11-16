@@ -1,3 +1,4 @@
+const { home, openReviews } = require('./support/navigation.cjs')
 const { test, expect } = require('@playwright/test')
 const AxeBuilder = require('@axe-core/playwright').default
 async function learning(page) {
@@ -292,7 +293,7 @@ test('simulator errors open related fresh practice and preserve the paused hand'
     db.close()
     return value.cursor.handId
   })
-  await page.getByRole('button', { name: 'Review mistakes' }).click()
+  await openReviews(page)
   const dialog = page.getByRole('dialog')
   await dialog.locator('.learning-list button').first().click()
   await expect(dialog).toContainText('not an equity estimate')

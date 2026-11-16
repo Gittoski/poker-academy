@@ -3,10 +3,11 @@ import type { ReactNode } from 'react'
 import './globals.css'
 import './interface.css'
 import './navy-table.css'
+import './home.css'
 
 export const metadata: Metadata = {
-  title: 'Poker Practice',
-  description: 'Open-source preflop range viewer for No-Limit Hold’em.',
+  title: 'Poker Trainer by Greg',
+  description: 'Six-max poker practice, guided fundamentals and saved mistake reviews.',
 }
 
 export const viewport: Viewport = {

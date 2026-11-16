@@ -368,7 +368,7 @@ export function HandTrainer({ entries, setup }: Props) {
           selected={inspectedSeat?.position}
           onSeatClick={(position) => {
             toggleInspected(position)
-            if (playUI?.mobile) playUI.openSettings()
+            playUI?.openSettings()
           }}
         />
 

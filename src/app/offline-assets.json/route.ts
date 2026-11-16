@@ -58,6 +58,7 @@ export async function GET() {
         urls: [
           ...new Set([
             '/',
+            '/ranges',
             '/play',
             '/learn',
             '/manifest.webmanifest',

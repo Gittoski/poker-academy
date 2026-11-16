@@ -41,10 +41,10 @@ export function PlayFrame({ children }: { children: ReactNode }) {
   useEffect(() => {
     const d = dialog.current
     if (!d) return
-    if (settings && mobile) {
+    if (settings) {
       d.showModal()
     } else if (d.open) d.close()
-  }, [settings, mobile])
+  }, [settings])
   function close() {
     setSettings(false)
     trigger.current?.focus()
@@ -53,7 +53,7 @@ export function PlayFrame({ children }: { children: ReactNode }) {
     <UI.Provider
       value={{
         mobile,
-        settings: settings && mobile,
+        settings,
         target,
         openSettings: () => setSettings(true),
         reportStatus: setStatus,
@@ -82,29 +82,16 @@ export function PlayFrame({ children }: { children: ReactNode }) {
               {status === 'Saved on this device' ? 'Saved on device' : status}
             </span>
           </div>
-          <button
-            className="btn sim-menu"
-            ref={trigger}
-            onClick={() => setSettings(true)}
-            aria-haspopup="dialog"
-            aria-label="Settings & review"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              strokeLinecap="round"
-              aria-hidden="true"
+          {status.startsWith('Not saved') && (
+            <button
+              className="btn sim-menu"
+              ref={trigger}
+              onClick={() => setSettings(true)}
+              aria-haspopup="dialog"
             >
-              <path d="M4 7h16M4 17h16" />
-              <circle cx="9" cy="7" r="2.5" fill="var(--bg)" />
-              <circle cx="15" cy="17" r="2.5" fill="var(--bg)" />
-            </svg>
-            <span>Settings</span>
-          </button>
+              Save needs attention
+            </button>
+          )}
         </header>
         {children}
         <dialog
@@ -117,7 +104,7 @@ export function PlayFrame({ children }: { children: ReactNode }) {
           }}
         >
           <header>
-            <h2 id="sim-settings-title">Simulator settings</h2>
+            <h2 id="sim-settings-title">Hand details & recovery</h2>
             <button className="btn" onClick={close}>
               Back to hand
             </button>
@@ -130,8 +117,13 @@ export function PlayFrame({ children }: { children: ReactNode }) {
 }
 export function PlayOptions({ children }: { children: ReactNode }) {
   const ui = usePlayUI()
-  if (ui?.mobile) return ui.target ? createPortal(children, ui.target) : null
-  return <>{children}</>
+  return ui ? (
+    ui.target ? (
+      createPortal(children, ui.target)
+    ) : null
+  ) : (
+    <>{children}</>
+  )
 }
 const Surface = createContext<{
   target: HTMLDivElement | null

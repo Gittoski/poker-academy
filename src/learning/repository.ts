@@ -18,6 +18,7 @@ import { compatible } from './scheduler'
 import type { LearningConfig } from './types'
 import { configureScheduler } from './scheduler'
 import { compactBackup } from './retention'
+import { activityFrom, countAnswer } from '@/activity/calendar'
 
 const TABLES = [
   'sources',
@@ -115,6 +116,19 @@ export class LearningRepository {
     }
     this.db = await req(opening)
     this.db.onversionchange = () => this.close()
+    // Migrate only retained timestamped decisions; session totals can span days.
+    const tx = this.tx(['meta', 'decisions'], 'readwrite'),
+      completion = done(tx)
+    const state: LearningMeta =
+      (await req(tx.objectStore('meta').get(META))) ?? defaultMeta()
+    if (!state.activity) {
+      const decisions: DecisionRecord[] = await req(
+        tx.objectStore('decisions').getAll(),
+      )
+      state.activity = activityFrom(decisions.map((d) => d.createdAt))
+      tx.objectStore('meta').put({ ...state, id: META })
+    }
+    await completion
   }
   close() {
     if (this.db) {
@@ -466,6 +480,10 @@ export class LearningRepository {
         d.firstExposure =
           (await req(ds.index('nodeKey').count(d.nodeKey))) === 0
         ds.add(d)
+        state.activity = countAnswer(
+          state.activity ?? activityFrom([]),
+          d.createdAt,
+        )
         if (
           existing &&
           event.at - session.lastActivityAt >= 30 * 60 * 1000 &&
@@ -710,6 +728,12 @@ export class LearningRepository {
         for (const value of data[name]) tx.objectStore(name).put(value)
       }
       tx.objectStore('meta').put({ ...data.meta, id: META })
+      if (!data.meta.activity)
+        tx.objectStore('meta').put({
+          ...data.meta,
+          activity: activityFrom(data.decisions.map((d) => d.createdAt)),
+          id: META,
+        })
       await completion
       if (clearPending) this.pending?.removeItem(this.walKey)
       this.overBudget = false

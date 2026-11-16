@@ -4,6 +4,7 @@ import type { GameMode } from '@/lib/gameModes'
 import type { HandScript, PostflopPlay, SuitMap } from '@/lib/fullHands'
 import type { Decision, HandState, Seat } from '@/lib/handSim'
 import type { Grade, Prompt, Score, TrainerSetup } from '@/lib/trainer'
+import type { Activity } from '@/activity/calendar'
 
 export const LEARNING_VERSION = 1 as const
 export type Origin = 'regular' | 'adaptive' | 'manual'
@@ -174,6 +175,7 @@ export interface SchedulerState {
   slot: number
 }
 export interface LearningMeta {
+  activity?: Activity
   version: 1
   cursor: Cursor | null
   resume: Cursor | null

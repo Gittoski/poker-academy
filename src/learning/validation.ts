@@ -1,4 +1,5 @@
 import { isTopic } from '@/fundamentals/content'
+import { validateActivity } from '@/activity/calendar'
 import { isGameMode } from '@/lib/gameModes'
 import { isPlayerCount, isPosition, positionsFor } from '@/lib/positions'
 import { isFormat, isOpenSize, isRangeType, isStack } from '@/lib/scenarios'
@@ -276,6 +277,7 @@ export function validateRecords(d: LearningBackup) {
       throw Error('Invalid mistake group')
   }
   validateScheduler(d.meta.scheduler)
+  if (d.meta.activity !== undefined) validateActivity(d.meta.activity)
   if (d.meta.nextScheduler) validateScheduler(d.meta.nextScheduler)
   if (d.meta.cursor) validateCursor(d.meta.cursor, sources)
   if (d.meta.resume) validateCursor(d.meta.resume, sources)

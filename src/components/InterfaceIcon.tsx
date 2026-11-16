@@ -2,6 +2,36 @@
 export function InterfaceIcon({ name }: { name: string }) {
   let artwork
   switch (name) {
+    case 'learn':
+      artwork = (
+        <>
+          <path d="M12 6v16M12 6C8 3 4 3 2 4v15c4-1 7 0 10 3 3-3 6-4 10-3V4c-2-1-6-1-10 2Z" />
+        </>
+      )
+      break
+    case 'settings':
+      artwork = (
+        <>
+          <path d="M3 6h18M3 13h18M3 20h18" />
+          <circle cx="8" cy="6" r="2.5" fill="var(--card)" />
+          <circle cx="16" cy="13" r="2.5" fill="var(--card)" />
+          <circle cx="8" cy="20" r="2.5" fill="var(--card)" />
+        </>
+      )
+      break
+    case 'review':
+      artwork = (
+        <>
+          <path d="M20 9a8 8 0 1 0 0 8M20 3v6h-6" />
+        </>
+      )
+      break
+    case 'arrow':
+      artwork = <path d="m9 5 7 8-7 8" />
+      break
+    case 'close':
+      artwork = <path d="m6 7 12 12M18 7 6 19" />
+      break
     case 'play':
       artwork = <path d="m8 4 12 8-12 8V4Z" />
       break

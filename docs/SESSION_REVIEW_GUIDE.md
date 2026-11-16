@@ -1,10 +1,10 @@
 # Sessions, mistakes and recurring practice
 
-Open **Play** and use either Full hands or Preflop. A session starts automatically. Submit an answer as usual; saving happens before Continue. A full hand’s last decision now offers View hand result, followed by a persistent Hand complete screen and a separate Next hand action. The session bar reports **Saving**, **Saved on this device**, or an explicit failure. No Save/End session action is required.
+Open **Play** and use either Full hands or Preflop. A session starts automatically. Submit an answer as usual; saving happens before Continue. A full hand’s last decision now offers View hand result, followed by a persistent Hand complete screen and a separate Next hand action. The simulator header reports **Saving**, **Saved on this device**, or an explicit failure. No Save/End session action is required.
 
 ## Review without losing your hand
 
-Choose **Review mistakes**. The live hand and its keyboard/timer controls pause.
+Return to **Home → All reviews** (or **Next practice → Revisit saved mistakes**). The live hand and its keyboard/timer controls pause.
 
 - **Mistakes** groups choices with zero support in the applicable supplied reference. Open a group to see the original public state, cards, action frequencies, source version, your choice and the trainer's actual continuation. A scripted correction is not presented as the action you chose.
 - **Sessions** separates regular, adaptive and manual practice, reference errors and supported alternatives. First recorded exposure and repeat counts are separate; random selection does not establish a never-before-seen problem.
@@ -15,7 +15,7 @@ Only public information available at the original decision is shown. Postflop re
 
 ## Adjust recurring practice
 
-Expand **Practice settings**. **Mix in my mistakes** controls insertion, not automatic saving. The slider runs from 2 to 20, default 10: approximately one review hand per N eligible completed hands. Changes take effect at the next deal, never by replacing a live hand.
+Open **Home → Settings → Recurring mistakes**. **Mix in my mistakes** controls insertion, not automatic saving. The slider runs from 2 to 20, default 10: approximately one review hand per N eligible completed hands. Changes take effect at the next deal, never by replacing a live hand.
 
 An independent persisted scheduler chooses one unpredictable opportunity per N-hand block. Empty/incompatible/not-due pools use ordinary play; unused opportunities do not accumulate. Hands with no player decision and manual practice are excluded from this hand denominator. A failed-to-reach target earns no successful review.
 
@@ -46,4 +46,4 @@ Two tabs cannot independently own the same live simulator. Close the other playi
 
 ## Verification limits
 
-Automated Chromium tests cover mobile-sized and desktop layouts, both trainer modes, saving/recovery, manual practice, adaptive return, source precision, retention, failure states, keyboard/focus, accessibility and reduced motion. They are not actual iPhone/Safari, VoiceOver or device-animation verification. Those device checks remain a release gate. Whole-app offline installation remains the separate M03 roadmap item.
+Automated Chromium tests cover mobile-sized and desktop layouts, both trainer modes, saving/recovery, manual practice, adaptive return, source precision, retention, failure states, keyboard/focus, accessibility and reduced motion. They are not actual iPhone/Safari, VoiceOver or device-animation verification. Those device checks remain a release gate. Complete offline packs are available under Home Settings or Learn. Actual iPhone installation remains an open M03 device gate.

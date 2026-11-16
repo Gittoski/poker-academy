@@ -1,4 +1,4 @@
-# Poker Practice
+# Poker Trainer by Greg
 
 A fresh start based on [jensbaagaard/poker-practice](https://github.com/jensbaagaard/poker-practice), pinned to `449993f78d995c77b72d0bcac418a8507dd6f783`. The previous Expo academy and custom simulator have been removed from this branch. Their last version is preserved on `backup/academy-before-poker-practice`.
 
@@ -13,7 +13,7 @@ npm ci
 npm run dev
 ```
 
-Open http://localhost:3000. **Ranges** opens the charts; **Play** opens the trainer; **Learn** opens the guided fundamentals. This foundation is a web app, so Expo Go is no longer used. Computer browser checks do not establish iPhone/Safari behavior.
+Open http://localhost:3000 for **Home**. **Ranges** opens the charts at `/ranges`; **Play** opens the trainer; **Learn** opens the guided fundamentals. This foundation is a web app, so Expo Go is no longer used. Computer browser checks do not establish iPhone/Safari behavior.
 
 ## Verify
 
@@ -23,7 +23,7 @@ npm run build
 npm run test:browser
 ```
 
-The test suite has 147 unit tests across fifteen files and 44 browser journeys covering original play plus saving, recovery, exact retries, adaptive return, failure handling, responsive layouts, keyboard/focus, accessibility and reduced motion. The browser runner uses a production build on its own port; install Chromium once with `npx playwright install chromium`, or set `CHROMIUM_PATH` to an existing system browser. The production build regenerates the range files from the included source data; it does not need a solver installation. Solver scripts are optional offline development tools, not a requirement for running the supplied app.
+The test suite has 154 unit tests across sixteen files and 50 browser journeys covering original play plus saving, recovery, exact retries, adaptive return, failure handling, responsive layouts, keyboard/focus, accessibility and reduced motion. The browser runner uses a production build on its own port; install Chromium once with `npx playwright install chromium`, or set `CHROMIUM_PATH` to an existing system browser. The production build regenerates the range files from the included source data; it does not need a solver installation. Solver scripts are optional offline development tools, not a requirement for running the supplied app.
 
 ## Source and next steps
 
@@ -39,7 +39,7 @@ The simulator now includes [automatic sessions, mistake reviews and adjustable r
 
 ## Use the session reviewer
 
-Play normally: answers save automatically before Continue. Open **Review mistakes** for session summaries, grouped errors, original references, reflections/pins and **Retry this decision / Play this hand**. Manual practice pauses and preserves your live hand. Under **Practice settings**, toggle **Mix in my mistakes** and choose approximately one review per 2–20 hands. Adaptive returns start from preflop and identify themselves only after the target answer.
+Play normally: answers save automatically before Continue. From **Home → All reviews**, open session summaries, grouped errors, original references, reflections/pins and **Retry this decision / Play this hand**. Manual practice pauses and preserves your live hand. Under **Home → Settings → Recurring mistakes**, toggle **Mix in my mistakes** and choose approximately one review per 2–20 hands. Adaptive returns start from preflop and identify themselves only after the target answer.
 
 Supported mixed alternatives stay separate from zero-support reference errors. History stays in this browser origin (address and port) on this device; use export/import for transfer. Storage failures are shown explicitly. Actual iPhone/Safari verification remains outstanding.
 
@@ -47,7 +47,7 @@ Supported mixed alternatives stay separate from zero-support reference errors. H
 
 Full hands now finish with a distinct **Hand complete** screen. After your final decision, choose **View hand result**, inspect the stored showdown runout or actual fold outcome, then **Next hand**. Results survive reload. The screen names both your selection and the scripted action when they differ; a supported Call is not the same as playing a new calling branch in this scripted trainer. Preflop mode explicitly stops before postflop. See [the completion audit](docs/implementation/HAND_COMPLETION.md).
 
-The app now offers an explicit complete offline download from Learn in a production build over HTTPS or localhost. Cached app pages, charts and supplied hands work in Chromium offline cold-start tests. A hosted HTTPS build would remove the PC requirement; no hosting or App Store publication has been performed. Actual iPhone/Safari installation remains unverified. The project ZIP is not an iPhone app and Expo Go cannot run it. See the [fundamentals and offline guide](docs/FUNDAMENTALS_GUIDE.md).
+The app now offers an explicit complete offline download from Home Settings or Learn in a production build over HTTPS or localhost. Cached app pages, charts and supplied hands work in Chromium offline cold-start tests. A hosted HTTPS build would remove the PC requirement; no hosting or App Store publication has been performed. Actual iPhone/Safari installation remains unverified. The project ZIP is not an iPhone app and Expo Go cannot run it. See the [fundamentals and offline guide](docs/FUNDAMENTALS_GUIDE.md).
 
 ## Guided fundamentals and linked practice
 
@@ -74,3 +74,9 @@ See [the implementation and source-state audit](docs/implementation/NAVY_TABLE.m
 The actual simulator now uses layered rail/felt lighting, raised seat badges, paper-edge card shadows and stronger button gradients/bevels. Shared card faces carry the depth treatment into saved reviews. Completed showdowns show **You win**, **Villain wins** or **Split pot**, the recorded pot and both hand names. Back to table and Next hand stay available; optional details scroll inside the popup. The table header now says Showdown complete instead of clipping the outcome paragraph.
 
 See [the implementation and source-safety audit](docs/implementation/MATERIAL_DEPTH_OUTCOMES.md). This is implemented SVG/CSS artwork, not another concept-preview round. Engine/grading/reference data are unchanged; actual iPhone/Safari appearance and performance still need device confirmation.
+
+## Home and organized navigation
+
+The approved Home screen has only Play/Resume, a twelve-week daily activity grid and Next practice. Ranges / Play / Learn are at the top; Settings holds training setup, recurring practice and offline installation. Home uses the simulator’s navy gradients, layered shadows and raised controls. Returning to the simulator preserves the original live-hand setup and verdict. All reviews retains mistake/session history, exact retries, notes and backups.
+
+Activity counts saved decisions and fundamentals answers, including retries; it is not an accuracy or mastery score. Daily aggregates remain after older detailed attempts are condensed. Older activity is reconstructed only from retained timestamped answers and may be incomplete. Progress stays on this browser origin/device. See [the Home implementation and verification audit](docs/implementation/HOME.md).

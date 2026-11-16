@@ -97,8 +97,15 @@ export function ReviewArea({
     return () => d?.close()
   }, [])
   const close = () => {
+    // Release the native modal before its asynchronous parent close restores
+    // play, so focus cannot be sent to an inert background element.
+    dialog.current?.close()
     onClose()
-    setTimeout(() => document.getElementById('open-review')?.focus(), 0)
+    setTimeout(() => {
+      const trigger = document.getElementById('open-review')
+      if (trigger?.getClientRects().length) trigger.focus()
+      else document.querySelector<HTMLAnchorElement>('.sim-back')?.focus()
+    }, 0)
   }
   async function showSession(id: string, page = 0) {
     if (!repo) return

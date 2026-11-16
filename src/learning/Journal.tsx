@@ -52,17 +52,19 @@ export function JournalShell({
   mode,
   index,
   children,
+  initialReview = false,
 }: {
   entries: RangeEntry[]
   setup: TrainerSetup
   mode: GameMode
   index?: HandIndex
   children: ReactNode
+  initialReview?: boolean
 }) {
   const [journal, setJournal] = useState<JournalRuntime | null>(null)
   const [status, setStatus] = useState('Loading saved play…')
   const [failure, setFailure] = useState<string | null>(null)
-  const [review, setReview] = useState(false)
+  const [review, setReview] = useState(initialReview)
   const [manual, setManual] = useState<JournalRuntime | null>(null)
   const [scheduler, setScheduler] = useState<SchedulerState | null>(null)
   const [bytes, setBytes] = useState<number | null>(null)
@@ -108,7 +110,9 @@ export function JournalShell({
           meta = { ...meta, cursor: meta.resume, resume: null }
           await repo.setMeta(meta)
         }
-        await repo.cache(source)
+        // Inspect archived source availability before a review-only entry writes
+        // the current pack. Playing again can cache that exact current source.
+        if (!initialReview) await repo.cache(source)
         const runtime = new JournalRuntime(repo, config, source, notify)
         await runtime.hydrate()
         if (cancelled) {
@@ -167,7 +171,7 @@ export function JournalShell({
       original = runtime.active
     if (!repo || !a || !original)
       throw Error(
-        'Save this decision before retrying. Open Settings & review for recovery controls.',
+        'Save this decision before retrying. Open Save needs attention for recovery controls.',
       )
     await runtime.flush()
     const hand: HandRecord = {
@@ -257,10 +261,28 @@ export function JournalShell({
         })
       setManual(null)
       setReview(false)
-      setTimeout(() => document.getElementById('open-review')?.focus(), 0)
+      setTimeout(
+        () => document.querySelector<HTMLAnchorElement>('.sim-back')?.focus(),
+        0,
+      )
     } catch (e) {
       journal.failed(e)
     }
+  }
+  async function closeReview() {
+    if (initialReview && journal?.repo) {
+      try {
+        await journal.repo.cache(journal.source)
+      } catch (e) {
+        journal.failed(e)
+      }
+    }
+    setReview(false)
+    if (initialReview)
+      setTimeout(
+        () => document.querySelector<HTMLAnchorElement>('.sim-back')?.focus(),
+        0,
+      )
   }
   if (!journal || !context)
     return (
@@ -424,7 +446,7 @@ export function JournalShell({
         <ReviewArea
           journal={journal}
           bytes={bytes}
-          onClose={() => setReview(false)}
+          onClose={() => void closeReview()}
           onPractice={async (runtime) => {
             if (!journal.repo) return
             await journal.flush()

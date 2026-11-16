@@ -1,10 +1,10 @@
 import type { MetadataRoute } from 'next'
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Poker Practice Academy',
-    short_name: 'Poker Practice',
+    name: 'Poker Trainer by Greg',
+    short_name: 'Poker Trainer',
     description: 'Six-max cash fundamentals, saved reviews and practice.',
-    start_url: '/learn',
+    start_url: '/',
     display: 'standalone',
     background_color: '#090b10',
     theme_color: '#090b10',

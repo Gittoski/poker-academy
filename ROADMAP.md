@@ -4,6 +4,15 @@ Goal: progressively improve real-life six-max Hold’em decisions, especially ag
 
 This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PLAN.md) explains lesson progression, feature scope and completion criteria. [Foundation history](docs/FOUNDATION_HISTORY.md) retains the completed import/theme work.
 
+## Current approved step: Home and organized navigation
+
+- [x] User approved the three-panel Home design and shared navy/graphite lighting, shadows and materials.
+- [x] Implement Home: Play/Resume, daily activity, Next practice; top Ranges/Play/Learn and Settings, without optional dashboard panels.
+- [x] Move routine simulator settings to Home and preserve saved-hand configuration, reviews, recovery controls and original range charts.
+- [x] Persist bounded, atomic local daily answer totals; migrate only verified retained history and include totals in backups.
+- [x] Finish automated Home/offline/regression checks and actual-app screenshot evidence; see [the implementation audit](docs/implementation/HOME.md).
+- [ ] Actual iPhone Safari/Home Screen review of Home, Settings, activity taps, safe areas and return to the same hand.
+
 ## Current follow-up: material depth and clear showdown outcomes
 
 - [x] Implement deeper rail/seat/felt lighting, raised card edges and button materials in the actual simulator; preserve shared card styling.
@@ -24,13 +33,13 @@ This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PL
 - [x] Implement the simulator treatment and share classic card faces with saved reviews.
 - [x] Finish option B verification, screenshot evidence and delivery; see [the audit](docs/implementation/NAVY_TABLE.md).
 - [ ] Actual iPhone/Home Screen review of option B, especially board readability, reveal positions and rotation.
-- [ ] Next approval: home screen, then extend the shared theme where appropriate. Leave Learn layout unchanged for now.
+- [x] Home design approved; implementation and verification tracked above. Leave Learn layout unchanged for now.
 
 ## Current verified foundation
 
 - [x] Replace the retired academy with jensbaagaard/poker-practice; preserve attribution and a Git backup.
 - [x] Deliver the navy theme while preserving engine, grading and chart data; document reviewed UI/controller integration.
-- [x] Last verified: 147 unit tests, 44 browser journeys, TypeScript, production build and simulator/strategy-calculation integrity checks.
+- [x] Last verified: 154 unit tests, 50 browser journeys, TypeScript, production build and simulator/strategy-calculation integrity checks.
 - [x] Retain range viewing, preflop training, scripted full-hand practice and existing custom-range/theme settings.
 - [ ] Actual iPhone/Safari, VoiceOver and device animation verification. Chromium phone-sized tests do not close this release gate.
 

@@ -23,11 +23,11 @@
     },
     "src/components/HandTrainer.tsx": {
       "files": 1,
-      "sha256": "353a2768165ab3e4b5771283cf9c711e598197e0e788e977398a01fa1428f807"
+      "sha256": "e51fe0db5432dd51df07881a9d4494a167f93aff2543e8f688748081048cd745"
     },
     "src/components/PlayPage.tsx": {
       "files": 1,
-      "sha256": "5b0cb19c3a929eb61d25a7c68501950ea7d77657f749f90744cdb78b1509f6c9"
+      "sha256": "93d4677f5777349c8bf7e4ee9526c7f2d605d68186288a3531e63414643ef3bb"
     },
     "src/components/RangeViewer.tsx": {
       "files": 1,
@@ -130,5 +130,13 @@
     ],
     "scope": "Terminal recorded-outcome prop and short result caption only; no decision, grading, source/result data or engine changes.",
     "audit": "docs/implementation/MATERIAL_DEPTH_OUTCOMES.md"
+  },
+  "homeIntegration": {
+    "approvedPaths": [
+      "src/components/PlayPage.tsx",
+      "src/components/HandTrainer.tsx"
+    ],
+    "reason": "Remove global simulator navigation and open existing saved reviews from Home via a captured initialReview flag. No changes to setup parsing, range loading, engine, grading or source data. Preflop seat-inspection callback opens its existing details sheet on desktop as well as mobile now that advanced controls are portaled. No decision or inspection content changes.",
+    "evidence": "docs/implementation/HOME.md"
   }
 }

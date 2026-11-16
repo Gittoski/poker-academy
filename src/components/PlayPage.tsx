@@ -25,8 +25,7 @@ import { JournalShell } from '@/learning/Journal'
 import { FullHandTrainer } from './FullHandTrainer'
 import { HandTrainer } from './HandTrainer'
 import { Segmented } from './Segmented'
-import { PlayFrame, PlayOptions, DesktopOnly } from './trainer/PlayFrame'
-import { TopNav } from './TopNav'
+import { PlayFrame, PlayOptions } from './trainer/PlayFrame'
 import { TrainerSetupPanel } from './TrainerSetupPanel'
 
 interface LoadedSet {
@@ -68,6 +67,7 @@ function setupParamsOf(setup: TrainerSetup): URLSearchParams {
 
 export function PlayPage() {
   const searchParams = useSearchParams()
+  const [initialReview] = useState(() => searchParams.get('review') === '1')
   const [mode, setMode] = useState<GameMode>(() => {
     const value = searchParams.get('mode')
     return isGameMode(value) ? value : DEFAULT_GAME_MODE
@@ -146,10 +146,6 @@ export function PlayPage() {
   return (
     <PlayFrame>
       <PlayOptions>
-        <DesktopOnly>
-          <TopNav active="play" setupParams={setupParams} />
-        </DesktopOnly>
-
         {GAME_MODES.length > 1 && (
           <section className="card">
             <div className="field">
@@ -176,6 +172,7 @@ export function PlayPage() {
       ) : entries && fullHands ? (
         handIndex ? (
           <JournalShell
+            initialReview={initialReview}
             key={JSON.stringify({ setId, mode, setup: effectiveSetup })}
             mode={mode}
             setup={effectiveSetup}
@@ -195,6 +192,7 @@ export function PlayPage() {
         )
       ) : entries ? (
         <JournalShell
+          initialReview={initialReview}
           key={JSON.stringify({ setId, mode, setup })}
           mode={mode}
           setup={setup}
