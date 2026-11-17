@@ -25,6 +25,7 @@ import {
   retryLiveDecision,
   decodeLiveSession,
   encodeLiveSession,
+  liveSessionVersion,
   LIVE_LOCK,
   LIVE_SAVE_KEY,
   replayLiveDeal,
@@ -40,6 +41,15 @@ import {
   retryLiveReference,
   type LiveReference,
 } from './liveReference'
+import { auditPreflopCharts } from './preflopCatalog'
+import {
+  newGradedPreflop,
+  gradedPreflopStatus,
+  chooseGradedOpponent,
+  upgradePreflop,
+  switchGradedMode,
+  retryGradedPreflop,
+} from './gradedPreflop'
 
 const bb = (n: number) => Number((n / 100).toFixed(2))
 function fresh(
@@ -78,6 +88,8 @@ function download(text: string, name: string) {
 }
 export function LiveTrainer() {
   const switching = useRef(false)
+  const initializePreflop = useRef(false)
+  const [preflopDetails, setPreflopDetails] = useState(false)
   const [modeBusy, setModeBusy] = useState(false)
   const [tools, setTools] = useState(false)
   const [toolSection, setToolSection] = useState<string | null>(null)
@@ -176,6 +188,10 @@ export function LiveTrainer() {
       const requested = params.get('mode')
       if (isGameMode(requested) && modeOf(next.current) !== requested) {
         const hadTarget = !!next.parked?.[requested]
+        initializePreflop.current =
+          requested === 'preflop' &&
+          !hadTarget &&
+          !['players', 'seat', 'stack'].some((k) => params.has(k))
         next = switchLiveMode(next, requested)
         // Older setup links configure only a new slot; never replace a saved hand.
         if (
@@ -220,7 +236,11 @@ export function LiveTrainer() {
       )
       setPlayers(next.current.config.stacks.length as PlayerCount)
       setStacks(next.current.config.stacks.map(bb).join(', '))
-      setHeroSeat(next.current.hero)
+      setHeroSeat(
+        next.current.graded
+          ? (next.current.graded.seat ?? -1)
+          : next.current.hero,
+      )
       setStyle(next.current.style)
       setAnteKind(next.current.config.ante?.kind ?? 'none')
       setAnte(String(bb(next.current.config.ante?.amount ?? 100)))
@@ -275,6 +295,51 @@ export function LiveTrainer() {
     [current],
   )
   const lastRecord = current?.feedback?.at(-1)
+  const preflopAuditError = useMemo(() => {
+    if (!entries) return ''
+    try {
+      auditPreflopCharts(entries)
+      return ''
+    } catch (e) {
+      return e instanceof Error ? e.message : 'Invalid preflop charts'
+    }
+  }, [entries])
+  const gradedState = useMemo(
+    () =>
+      current && (current.graded || initializePreflop.current)
+        ? preflopAuditError
+          ? { kind: 'problem' as const, message: preflopAuditError }
+          : gradedPreflopStatus(current, entries)
+        : null,
+    [current, entries, preflopAuditError],
+  )
+  useEffect(() => {
+    if (
+      !session ||
+      !initializePreflop.current ||
+      !entries ||
+      !['owner', 'unsaved'].includes(owner)
+    )
+      return
+    if (preflopAuditError) {
+      setError(preflopAuditError)
+      return
+    }
+    try {
+      const d = newGradedPreflop(entries)
+      initializePreflop.current = false
+      setSession({ ...session, version: 4, current: d })
+      setPlayers(6)
+      setStacks(Array(6).fill('100').join(', '))
+      setHeroSeat(-1)
+      setAnteKind('none')
+      setStyle('balanced')
+      setPaused(false)
+      setError('')
+    } catch (e) {
+      setError(String(e))
+    }
+  }, [session, entries, owner, preflopAuditError])
   const pending =
     !!lastRecord &&
     lastRecord.index === current!.actions.length - 1 &&
@@ -312,6 +377,7 @@ export function LiveTrainer() {
   const commit = useCallback(
     (action: LiveAction, human: boolean) => {
       if (!current || !active || !allowed || review || switching.current) return
+      if (initializePreflop.current) return
       if (!entries && !allowUngraded) return
       const index = current.actions.length,
         seed = current.seed
@@ -319,6 +385,10 @@ export function LiveTrainer() {
         ? liveReference(current, active, action, entries)
         : undefined
       try {
+        if (current.graded && human && reference?.status === 'ungraded')
+          throw Error(
+            'This decision has no applicable reference. Your action was not recorded; reload the charts.',
+          )
         const next = appendLiveAction(current, action, index, reference)
         setSession((prev) =>
           !prev ||
@@ -352,26 +422,34 @@ export function LiveTrainer() {
       tools ||
       review ||
       !allowed ||
-      (!entries && !allowUngraded)
+      (!entries && !allowUngraded) ||
+      initializePreflop.current ||
+      (current.graded && gradedState?.kind !== 'decision')
     )
       return
-    const timer = setTimeout(
-      () =>
+    const timer = setTimeout(() => {
+      try {
         commit(
-          chooseLiveOpponent(
-            observeLivePlayer(active),
-            current.style,
-            seededLiveRandom(
-              (current.seed ^
-                Math.imul(current.actions.length + 1, 0x9e3779b9)) >>>
-                0,
-            ),
-            liveReference(current, active, { kind: 'fold' }, entries).raiseTo,
-          ),
+          current.graded
+            ? chooseGradedOpponent(current, entries!)
+            : chooseLiveOpponent(
+                observeLivePlayer(active),
+                current.style,
+                seededLiveRandom(
+                  (current.seed ^
+                    Math.imul(current.actions.length + 1, 0x9e3779b9)) >>>
+                    0,
+                ),
+                liveReference(current, active, { kind: 'fold' }, entries)
+                  .raiseTo,
+              ),
           false,
-        ),
-      650,
-    )
+        )
+      } catch (e) {
+        setPaused(true)
+        setError(e instanceof Error ? e.message : 'Could not progress the hand')
+      }
+    }, 650)
     return () => clearTimeout(timer)
   }, [
     active,
@@ -386,6 +464,7 @@ export function LiveTrainer() {
     sizing,
     entries,
     allowUngraded,
+    gradedState,
   ])
   const legal = displayed ? legalLiveActions(displayed) : null
   const feedback = useMemo(() => {
@@ -425,7 +504,10 @@ export function LiveTrainer() {
   }, [suggestedRaise, current?.seed, current?.actions.length, review?.index])
   function raiseEntered() {
     try {
-      submit({ kind: 'raise', to: chipsFromBB(raise) })
+      submit({
+        kind: 'raise',
+        to: deal?.graded ? suggestedRaise : chipsFromBB(raise),
+      })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Invalid raise amount')
     }
@@ -451,6 +533,17 @@ export function LiveTrainer() {
   }
   async function changeMode(nextMode: GameMode) {
     if (!session || !allowed || switching.current || nextMode === mode) return
+    if (
+      nextMode === 'preflop' &&
+      !session.parked?.preflop &&
+      (!entries || preflopAuditError)
+    ) {
+      setError(
+        preflopAuditError ||
+          'Load the grading charts before opening Preflop practice.',
+      )
+      return
+    }
     switching.current = true
     setModeBusy(true)
     setPaused(true)
@@ -458,7 +551,11 @@ export function LiveTrainer() {
       await new Promise<void>((resolve) =>
         requestAnimationFrame(() => resolve()),
       )
-      const next = switchLiveMode(session, nextMode)
+      if (nextMode === 'preflop' && !session.parked?.preflop && !entries)
+        throw Error('Load the grading charts before opening Preflop practice.')
+      const next = entries
+        ? switchGradedMode(session, nextMode, entries)
+        : switchLiveMode(session, nextMode)
       const encoded = encodeLiveSession(next)
       if (owner === 'owner') localStorage.setItem(LIVE_SAVE_KEY, encoded)
       setSession(next)
@@ -467,7 +564,7 @@ export function LiveTrainer() {
       const d = next.current
       setPlayers(d.config.stacks.length as PlayerCount)
       setStacks(d.config.stacks.map(bb).join(', '))
-      setHeroSeat(d.hero)
+      setHeroSeat(d.graded ? (d.graded.seat ?? -1) : d.hero)
       setStyle(d.style)
       setAnteKind(d.config.ante?.kind ?? 'none')
       setAnte(String(bb(d.config.ante?.amount ?? 100)))
@@ -494,7 +591,12 @@ export function LiveTrainer() {
     }
     if (!session || !allowed) return
     try {
-      setSession(retryLiveDecision(session))
+      setSession(
+        current?.graded
+          ? retryGradedPreflop(session)
+          : retryLiveDecision(session),
+      )
+      setPreflopDetails(false)
       setPaused(true)
       setError('')
     } catch (e) {
@@ -513,6 +615,7 @@ export function LiveTrainer() {
     if (
       active.heroFolded ||
       active.preflopComplete ||
+      gradedState?.kind === 'boundary' ||
       (active.street === 'complete' && active.board.length === 0)
     ) {
       startHand(false)
@@ -559,7 +662,15 @@ export function LiveTrainer() {
         hero = heroSeat
         nextStyle = style
       }
-      const next = fresh(config, hero, nextStyle, mode)
+      const next = current?.graded
+        ? newGradedPreflop(entries ?? [], {
+            seat: applySettings
+              ? heroSeat < 0
+                ? undefined
+                : heroSeat
+              : current.graded.seat,
+          })
+        : fresh(config, hero, nextStyle, mode)
       replayLiveDeal(next)
       setSession({
         ...session,
@@ -570,6 +681,7 @@ export function LiveTrainer() {
       setSizing(false)
       setOutcome(false)
       setReview(null)
+      setPreflopDetails(false)
       setPaused(false)
       setError('')
     } catch (e) {
@@ -599,13 +711,17 @@ export function LiveTrainer() {
     const s = practiceLiveDeal(d)
     return (
       !d.attempt &&
-      (s.street === 'complete' || s.preflopComplete || s.heroFolded)
+      (s.street === 'complete' ||
+        s.preflopComplete ||
+        s.heroFolded ||
+        (d.graded && gradedPreflopStatus(d, entries)?.kind === 'boundary'))
     )
   }).length
   const ended =
     !!active.heroFolded ||
     !!active.preflopComplete ||
-    active.street === 'complete'
+    active.street === 'complete' ||
+    gradedState?.kind === 'boundary'
   const nextLabel =
     mode === 'preflop' ? 'Deal next preflop hand' : 'Deal next live hand'
   const feedbackAction = review
@@ -642,7 +758,13 @@ export function LiveTrainer() {
         </div>
         <GameModeSwitch
           mode={mode}
-          disabled={!allowed || modeBusy}
+          disabled={
+            !allowed ||
+            modeBusy ||
+            (mode === 'full-hands' &&
+              !session.parked?.preflop &&
+              (!entries || !!preflopAuditError))
+          }
           onChange={(next) => void changeMode(next)}
         />
         <button
@@ -672,9 +794,11 @@ export function LiveTrainer() {
                   ? 'You folded'
                   : active.preflopComplete
                     ? 'Preflop complete'
-                    : active.street === 'complete'
-                      ? 'Hand settled'
-                      : `${order[deal.hero]} · ${displayed.street[0].toUpperCase() + displayed.street.slice(1)}`}
+                    : gradedState?.kind === 'boundary'
+                      ? 'Reference boundary'
+                      : active.street === 'complete'
+                        ? 'Hand settled'
+                        : `${order[deal.hero]} · ${displayed.street[0].toUpperCase() + displayed.street.slice(1)}`}
             </h2>
             <span>
               {review
@@ -683,20 +807,25 @@ export function LiveTrainer() {
                   ? 'Decision feedback'
                   : ended
                     ? 'Practice hand complete'
-                    : displayed.toAct === deal.hero
-                      ? review || coverage?.status !== 'ungraded'
-                        ? 'Your move · Chart available'
-                        : !entries
-                          ? referenceState === 'loading'
-                            ? 'Loading grading charts…'
-                            : 'Grading charts unavailable'
-                          : displayed.street !== 'preflop'
-                            ? 'Your move · Postflop ungraded'
-                            : 'Your move · No matching chart'
-                      : 'Opponents are acting'}
+                    : current.graded
+                      ? 'Graded · Supplied setup'
+                      : mode === 'preflop'
+                        ? 'Unrestricted preflop · Upgrade in tools'
+                        : displayed.toAct === deal.hero
+                          ? review || coverage?.status !== 'ungraded'
+                            ? 'Your move · Chart available'
+                            : !entries
+                              ? referenceState === 'loading'
+                                ? 'Loading grading charts…'
+                                : 'Grading charts unavailable'
+                              : displayed.street !== 'preflop'
+                                ? 'Your move · Postflop ungraded'
+                                : 'Your move · No matching chart'
+                          : 'Opponents are acting'}
             </span>
           </div>
           {!pending &&
+            !deal.graded &&
             (!ended || review) &&
             displayed.toAct === deal.hero &&
             legal?.minRaiseTo != null && (
@@ -736,7 +865,12 @@ export function LiveTrainer() {
           <LiveDecisionFeedback
             key={`${deal.seed}:${review?.index ?? lastRecord?.index}:${review ? 'review' : 'live'}`}
             reference={feedback}
-            suspended={tools || sizing || modeBusy}
+            boundary={
+              !review && gradedState?.kind === 'boundary'
+                ? gradedState.message
+                : undefined
+            }
+            suspended={tools || sizing || modeBusy || preflopDetails}
             action={actionLabel}
             retry={!!review}
             onRetry={retryCurrent}
@@ -746,6 +880,7 @@ export function LiveTrainer() {
                 ? 'Return to live hand'
                 : active.heroFolded ||
                     active.preflopComplete ||
+                    gradedState?.kind === 'boundary' ||
                     (active.street === 'complete' && active.board.length === 0)
                   ? nextLabel
                   : active.street === 'complete'
@@ -753,6 +888,42 @@ export function LiveTrainer() {
                     : 'Continue hand'
             }
           />
+        ) : !review && gradedState?.kind === 'problem' ? (
+          <section
+            className="hand-result live-result"
+            aria-label="Preflop reference problem"
+          >
+            <h3>Grading reference needs recovery.</h3>
+            <button className="btn" onClick={() => setPreflopDetails(true)}>
+              Details
+            </button>
+            <button
+              className="btn btn--primary"
+              onClick={() => {
+                setEntries(null)
+                setReferenceAttempt((n) => n + 1)
+              }}
+            >
+              Reload charts
+            </button>
+          </section>
+        ) : !review && gradedState?.kind === 'boundary' ? (
+          <section
+            className="hand-result live-result"
+            aria-label="Reference boundary"
+          >
+            <h3>Reference practice stops here.</h3>
+            <button className="btn" onClick={() => setPreflopDetails(true)}>
+              Why practice stopped
+            </button>
+            <button
+              className="btn btn--primary"
+              aria-label={nextLabel}
+              onClick={() => startHand(false)}
+            >
+              Next hand
+            </button>
+          </section>
         ) : !review && ended ? (
           <section
             className="hand-result live-result"
@@ -786,7 +957,9 @@ export function LiveTrainer() {
               Next hand
             </button>
           </section>
-        ) : !review && !entries && !allowUngraded ? (
+        ) : !review &&
+          ((!entries && (!allowUngraded || !!current.graded)) ||
+            initializePreflop.current) ? (
           <section
             className="verdict sim-compact live-reference-status"
             aria-label="Grading charts"
@@ -810,9 +983,14 @@ export function LiveTrainer() {
                 >
                   Retry charts
                 </button>
-                <button className="btn" onClick={() => setAllowUngraded(true)}>
-                  Play ungraded
-                </button>
+                {!current.graded && !initializePreflop.current && (
+                  <button
+                    className="btn"
+                    onClick={() => setAllowUngraded(true)}
+                  >
+                    Play ungraded
+                  </button>
+                )}
               </>
             )}
           </section>
@@ -830,7 +1008,8 @@ export function LiveTrainer() {
               >
                 <InterfaceIcon name="raise" />
                 <span>
-                  {legal.check ? 'Bet' : 'Raise'} {raise} BB
+                  {legal.check ? 'Bet' : 'Raise'}{' '}
+                  {deal.graded ? bb(suggestedRaise) : raise} BB
                 </span>
               </button>
             )}
@@ -883,6 +1062,44 @@ export function LiveTrainer() {
           </div>
         )}
       </section>
+      {preflopDetails && (
+        <LiveSheet
+          title={
+            gradedState?.kind === 'boundary'
+              ? 'Reference boundary'
+              : 'Preflop reference'
+          }
+          onClose={() => setPreflopDetails(false)}
+          footer={
+            gradedState?.kind === 'boundary' ? (
+              <>
+                {lastRecord && (
+                  <button className="btn" onClick={retryCurrent}>
+                    Retry my decision
+                  </button>
+                )}
+                <button
+                  className="btn btn--primary"
+                  onClick={() => startHand(false)}
+                >
+                  Next hand
+                </button>
+              </>
+            ) : undefined
+          }
+        >
+          <p>
+            {gradedState?.kind === 'boundary' || gradedState?.kind === 'problem'
+              ? gradedState.message
+              : 'This practice uses the imported 100 BB six-max preflop charts and their documented sizing.'}
+          </p>
+          <p>
+            Your actual actions remain saved. No unplayed actions or hand result
+            are invented. Retry restores your last decision with the same cards
+            and source.
+          </p>
+        </LiveSheet>
+      )}
       {sizing && legal?.minRaiseTo != null && (
         <LiveSheet
           title="Bet sizing"
@@ -967,6 +1184,83 @@ export function LiveTrainer() {
             <a href="/ranges">Ranges</a>
             <a href="/learn">Lessons</a>
           </nav>
+          {mode === 'preflop' && (
+            <section className="card">
+              <h2>Graded preflop practice</h2>
+              <p>
+                Six-max · 100 BB · no antes · standard reference sizes. Fresh
+                cards and supplied setup actions vary the situations. Your
+                choices remain your own; calls or cold responses outside the
+                charts end reference practice without assigning a result.
+              </p>
+              <p>
+                {current.graded
+                  ? 'Earlier setup actions are supplied for this exercise; only your answers are scored. Use Any position to practice all 65 standard contexts.'
+                  : 'This hand uses the earlier unrestricted preflop setup. Starting graded practice keeps it in recent history and preserves the other mode’s hand.'}
+              </p>
+              {!current.graded && (
+                <button
+                  className="btn btn--primary"
+                  disabled={!entries || !!preflopAuditError}
+                  onClick={() => {
+                    try {
+                      const next = upgradePreflop(session, entries ?? [])
+                      if (owner === 'owner')
+                        localStorage.setItem(
+                          LIVE_SAVE_KEY,
+                          encodeLiveSession(next),
+                        )
+                      setSession(next)
+                      setPlayers(6)
+                      setStacks(Array(6).fill('100').join(', '))
+                      setHeroSeat(-1)
+                      setAnteKind('none')
+                      setStyle('balanced')
+                      setTools(false)
+                      setPaused(false)
+                      setError('')
+                      setReview(null)
+                    } catch (e) {
+                      setError(
+                        e instanceof Error
+                          ? e.message
+                          : 'Could not start graded practice',
+                      )
+                    }
+                  }}
+                >
+                  Start graded practice
+                </button>
+              )}
+              {current.graded && (
+                <p>
+                  Practice coverage:{' '}
+                  {records.filter((d) => d.graded && !d.attempt).length}{' '}
+                  retained hands;{' '}
+                  {
+                    records.filter(
+                      (d) =>
+                        d.graded &&
+                        !d.attempt &&
+                        gradedPreflopStatus(d, [])?.kind === 'boundary',
+                    ).length
+                  }{' '}
+                  reference-boundary endings;{' '}
+                  {
+                    new Set(
+                      records.flatMap((d) =>
+                        d.graded ? [d.graded.context] : [],
+                      ),
+                    ).size
+                  }{' '}
+                  of 65 setup contexts;{' '}
+                  {decisions.filter((d) => d.deal.graded).length} graded
+                  answers. History is bounded; this is not a lifetime mastery
+                  score.
+                </p>
+              )}
+            </section>
+          )}
           <section className="card">
             <h2>Recent practice</h2>
             <p>
@@ -988,7 +1282,13 @@ export function LiveTrainer() {
                   .reverse()
                   .map((r, i) => (
                     <li key={`${r.deal.seed}-${r.index}-${i}`}>
-                      Decision {r.index + 1}: {r.reference.status}{' '}
+                      Decision{' '}
+                      {r.deal.graded
+                        ? (r.deal.feedback ?? []).findIndex(
+                            (f) => f.index === r.index,
+                          ) + 1
+                        : r.index + 1}
+                      : {r.reference.status}{' '}
                       <button
                         className="btn"
                         onClick={() => {
@@ -1029,14 +1329,17 @@ export function LiveTrainer() {
               onChange={(next) => void changeMode(next)}
             />
             <p>
-              Both modes use shuffled cards and your actual choices. Preflop
-              stops after its betting round; each mode keeps its own saved hand.
+              Both modes use shuffled cards and your actual choices. Covered
+              Preflop uses chart-backed situations and standard sizes; Full
+              hands keeps unrestricted live play. Each mode keeps its own saved
+              hand.
             </p>
             <div className="live-settings">
               <label>
                 Players
                 <select
                   value={players}
+                  disabled={!!current.graded}
                   onChange={(e) => {
                     const n = Number(e.target.value) as PlayerCount
                     setPlayers(n)
@@ -1055,6 +1358,7 @@ export function LiveTrainer() {
                   value={heroSeat}
                   onChange={(e) => setHeroSeat(Number(e.target.value))}
                 >
+                  {current.graded && <option value={-1}>Any position</option>}
                   {positionsFor(players).map((p, i) => (
                     <option key={p} value={i}>
                       {p}
@@ -1066,6 +1370,7 @@ export function LiveTrainer() {
                 Starting stacks (BB, seat order)
                 <input
                   value={stacks}
+                  disabled={!!current.graded}
                   onChange={(e) => setStacks(e.target.value)}
                 />
               </label>
@@ -1073,6 +1378,7 @@ export function LiveTrainer() {
                 Ante convention
                 <select
                   value={anteKind}
+                  disabled={!!current.graded}
                   onChange={(e) =>
                     setAnteKind(e.target.value as typeof anteKind)
                   }
@@ -1097,14 +1403,19 @@ export function LiveTrainer() {
                 </label>
               )}
               <label>
-                Opponent style
+                {current.graded ? 'Opponent policy' : 'Opponent style'}
                 <select
                   value={style}
+                  disabled={!!current.graded}
                   onChange={(e) => setStyle(e.target.value as OpponentStyle)}
                 >
-                  {['tight', 'balanced', 'loose'].map((s) => (
-                    <option key={s}>{s}</option>
-                  ))}
+                  {current.graded ? (
+                    <option value="balanced">Imported reference charts</option>
+                  ) : (
+                    ['tight', 'balanced', 'loose'].map((s) => (
+                      <option key={s}>{s}</option>
+                    ))
+                  )}
                 </select>
               </label>
             </div>
@@ -1126,10 +1437,13 @@ export function LiveTrainer() {
                   : 'unavailable'}
               .
             </p>
-            {referenceState === 'error' && (
+            {(referenceState === 'error' || preflopAuditError) && (
               <button
                 className="btn"
-                onClick={() => setReferenceAttempt((n) => n + 1)}
+                onClick={() => {
+                  setEntries(null)
+                  setReferenceAttempt((n) => n + 1)
+                }}
               >
                 Retry charts
               </button>
@@ -1147,7 +1461,14 @@ export function LiveTrainer() {
               postflop play uses no verified GTO or EV-loss reference.
             </p>
             <p>
-              Opponent policy uses hand ranks/suitedness preflop and current
+              Graded Preflop opponents follow the applicable imported chart
+              frequencies and documented sizes using their own cards and public
+              history. Supplied setups and reference boundaries constrain this
+              practice; it does not model the frequency of situations in live
+              games or a calibrated recreational player population.
+            </p>
+            <p>
+              Unrestricted play uses hand ranks/suitedness preflop and current
               made-hand category postflop, with style thresholds and randomness.
               Where a matching preflop chart exists, raises use its documented
               size so later covered decisions can still be graded. This does not
@@ -1160,7 +1481,10 @@ export function LiveTrainer() {
               className="btn"
               onClick={() =>
                 download(
-                  JSON.stringify({ ...session, version: 3 }),
+                  JSON.stringify({
+                    ...session,
+                    version: liveSessionVersion(session),
+                  }),
                   'poker-live-practice.json',
                 )
               }

@@ -6,15 +6,16 @@ This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PL
 
 ## Immediate planned priority: fully graded preflop practice
 
-Complete this scoped release before the longer postflop project. [PREFLOP_GRADING_PLAN.md](docs/PREFLOP_GRADING_PLAN.md) maps the requirements, proposed training constraints, existing gaps and completion checks. [GRADED_PREFLOP.md](docs/goals/GRADED_PREFLOP.md) is the copy-ready implementation goal. The user requested planning and a goal first; application implementation has not begun.
+Complete this scoped release before the longer postflop project. [PREFLOP_GRADING_PLAN.md](docs/PREFLOP_GRADING_PLAN.md) maps the requirements, proposed training constraints, existing gaps and completion checks. [GRADED_PREFLOP.md](docs/goals/GRADED_PREFLOP.md) is the copy-ready implementation goal. The user approved implementation after planning. The scoped candidate is on `test/graded-preflop`; production integration waits for candidate review.
 
 - [x] Inspect why live preflop decisions remain ungraded and confirm metadata matches for all 65 standard six-max reference contexts.
 - [x] Draft the covered-training scope, safeguards, acceptance criteria and implementation goal; distinguish guaranteed practice grading from unrestricted live play.
 - [x] PF0: User approved covered-practice scope; audit all 65 contexts × 169 classes using genuine shuffled deals and legal setup replay, validate source weights and applicable actions (221 unit tests plus TypeScript/integrity checks). See [implementation record](docs/implementation/GRADED_PREFLOP.md).
 - [x] PF1: Add covered context generation/progression, honest boundaries, original-action retries and validated version-four profile saves; pass 226 unit tests, TypeScript/integrity and production build. Browser integration remains below.
-- [ ] PF2: Grade every accepted learner choice, retaining source charts, explanations, exact retries and automatic stable mistake recording.
-- [ ] PF3: Preserve mode settings, incompatible older saves, ownership and offline support; identify the supported profile clearly.
-- [ ] PF4: Exhaustive source/action tests, randomized and player journeys, TypeScript/build/regressions and device verification; deliver an isolated candidate for user testing.
+- [x] PF2: Grade every accepted learner choice, retaining source charts, explanations, exact retries and automatic stable mistake recording.
+- [x] PF3: Preserve mode settings, incompatible older saves, ownership and offline support; identify the supported profile clearly.
+- [x] PF4 automated: 10,985 source contexts/classes, 325 seeded rounds with 340 graded decisions and explicit boundary counts, 229 unit tests and 106 browser checks; complete TypeScript/integrity/build and final focused checks on the isolated candidate.
+- [ ] Actual iPhone Safari/Home Screen and candidate deployment confirmation; user review before any main-app merge/deployment. See [the implementation record](docs/implementation/GRADED_PREFLOP.md) and [test guide](docs/verification/graded-preflop/TEST_GUIDE.md).
 
 ## Deferred until preflop is complete: verified branching postflop grading
 

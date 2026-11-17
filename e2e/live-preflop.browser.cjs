@@ -25,13 +25,19 @@ test('live toggle parks both exact hands, reloads, settings and retries without 
   await modeSwitch(page).click()
   await expect(modeSwitch(page)).toBeChecked()
   expect((await read(page)).parked['full-hands']).toEqual(full)
-  await readyRaise(page)
-  await page.getByRole('button', { name: 'Raise / bet', exact: true }).click()
+  await expect(page.getByRole('group',{name:'Your move',exact:true})).toBeVisible()
+  const beforePre = (await read(page)).current
+  const hasRaise = await page.getByRole('button',{name:'Raise / bet',exact:true}).isVisible()
+  if(hasRaise) await page.getByRole('button',{name:'Raise / bet',exact:true}).click()
+  else await page.getByRole('button',{name:/^Call /}).click()
   await openFeedback(page)
       const panel = page.getByRole('region', { name: 'Decision feedback' })
   await expect(panel.getByRole('gridcell')).toHaveCount(169)
   const pre = (await read(page)).current
-  expect(pre.actions[0]).toEqual({ kind: 'raise', to: 250 })
+  expect(pre.graded).toBeDefined()
+  expect(pre.actions).toHaveLength(beforePre.actions.length+1)
+  expect(pre.actions.at(-1).kind).toBe(hasRaise?'raise':'call')
+  expect(pre.feedback.at(-1).reference.status).not.toBe('ungraded')
   await dismiss(page)
   await modeSwitch(page).click()
   await expect(modeSwitch(page)).not.toBeChecked()
@@ -99,7 +105,7 @@ test('failed switch preserves the original hand and save; another tab cannot rep
       return original.call(this, k, v)
     }
   }, key)
-  await page.goto('/live'); await expect(modeSwitch(page)).toBeEnabled()
+  await page.goto('/live'); await readyRaise(page); await expect(modeSwitch(page)).toBeEnabled()
   const before = await read(page)
   await modeSwitch(page).click()
   await expect(page.locator('.live-page').getByRole('alert')).toContainText('Could not save the mode change')
@@ -134,8 +140,9 @@ test('offline cold starts support the updated preflop link and retained archive'
   await context.setOffline(true)
   await page.goto('/play?mode=preflop')
   await expect(modeSwitch(page)).toBeChecked()
-  await readyRaise(page)
-  await page.getByRole('button', { name: 'Raise / bet', exact: true }).click()
+  await expect(page.getByRole('group',{name:'Your move',exact:true})).toBeVisible()
+  if(await page.getByRole('button',{name:'Raise / bet',exact:true}).isVisible())await page.getByRole('button',{name:'Raise / bet',exact:true}).click()
+  else await page.getByRole('button',{name:/^Call /}).click()
   await openFeedback(page)
   await expect(page.getByRole('region', { name: 'Decision feedback' }).getByRole('gridcell')).toHaveCount(169)
   await page.goto('/play?mode=preflop&review=1')
@@ -151,7 +158,7 @@ for (const device of ['phone', 'desktop']) test(`${device}: play five shuffled p
   let completed = 0, decisions = 0
   for (let step = 0; step < 350 && completed < 5; step++) {
     const phase=await page.locator('.live-hand h2').first().innerText()
-    if(['You folded','Preflop complete','Hand settled'].includes(phase)) {
+    if(['You folded','Preflop complete','Hand settled','Reference boundary'].includes(phase)) {
       await expect(page.locator('.table-board .playing-card')).toHaveCount(0)
       completed++
       if(completed<5) await page.getByRole('button',{name:'Deal next preflop hand',exact:true}).click()
@@ -162,8 +169,8 @@ for (const device of ['phone', 'desktop']) test(`${device}: play five shuffled p
     const moves = page.getByRole('group', { name:'Your move',exact:true })
     if (await moves.isVisible()) {
       if (!decisions) {
-        await readyRaise(page)
-        await page.getByRole('button', { name:'Raise / bet',exact:true }).click()
+        if(await page.getByRole('button',{name:'Raise / bet',exact:true}).isVisible())await page.getByRole('button',{name:'Raise / bet',exact:true}).click()
+        else await moves.getByRole('button',{name:/^Call /}).click()
         await openFeedback(page)
         await expect(page.getByRole('region', { name:'Decision feedback' }).getByRole('gridcell')).toHaveCount(169)
       } else if (completed === 2) await moves.getByRole('button', { name:'Fold',exact:true }).click()

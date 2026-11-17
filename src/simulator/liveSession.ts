@@ -53,6 +53,7 @@ function validateDeal(value: unknown): asserts value is LiveDeal {
     let before=newLiveHand(d.config,seededLiveRandom(d.seed),true)
     for(let i=0;i<d.actions.length;i++) {
       if(i>=prefix.length && before.seats[d.hero].folded)throw Error('Actions after graded learner fold')
+      if(i>=prefix.length && liveReference({...d,actions:d.actions.slice(0,i)},before,d.actions[i],[]).reason!=='missing')throw Error('Saved action outside covered preflop progression')
       if(i>=prefix.length && before.toAct===d.hero && (!d.attempt || d.feedback?.some(f=>f.index===i))) {
         const f=d.feedback?.find(f=>f.index===i)
         if(!f?.reference.chart || f.reference.status==='ungraded') throw Error('Missing graded learner feedback')

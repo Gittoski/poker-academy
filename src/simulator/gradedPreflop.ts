@@ -23,6 +23,13 @@ export function newGradedPreflop(
 ): LiveDeal {
   auditPreflopCharts(entries)
   if (
+    options.seed !== undefined &&
+    (!Number.isInteger(options.seed) ||
+      options.seed < 0 ||
+      options.seed > 4294967295)
+  )
+    throw Error('Invalid shuffled-deal seed')
+  if (
     options.seat !== undefined &&
     (!Number.isInteger(options.seat) || options.seat < 0 || options.seat > 5)
   )

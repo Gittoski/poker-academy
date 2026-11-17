@@ -1,6 +1,6 @@
 # Fully graded preflop practice
 
-Planning baseline: `79c0993`, inspected November 17, 2026. This is a proposed implementation scope and checklist. Application behavior has not changed in this planning step.
+Planning baseline: `79c0993`, inspected November 17, 2026. The user approved implementation after planning. The candidate is on `test/graded-preflop`; see the implementation record for verification and remaining device/review checks.
 
 ## Priority and intended experience
 
@@ -72,51 +72,53 @@ Done when every declared context and all possible learner actions at that contex
 
 ### PF1 — Covered preflop generation and progression
 
-- [ ] Implement separately scoped covered-practice generation around the existing live rules/replay engine.
-- [ ] Randomize cards and vary applicable positions/contexts. Keep the full declared scenario catalog reachable, with optional focus using the same sources.
-- [ ] Define covered opponent actions, sizing, calls, raises and terminal boundaries; avoid unsupported learner prompts without silently folding players or replacing their actions.
-- [ ] Retain every actual learner choice and explicitly distinguish real poker terminals from educational reference boundaries.
-- [ ] Prove legality, deck uniqueness, contributions/stacks, correct acting order, blind-vs-blind sizing and all-in call/fold boundaries.
-- [ ] Keep unrestricted Full hands logic and dealing behavior unchanged by the preflop-only profile.
+- [x] Implement separately scoped covered-practice generation around the existing live rules/replay engine.
+- [x] Randomize cards and vary applicable positions/contexts. Keep the full declared scenario catalog reachable, with optional focus using the same sources.
+- [x] Define covered opponent actions, sizing, calls, raises and terminal boundaries; avoid unsupported learner prompts without silently folding players or replacing their actions.
+- [x] Retain every actual learner choice and explicitly distinguish real poker terminals from educational reference boundaries.
+- [x] Prove legality, deck uniqueness, contributions/stacks, correct acting order, blind-vs-blind sizing and all-in call/fold boundaries.
+- [x] Keep unrestricted Full hands logic and dealing behavior unchanged by the preflop-only profile.
 
 Done when deterministic tests exercise every declared family and randomized journeys produce no unexplained missing references or action substitutions. No flop cards are dealt by Preflop practice.
 
 ### PF2 — Feedback, charts and review
 
-- [ ] Show a reference grade after every accepted learner decision, including wrong calls/folds and reference-sized raises.
-- [ ] Preserve positive-frequency alternatives and ties as supported. A single click is not evidence of correct long-run mixing.
-- [ ] Use the original range grid and frequencies. Show the precise source context and action taken before revealing recommended actions.
-- [ ] Explain the supplied recommendation using reviewed educational reasoning; identify assumptions, retain provenance limits and make no invented EV-loss claims.
-- [ ] Preserve automatic error explanation, compact supported feedback, fixed controls, exact retry and immediate fold-stop behavior.
-- [ ] Record original errors automatically; prevent duplicate records from rapid taps, reloads, retries or mode changes. Original grades stay stable when charts change.
-- [ ] Keep ungraded legacy answers, hinted retries and fresh attempts separate in progress. Do not classify an old uncovered choice as a learner mistake.
+- [x] Show a reference grade after every accepted learner decision, including wrong calls/folds and reference-sized raises.
+- [x] Preserve positive-frequency alternatives and ties as supported. A single click is not evidence of correct long-run mixing.
+- [x] Use the original range grid and frequencies. Show the precise source context and action taken before revealing recommended actions.
+- [x] Explain the supplied recommendation using reviewed educational reasoning; identify assumptions, retain provenance limits and make no invented EV-loss claims.
+- [x] Preserve automatic error explanation, compact supported feedback, fixed controls, exact retry and immediate fold-stop behavior.
+- [x] Record original errors automatically; prevent duplicate records from rapid taps, reloads, retries or mode changes. Original grades stay stable when charts change.
+- [x] Keep ungraded legacy answers, hinted retries and fresh attempts separate in progress. Do not classify an old uncovered choice as a learner mistake.
 
 Done when all declared prompt/action combinations receive appropriate reference feedback and the full answer → explanation/chart → retry/continue → review flow survives reloads.
 
 ### PF3 — Mode settings, existing saves and offline behavior
 
-- [ ] Keep the same Preflop switch, approved navy materials and simulator navigation. Clearly name the covered setup without adding a complex configuration dashboard.
-- [ ] Scope configuration and state by profile/mode. Entering six-max practice must not overwrite a parked 8/9-seat or custom-stack Full hands game.
-- [ ] Preserve incompatible older preflop hands and feedback. Provide an explicit migration/start-new-practice path; never silently redraw cards, discard actions or call legacy unrestricted practice fully graded.
-- [ ] Version any changed saved semantics so stale clients cannot corrupt new checkpoints. Keep export, ownership, storage-failure recovery and bounded retention.
-- [ ] Reuse the bundled chart URL/offline assets; confirm cold-start practice, invalid data, chart retries and missing-source behavior without accepting ungraded answers into the covered profile.
-- [ ] Correct misleading live-mode descriptions where they still imply solver-controlled opponents or automatic action substitution, while retaining appropriate archive wording.
+- [x] Keep the same Preflop switch, approved navy materials and simulator navigation. Clearly name the covered setup without adding a complex configuration dashboard.
+- [x] Scope configuration and state by profile/mode. Entering six-max practice must not overwrite a parked 8/9-seat or custom-stack Full hands game.
+- [x] Preserve incompatible older preflop hands and feedback. Provide an explicit migration/start-new-practice path; never silently redraw cards, discard actions or call legacy unrestricted practice fully graded.
+- [x] Version any changed saved semantics so stale clients cannot corrupt new checkpoints. Keep export, ownership, storage-failure recovery and bounded retention.
+- [x] Reuse the bundled chart URL/offline assets; confirm cold-start practice, invalid data, chart retries and missing-source behavior without accepting ungraded answers into the covered profile.
+- [x] Correct misleading live-mode descriptions where they still imply solver-controlled opponents or automatic action substitution, while retaining appropriate archive wording.
 
 Done when both modes preserve their own exact state, prior data remains recoverable, and covered practice can run offline after a complete pack is installed.
 
 ### PF4 — Exhaustive verification and user-testable candidate
 
-- [ ] Test all 65 declared contexts × 169 hand classes against the imported source, including all applicable actions and standard sizes; verify known source examples independently of the adapter under test.
-- [ ] Test real combo-to-class mapping, positional source selection, mixed strategies, ties, all-ins, source precision, invalid data and intentionally unsupported histories.
-- [ ] Verify hidden opponent cards, unseen deck order and later outcomes cannot change a decision's recommendation. Replays must restore the exact original spot.
-- [ ] Run randomized sessions with fixed reproducible seeds across positions and scenario families; report grade coverage, boundary endings and reach rather than only accuracy.
-- [ ] Test actual player journeys on phone/desktop viewports: correct/wrong choices, automatic overlays, chart inspection, Retry, Next, modes, saves, reload, offline and multiple tabs.
-- [ ] Run relevant unit tests, TypeScript/integrity checks, production build and regression browser checks for existing Full hands, ranges, review, learning and navigation.
-- [ ] Check no page scrolling, overlapping controls or clipped feedback. Record actual iPhone Safari/Home Screen verification separately from browser emulation.
-- [ ] Commit verified work on an isolated test branch, update this checklist/ROADMAP and provide a testable candidate for review before main-app merge or deployment.
+- [x] Test all 65 declared contexts × 169 hand classes against the imported source, including all applicable actions and standard sizes; verify known source examples independently of the adapter under test.
+- [x] Test real combo-to-class mapping, positional source selection, mixed strategies, ties, all-ins, source precision, invalid data and intentionally unsupported histories.
+- [x] Verify hidden opponent cards, unseen deck order and later outcomes cannot change a decision's recommendation. Replays must restore the exact original spot.
+- [x] Run randomized sessions with fixed reproducible seeds across positions and scenario families; report grade coverage, boundary endings and reach rather than only accuracy.
+- [x] Test actual player journeys on phone/desktop viewports: correct/wrong choices, automatic overlays, chart inspection, Retry, Next, modes, saves, reload, offline and multiple tabs.
+- [x] Run relevant unit tests, TypeScript/integrity checks, production build and regression browser checks for existing Full hands, ranges, review, learning and navigation.
+- [x] Check no page scrolling, overlapping controls or clipped feedback. Record actual iPhone Safari/Home Screen verification separately from browser emulation.
+- [x] Commit verified work on an isolated test branch, update this checklist/ROADMAP and provide a testable candidate for review before main-app merge or deployment.
+
+- [ ] Actual iPhone Safari/Home Screen touch, safe-area and on-device performance confirmation, followed by user review of the test candidate.
 
 Done when every accepted decision in the new covered profile is graded, no ordinary generated path lacks a source, all enumerated boundaries are explained and tested, the source catalog is reachable, and existing app features pass regression checks. Missing device access remains an explicit verification limit.
 
 ## Next goal
 
-The copy-ready development instruction is [GRADED_PREFLOP.md](goals/GRADED_PREFLOP.md). Its recommended scope assumes covered training with standard sizes. The user's answer about unrestricted versus covered practice takes precedence; revise the goal if that preference differs. This planning task does not itself start implementation or publish the app.
+The copy-ready development instruction is [GRADED_PREFLOP.md](goals/GRADED_PREFLOP.md). Its recommended scope assumes covered training with standard sizes. The user's answer about unrestricted versus covered practice takes precedence; revise the goal if that preference differs. Implementation was authorized after planning. Production merge/deployment remains outside the candidate task; actual device review is still required.

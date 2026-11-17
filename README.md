@@ -12,6 +12,8 @@ The live engine sits inside the approved simulator layout. Supported answers use
 
 Live play now waits for grading charts to load, offers Retry on failure and identifies why a decision is ungraded. Heuristic opponents use documented preflop raise sizes where a matching chart exists, preserving covered responses. Arbitrary postflop play still has no verified strategy grade; see [feedback recovery and remaining coverage](docs/implementation/FEEDBACK_RECOVERY.md).
 
+The `test/graded-preflop` candidate upgrades the existing Preflop switch with source-covered six-max 100 BB practice: fresh cards, supplied legal setup actions, grades for accepted choices, original charts, retries and honest reference boundaries. Existing older hands can upgrade explicitly through Practice tools. Full hands stays unrestricted. See [candidate behavior and verification](docs/implementation/GRADED_PREFLOP.md) and [how to test it](docs/verification/graded-preflop/TEST_GUIDE.md). Candidate deployment and actual iPhone verification are separate from automated checks.
+
 See [restoration scope and verification](docs/implementation/LEARNING_RESTORATION.md). This release preserves the shared table/card artwork, navy materials and chart data rather than replacing them.
 
 ## Live modes

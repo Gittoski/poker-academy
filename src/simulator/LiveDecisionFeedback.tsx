@@ -14,7 +14,9 @@ export function LiveDecisionFeedback({
   onContinue,
   continueLabel,
   suspended = false,
+  boundary,
 }: {
+  boundary?: string
   suspended?: boolean
   reference: LiveReference
   action: string
@@ -36,7 +38,7 @@ export function LiveDecisionFeedback({
     : continueLabel === 'Continue hand'
       ? 'Continue'
       : continueLabel
-  const [expanded, setExpanded] = useState(outside)
+  const [expanded, setExpanded] = useState(outside || !!boundary)
   const [tab, setTab] = useState<'explanation' | 'chart'>('explanation')
   const supportedActions = reference.frequencies
     ? Object.entries(reference.frequencies)
@@ -141,6 +143,11 @@ export function LiveDecisionFeedback({
                 </p>
               )}
               <p>{reference.explanation}</p>
+              {boundary && (
+                <p>
+                  <strong>Reference boundary.</strong> {boundary}
+                </p>
+              )}
               {!supported && !outside && (
                 <p>
                   Ungraded means we cannot label this decision correct or
