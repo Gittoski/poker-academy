@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { formatFrequency } from '@/learning/classification'
-import type { LiveReference } from './liveReference'
+import { liveUngradedSummary, type LiveReference } from './liveReference'
 import { LiveRangeFeedback } from './LiveRangeFeedback'
 import { LiveSheet } from './LiveSheet'
 
@@ -64,7 +64,7 @@ export function LiveDecisionFeedback({
             ? 'This reference gives your action zero support.'
             : supported
               ? 'Your choice is supported by this reference.'
-              : 'No applicable reference. Your legal action is ungraded.'}
+              : liveUngradedSummary(reference)}
         </span>
         <button
           className="btn"
@@ -141,6 +141,15 @@ export function LiveDecisionFeedback({
                 </p>
               )}
               <p>{reference.explanation}</p>
+              {!supported && !outside && (
+                <p>
+                  Ungraded means we cannot label this decision correct or
+                  incorrect. Live play uses imported preflop charts for matching
+                  100 BB, no-ante situations. Random postflop boards, prior
+                  callers and different sizing can fall outside those charts.
+                  Winning or losing the hand does not supply a strategy grade.
+                </p>
+              )}
               {supportedActions && (
                 <p>
                   The supplied reference supports:{' '}

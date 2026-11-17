@@ -4,6 +4,17 @@ Goal: progressively improve real-life six-max Hold’em decisions, especially ag
 
 This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PLAN.md) explains lesson progression, feature scope and completion criteria. [Foundation history](docs/FOUNDATION_HISTORY.md) retains the completed import/theme work.
 
+## Current priority: dependable live decision feedback
+
+- [x] Diagnose silent chart-loading failures and the gap between random live situations and the imported preflop reference tree.
+- [x] Pause decisions/opponents while charts load; bound stalled requests, expose Retry and require an explicit choice to play without charts after a failure.
+- [x] Preserve genuine preflop coverage by using documented raise sizes for heuristic opponents when an exact matching chart exists; retain random deals and actual player choices.
+- [x] Show short, specific reasons for ungraded decisions and signal postflop/reference availability before acting; preserve green supported feedback, automatic error explanations and original charts.
+- [x] Keep saved feedback immutable when charts recover, including snapshots, retries and earlier ungraded decisions; preserve prior saves, engine rules and approved theme.
+- [x] Complete final regressions: 218 unit tests plus TypeScript/integrity checks, optimized build, 99 browser checks and 22 focused checks against the final build; record [feedback recovery verification](docs/implementation/FEEDBACK_RECOVERY.md).
+- [ ] Expand live strategy coverage with an identified, applicable postflop reference. Arbitrary boards, caller/limp situations, unsupported sizes/stacks and cold re-raises cannot yet receive honest chart grades. Legal poker and hand outcomes do not resolve this limitation.
+- [ ] Confirm the deployed update and actual iPhone Safari/Home Screen loading, touch and offline behavior.
+
 ## Current priority: restore the approved learning simulator
 
 - [x] Restore the approved simulator surface/table proportions, three action buttons, compact header and navy materials around the live engine.

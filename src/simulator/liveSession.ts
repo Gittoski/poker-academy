@@ -3,7 +3,7 @@ import { contentHash } from '@/learning/identity'
 import { parseRangeEntries } from '@/lib/rangeEntries'
 import { resolveActions } from '@/lib/range'
 import { handOf } from '@/lib/cards'
-import { liveReference, type LiveReference } from './liveReference'
+import { liveReference, LIVE_UNGRADED_REASONS, type LiveReference } from './liveReference'
 import { actLive, newLiveHand, type LiveAction, type LiveConfig, type LiveState } from './liveEngine'
 
 export type OpponentStyle = 'tight' | 'balanced' | 'loose'
@@ -46,6 +46,7 @@ function validateDeal(value: unknown): asserts value is LiveDeal {
     if (!Number.isInteger(f.index) || f.index < 0 || f.index >= d.actions.length || !f.reference
       || !['match', 'alternative', 'outside', 'ungraded'].includes(f.reference.status)
       || typeof f.reference.explanation !== 'string' || typeof f.reference.source !== 'string'
+      || (f.reference.reason !== undefined && !LIVE_UNGRADED_REASONS.includes(f.reference.reason))
       || (f.reference.referenceHash !== undefined && !/^[0-9a-f]{64}$/.test(f.reference.referenceHash))
       || (f.reference.frequencies && Math.abs(Object.values(f.reference.frequencies).reduce((a, b) => a + b, 0) - 1) > 0.000001)
       || (f.reference.frequency !== undefined && (!Number.isFinite(f.reference.frequency) || f.reference.frequency < 0 || f.reference.frequency > 1))

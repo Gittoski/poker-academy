@@ -10,6 +10,8 @@ The user approved publishing the verified live integration to the connected `wor
 
 The live engine sits inside the approved simulator layout. Supported answers use compact green feedback; errors automatically open the familiar Explanation/Chart overlay with fixed Retry/Continue controls. Ungraded spots do not interrupt with a large popup. Folding ends your practice hand immediately. Retry restores the decision while retaining the original mistake; it never silently substitutes an action. Custom bet sizing remains available in a small separate panel.
 
+Live play now waits for grading charts to load, offers Retry on failure and identifies why a decision is ungraded. Heuristic opponents use documented preflop raise sizes where a matching chart exists, preserving covered responses. Arbitrary postflop play still has no verified strategy grade; see [feedback recovery and remaining coverage](docs/implementation/FEEDBACK_RECOVERY.md).
+
 See [restoration scope and verification](docs/implementation/LEARNING_RESTORATION.md). This release preserves the shared table/card artwork, navy materials and chart data rather than replacing them.
 
 ## Live modes

@@ -1,0 +1,67 @@
+
+> open-range-viewer@0.1.0 prebuild
+> node scripts/build-ranges.mjs --if-present
+
+Cash_100_PTO: 207 entries (52 KB)
+Cash_100_Simple: 207 entries (53 KB)
+Cash_100_PRO: 207 entries (55 KB)
+Cash_100_GTO: 207 entries (84 KB)
+Cash_100_GTO_2bb: 207 entries (81 KB)
+Cash_100_GTO_3bb: 207 entries (77 KB)
+MTT_100_PTO: 207 entries (66 KB)
+MTT_100_GTO: 207 entries (130 KB)
+MTT_40_PTO: 201 entries (61 KB)
+MTT_40_GTO: 207 entries (82 KB)
+MTT_20_PTO: 158 entries (50 KB)
+MTT_20_GTO: 158 entries (67 KB)
+MTT_10_PTO: 143 entries (37 KB)
+MTT_10_GTO: 143 entries (38 KB)
+MTT_5_PTO: 158 entries (46 KB)
+MTT_5_GTO: 158 entries (46 KB)
+2982 entries written to public/ranges
+
+> open-range-viewer@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.25
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 2.6s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/14) ...
+   Generating static pages (3/14) 
+   Generating static pages (6/14) 
+   Generating static pages (10/14) 
+ ✓ Generating static pages (14/14)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ○ /                                    5.22 kB         149 kB
+├ ○ /_not-found                            991 B         104 kB
+├ ○ /apple-icon                            140 B         103 kB
+├ ○ /archive/play                        26.7 kB         157 kB
+├ ○ /brand-mark                            140 B         103 kB
+├ ○ /icon                                  140 B         103 kB
+├ ○ /learn                               10.8 kB         123 kB
+├ ○ /live                                12.6 kB         131 kB
+├ ○ /manifest.webmanifest                  140 B         103 kB
+├ ƒ /offline-assets.json                   140 B         103 kB
+├ ○ /offline-worker.js                     140 B         103 kB
+├ ƒ /play                                  140 B         103 kB
+└ ○ /ranges                              6.87 kB         115 kB
++ First Load JS shared by all             103 kB
+  ├ chunks/255-37e0f0325134c4d7.js       46.4 kB
+  ├ chunks/4bd1b696-c023c6e3521b1417.js  54.2 kB
+  └ other shared chunks (total)          1.92 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice

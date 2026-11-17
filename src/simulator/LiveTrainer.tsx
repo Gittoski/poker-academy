@@ -12,7 +12,7 @@ import { LiveOutcome, liveOutcomeTitle } from './LiveOutcome'
 import { InterfaceIcon } from '@/components/InterfaceIcon'
 import { SimulatorTable } from '@/components/SimulatorTable'
 import { positionsFor, type PlayerCount } from '@/lib/positions'
-import { loadRangeSet } from '@/lib/rangeSets'
+import { loadLiveCharts } from './liveCharts'
 import type { RangeEntry } from '@/data/types'
 import {
   legalLiveActions,
@@ -102,6 +102,11 @@ export function LiveTrainer() {
   const [error, setError] = useState('')
   const [paused, setPaused] = useState(true)
   const [entries, setEntries] = useState<RangeEntry[] | null>(null)
+  const [referenceState, setReferenceState] = useState<
+    'loading' | 'ready' | 'error'
+  >('loading')
+  const [referenceAttempt, setReferenceAttempt] = useState(0)
+  const [allowUngraded, setAllowUngraded] = useState(false)
   const [review, setReview] = useState<{
     deal: LiveDeal
     index: number
@@ -124,15 +129,22 @@ export function LiveTrainer() {
   }, [])
   useEffect(() => {
     let gone = false
-    loadRangeSet('Cash_100_PTO')
+    setReferenceState('loading')
+    loadLiveCharts()
       .then((e) => {
-        if (!gone) setEntries(e)
+        if (!gone) {
+          if (!e.length) throw Error('Empty grading charts')
+          setEntries(e)
+          setReferenceState('ready')
+        }
       })
-      .catch(() => {})
+      .catch(() => {
+        if (!gone) setReferenceState('error')
+      })
     return () => {
       gone = true
     }
-  }, [])
+  }, [referenceAttempt])
   useEffect(() => {
     let disposed = false,
       release: (() => void) | undefined
@@ -300,6 +312,7 @@ export function LiveTrainer() {
   const commit = useCallback(
     (action: LiveAction, human: boolean) => {
       if (!current || !active || !allowed || review || switching.current) return
+      if (!entries && !allowUngraded) return
       const index = current.actions.length,
         seed = current.seed
       const reference = human
@@ -322,7 +335,7 @@ export function LiveTrainer() {
         setError(e instanceof Error ? e.message : 'The action was rejected.')
       }
     },
-    [current, active, allowed, review, entries],
+    [current, active, allowed, review, entries, allowUngraded],
   )
   useEffect(() => {
     if (
@@ -338,7 +351,8 @@ export function LiveTrainer() {
       paused ||
       tools ||
       review ||
-      !allowed
+      !allowed ||
+      (!entries && !allowUngraded)
     )
       return
     const timer = setTimeout(
@@ -352,6 +366,7 @@ export function LiveTrainer() {
                 Math.imul(current.actions.length + 1, 0x9e3779b9)) >>>
                 0,
             ),
+            liveReference(current, active, { kind: 'fold' }, entries).raiseTo,
           ),
           false,
         ),
@@ -369,6 +384,8 @@ export function LiveTrainer() {
     modeBusy,
     outcome,
     sizing,
+    entries,
+    allowUngraded,
   ])
   const legal = displayed ? legalLiveActions(displayed) : null
   const feedback = useMemo(() => {
@@ -393,6 +410,13 @@ export function LiveTrainer() {
       ? reference.raiseTo
       : legal.minRaiseTo
   }, [deal, displayed, legal?.minRaiseTo, legal?.maxRaiseTo, entries, review])
+  const coverage = useMemo(
+    () =>
+      deal && displayed
+        ? liveReference(deal, displayed, { kind: 'fold' }, entries)
+        : null,
+    [deal, displayed, entries],
+  )
   useEffect(() => {
     const turn = `${current?.seed}:${current?.actions.length}:${review?.index ?? 'live'}`
     if (raiseEdit.current.turn !== turn)
@@ -660,7 +684,15 @@ export function LiveTrainer() {
                   : ended
                     ? 'Practice hand complete'
                     : displayed.toAct === deal.hero
-                      ? 'Your move'
+                      ? review || coverage?.status !== 'ungraded'
+                        ? 'Your move · Chart available'
+                        : !entries
+                          ? referenceState === 'loading'
+                            ? 'Loading grading charts…'
+                            : 'Grading charts unavailable'
+                          : displayed.street !== 'preflop'
+                            ? 'Your move · Postflop ungraded'
+                            : 'Your move · No matching chart'
                       : 'Opponents are acting'}
             </span>
           </div>
@@ -753,6 +785,36 @@ export function LiveTrainer() {
             >
               Next hand
             </button>
+          </section>
+        ) : !review && !entries && !allowUngraded ? (
+          <section
+            className="verdict sim-compact live-reference-status"
+            aria-label="Grading charts"
+            aria-live="polite"
+          >
+            <strong>
+              {referenceState === 'loading'
+                ? 'Loading grading charts…'
+                : 'Grading charts could not load.'}
+            </strong>
+            <span>
+              {referenceState === 'loading'
+                ? 'Wait for charts before answering. Your hand is kept.'
+                : 'Reconnect, then retry. Your hand is kept.'}
+            </span>
+            {referenceState === 'error' && (
+              <>
+                <button
+                  className="btn btn--primary"
+                  onClick={() => setReferenceAttempt((n) => n + 1)}
+                >
+                  Retry charts
+                </button>
+                <button className="btn" onClick={() => setAllowUngraded(true)}>
+                  Play ungraded
+                </button>
+              </>
+            )}
           </section>
         ) : displayed.toAct === deal.hero ? (
           <div
@@ -1055,6 +1117,23 @@ export function LiveTrainer() {
           </details>
           <details className="card">
             <summary>Save and source details</summary>
+            <p role="status">
+              Grading charts:{' '}
+              {referenceState === 'ready'
+                ? 'loaded'
+                : referenceState === 'loading'
+                  ? 'loading'
+                  : 'unavailable'}
+              .
+            </p>
+            {referenceState === 'error' && (
+              <button
+                className="btn"
+                onClick={() => setReferenceAttempt((n) => n + 1)}
+              >
+                Retry charts
+              </button>
+            )}
             <p>
               One tab owns the live save. Reload pauses opponents. Saves store
               the shuffled-deal seed, legal actions and original feedback.
@@ -1070,14 +1149,20 @@ export function LiveTrainer() {
             <p>
               Opponent policy uses hand ranks/suitedness preflop and current
               made-hand category postflop, with style thresholds and randomness.
-              It receives only its own cards, the visible board, public pot/bet
-              and legal actions. It does not model equity, blockers, draws or
-              equilibrium strategy.
+              Where a matching preflop chart exists, raises use its documented
+              size so later covered decisions can still be graded. This does not
+              make opponents' action choices solver recommendations. It receives
+              only its own cards, the visible board, public pot/bet and legal
+              actions. It does not model equity, blockers, draws or equilibrium
+              strategy.
             </p>
             <button
               className="btn"
               onClick={() =>
-                download(JSON.stringify({ ...session, version: 3 }), 'poker-live-practice.json')
+                download(
+                  JSON.stringify({ ...session, version: 3 }),
+                  'poker-live-practice.json',
+                )
               }
             >
               Export live practice

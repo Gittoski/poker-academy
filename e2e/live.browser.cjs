@@ -62,6 +62,7 @@ test('play continues without reference data and can settle a real randomized run
   await page.route('**/ranges/Cash_100_PTO.json', route => route.fulfill({ status: 503, body: 'Unavailable' }))
   await page.clock.install()
   await page.goto('/live')
+  await page.getByRole('button', { name: 'Play ungraded', exact: true }).click()
   await expect(page.getByRole('group', { name: 'Your move', exact: true })).toBeVisible()
   for (let i = 0; i < 150; i++) {
     if (await page.getByRole('heading', { name: 'Hand settled', exact: true }).isVisible()) break
