@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test')
 const AxeBuilder = require('@axe-core/playwright').default
-const { home, openReviews } = require('./support/navigation.cjs')
+const { home, openReviews, openArchivedSettings } = require('./support/navigation.cjs')
 async function snapshot(page) {
   return page.evaluate(async () => {
     const db = await new Promise((resolve) => {
@@ -127,9 +127,8 @@ test('Home resumes the same decision, counts answered decisions exactly once and
   await expect(page.locator('.activity-footer')).toContainText(
     '1 answered today',
   )
-  await expect(
-    page.getByRole('link', { name: /^Resume reference hand/ }),
-  ).toHaveAttribute('href', /mode=full-hands.*seat=LJ/)
+  await page.getByText('Earlier exercise history', { exact: true }).click()
+  await expect(page.getByRole('link', { name: 'Saved exercise reviews', exact: true })).toHaveAttribute('href', /mode=full-hands.*seat=LJ/)
   await page.reload()
   await expect(page.locator('.activity-footer')).toContainText(
     '1 answered today',
@@ -138,7 +137,8 @@ test('Home resumes the same decision, counts answered decisions exactly once and
     path: info.outputPath('home-saved-progress.png'),
     fullPage: true,
   })
-  await page.getByRole('link', { name: /^Resume reference hand/ }).click()
+  await openReviews(page)
+  await page.getByRole('button', { name: 'Back to simulator', exact: true }).click()
   await expect(page.locator('.verdict:visible')).toBeVisible()
   expect((await snapshot(page)).meta.cursor).toEqual(saved.meta.cursor)
   await openReviews(page)
@@ -203,7 +203,8 @@ test('Home includes fundamentals answers and preserves activity offline across c
   await page.getByRole('link', { name: 'Start training', exact: true }).click()
   await expect(page.getByRole('group', { name: 'Your live move', exact: true })).toBeVisible()
   await home(page)
-  await page.getByRole('link', { name: /^Reference exercises ·/ }).click()
+  await openReviews(page)
+  await page.getByRole('button', { name: 'Back to simulator', exact: true }).click()
   await expect(page.getByRole('group', { name: 'Your move', exact: true })).toBeVisible({ timeout: 20000 })
   const modeSwitch = page.getByRole('switch', { name: 'Preflop mode' })
   await expect(modeSwitch).toBeEnabled()
@@ -230,9 +231,8 @@ test('Home settings persist while Resume keeps the existing configuration and sc
     .click()
   await expect(page.getByRole('group', { name: 'Your live move', exact: true })).toBeVisible()
   expect((await snapshot(page)).meta.cursor.handId).toBe(before.meta.cursor.handId)
-  await home(page)
-  await page.getByRole('button', { name: 'Settings', exact: true }).click()
-  const settings = page.getByRole('dialog', { name: 'Settings', exact: true })
+  await openArchivedSettings(page)
+  const settings = page.getByRole('dialog', { name: 'Archived exercise settings', exact: true })
   await settings.getByRole('radio', { name: 'Preflop', exact: true }).click()
   await settings
     .getByRole('button', { name: 'Game setup', exact: true })
@@ -249,13 +249,14 @@ test('Home settings persist while Resume keeps the existing configuration and sc
     .toBe(20)
   await settings.getByRole('button', { name: 'Done', exact: true }).click()
   await page.reload()
+  await page.getByText('Earlier exercise history', { exact: true }).click()
   await expect(
-    page.getByRole('link', { name: /^Resume reference hand/ }),
+    page.getByRole('link', { name: 'Saved exercise reviews', exact: true }),
   ).toHaveAttribute('href', /seat=LJ/)
   expect((await snapshot(page)).meta.cursor.handId).toBe(
     before.meta.cursor.handId,
   )
-  await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  await openArchivedSettings(page)
   await page.getByRole('button', { name: 'Game setup', exact: true }).click()
   await expect(
     settings.getByRole('radio', { name: 'CO', exact: true }),

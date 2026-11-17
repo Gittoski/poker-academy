@@ -2,9 +2,9 @@
 
 A fresh start based on [jensbaagaard/poker-practice](https://github.com/jensbaagaard/poker-practice), pinned to `449993f78d995c77b72d0bcac418a8507dd6f783`. The previous Expo academy and custom simulator have been removed from this branch. Their last version is preserved on `backup/academy-before-poker-practice`.
 
-This test candidate adds live poker: shuffled hands and legal player choices determine the continuation, streets and chip payouts. Home and shared **Play** navigation open `/live`. The familiar range grid and navy/graphite table, card artwork and oval preflop switch are preserved. `/play` remains available as **Reference exercises** (preflop and scripted full hands), with its existing saves, reviews and adaptive practice.
+Live poker uses shuffled hands: shuffled hands and legal player choices determine the continuation, streets and chip payouts. Home and shared **Play** navigation open `/live`. The familiar range grid and navy/graphite table, card artwork and oval preflop switch are preserved. Earlier preflop/scripted exercises and their saves remain in **Earlier exercise history** for future learning work; routine Play uses live poker.
 
-The attached patch was compared with latest `dfa701d` and integrated on local branch `test/live-play-integration`; nothing has been merged, pushed or deployed. See [integration notes and the testing guide](docs/implementation/LIVE_INTEGRATION.md). Earlier sections below describe the retained reference exercises unless explicitly marked live.
+The user approved publishing the verified live integration to the connected `work` branch. See [the release audit](docs/implementation/LIVE_RELEASE.md) for current behavior, checks, preserved visuals and deployment/device limits. [The earlier integration audit](docs/implementation/LIVE_INTEGRATION.md) records the separate test candidate. Earlier sections below describe archived reference exercises unless explicitly marked live.
 
 ## Run
 

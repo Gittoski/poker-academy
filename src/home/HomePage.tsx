@@ -13,6 +13,7 @@ import { PracticeRepository } from '@/fundamentals/progress'
 import type { HandRecord, ProblemRecord } from '@/learning/types'
 import { emptyActivity, type Activity } from '@/activity/calendar'
 import { ActivityGrid } from './ActivityGrid'
+import { ArchivedExerciseSettings } from './ArchivedExerciseSettings'
 import { HomeSettings } from './HomeSettings'
 import {
   defaultPreferences,
@@ -25,9 +26,8 @@ import {
 export function HomePage() {
   const [preferences, setPreferences] = useState(defaultPreferences),
     [saved, setSaved] = useState<PlayPreferences | null>(null)
-  const [hasHand, setHasHand] = useState(false),
-    [completed, setCompleted] = useState(false),
-    [settings, setSettings] = useState(false)
+  const [settings, setSettings] = useState(false)
+  const [archivedSettings, setArchivedSettings] = useState(false)
   const [activity, setActivity] = useState<Activity>(emptyActivity),
     [now, setNow] = useState<Date | null>(null)
   const [status, setStatus] = useState('Loading saved progress…'),
@@ -37,6 +37,8 @@ export function HomePage() {
   const [live, setLive] = useState<{
     players: number
     completed: boolean
+    decisions: number
+    outside: number
   } | null>(null)
   const [liveStatus, setLiveStatus] = useState(
     'Live hands save separately on this device',
@@ -66,6 +68,17 @@ export function HomePage() {
                 completed:
                   savedLive.current.actions.length > 0 &&
                   replayLiveDeal(savedLive.current).street === 'complete',
+                decisions: [savedLive.current, ...savedLive.archive].reduce(
+                  (n, d) => n + (d.feedback?.length ?? 0),
+                  0,
+                ),
+                outside: [savedLive.current, ...savedLive.archive].reduce(
+                  (n, d) =>
+                    n +
+                    (d.feedback?.filter((f) => f.reference.status === 'outside')
+                      .length ?? 0),
+                  0,
+                ),
               }
             : null,
         )
@@ -95,8 +108,6 @@ export function HomePage() {
           ? await learning.get<HandRecord>('hands', cursor.handId)
           : null
         if (stopped) return
-        setHasHand(!!hand)
-        setCompleted(!!hand?.completedAt && !!cursor?.resultShown)
         setSaved(hand ? { setup: hand.config, mode: hand.config.mode } : null)
         try {
           if (hand && !loadPreferences())
@@ -166,7 +177,6 @@ export function HomePage() {
   }, [])
   const play = saved ?? preferences,
     href = '/live',
-    referenceHref = playHref(play),
     review = playHref(play, true)
   return (
     <main className="home-page">
@@ -253,38 +263,53 @@ export function HomePage() {
         <p className="home-eyebrow" id="practice-title">
           NEXT PRACTICE
         </p>
-        <a className="home-practice-link" href={review}>
+        <a className="home-practice-link" href="/live?tools=review">
           <span className="home-review-icon">
             <InterfaceIcon name="review" />
           </span>
           <span>
-            <strong>Reference exercise mistakes</strong>
+            <strong>Review live decisions</strong>
             <small>
-              {available
-                ? due
-                  ? `${due} ${due === 1 ? 'spot' : 'spots'} ready to review`
-                  : total
-                    ? 'Your saved spots are here when you need them'
-                    : 'Your mistakes will appear here automatically'
-                : 'Open your saved reviews'}
+              {live?.decisions
+                ? `${live.decisions} recent ${live.decisions === 1 ? 'decision' : 'decisions'} · ${live.outside} outside reference`
+                : 'Your live decisions save automatically as you play'}
             </small>
           </span>
           <InterfaceIcon name="arrow" />
         </a>
         <p className="home-help">
-          Live decisions and retries are in Play → Practice tools. The activity
-          calendar counts reference exercises and lessons.
+          Replay a saved decision without changing your current hand.
+          Unsupported spots stay ungraded.
         </p>
-        <a className="home-text-link" href={referenceHref}>
-          {hasHand && !completed
-            ? 'Resume reference hand'
-            : 'Reference exercises'}{' '}
-          · Full hands / Preflop
-        </a>
-        <a className="home-text-link home-all-reviews" href={review}>
+        <a
+          className="home-text-link home-all-reviews"
+          href="/live?tools=review"
+        >
           All reviews <InterfaceIcon name="arrow" />
         </a>
+        <details>
+          <summary>Earlier exercise history</summary>
+          <p className="home-help">
+            Your previous exercise saves are preserved.{' '}
+            {available
+              ? `${total} saved mistake groups, ${due} due in the archived exercises.`
+              : 'Open history to check saved records.'}
+          </p>
+          <button className="btn" onClick={() => setArchivedSettings(true)}>
+            Archived exercise settings
+          </button>
+          <a className="home-text-link" href={review}>
+            Saved exercise reviews <InterfaceIcon name="arrow" />
+          </a>
+        </details>
       </section>
+      {archivedSettings && (
+        <ArchivedExerciseSettings
+          preferences={preferences}
+          onChange={setPreferences}
+          onClose={() => setArchivedSettings(false)}
+        />
+      )}
       {settings && (
         <HomeSettings
           preferences={preferences}

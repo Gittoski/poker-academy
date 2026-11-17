@@ -71,6 +71,15 @@ function download(text: string, name: string) {
 }
 export function LiveTrainer() {
   const [tools, setTools] = useState(false)
+  const [toolSection, setToolSection] = useState<string | null>(null)
+  useEffect(() => {
+    const requested = new URLSearchParams(location.search).get('tools')
+    if (requested === 'review' || requested === 'settings') {
+      setToolSection(requested)
+      setTools(true)
+      setPaused(true)
+    }
+  }, [])
   const [mobile, setMobile] = useState(false)
   const [feedbackClosed, setFeedbackClosed] = useState(false)
   useEffect(() => {
@@ -161,7 +170,12 @@ export function LiveTrainer() {
       setStyle(next.current.style)
       setAnteKind(next.current.config.ante?.kind ?? 'none')
       setAnte(String(bb(next.current.config.ante?.amount ?? 100)))
-      setPaused(!!saved)
+      setPaused(
+        !!saved ||
+          ['review', 'settings'].includes(
+            new URLSearchParams(location.search).get('tools') ?? '',
+          ),
+      )
     }
     if (navigator.locks) {
       void navigator.locks
@@ -246,6 +260,7 @@ export function LiveTrainer() {
       active.toAct === null ||
       active.toAct === current.hero ||
       paused ||
+      tools ||
       review ||
       !allowed
     )
@@ -267,7 +282,7 @@ export function LiveTrainer() {
       650,
     )
     return () => clearTimeout(timer)
-  }, [active, current, commit, paused, review, allowed])
+  }, [active, current, commit, paused, tools, review, allowed])
   const legal = displayed ? legalLiveActions(displayed) : null
   const lastRecord = current?.feedback?.at(-1)
   const feedback = useMemo(() => {
@@ -417,7 +432,7 @@ export function LiveTrainer() {
         ).name
       : null
   const feedbackView =
-    feedback && !feedbackClosed && (review || awaitingRangeCheck) ? (
+    feedback && !tools && !feedbackClosed && (review || awaitingRangeCheck) ? (
       <LiveRangeFeedback
         key={`${deal.seed}-${review?.index ?? lastRecord?.index}-${review ? 'retry' : 'live'}`}
         reference={feedback}
@@ -685,7 +700,6 @@ export function LiveTrainer() {
           <nav className="live-nav" aria-label="Practice pages">
             <a href="/ranges">Ranges</a>
             <a href="/learn">Lessons</a>
-            <a href="/play">Reference exercises · Full hands / Preflop</a>
           </nav>
           <section className="card">
             <h2>Recent practice</h2>
@@ -700,7 +714,7 @@ export function LiveTrainer() {
               }{' '}
               ungraded. Outcomes are tracked separately from reference matching.
             </p>
-            <details>
+            <details open={toolSection === 'review' ? true : undefined}>
               <summary>Review recent decisions ({decisions.length})</summary>
               <ul className="live-review">
                 {decisions
@@ -730,7 +744,10 @@ export function LiveTrainer() {
               </ul>
             </details>
           </section>
-          <details className="card">
+          <details
+            className="card"
+            open={toolSection === 'settings' ? true : undefined}
+          >
             <summary>Live table settings</summary>
             <p>
               Starts a fresh practice hand. Existing hand moves to recent

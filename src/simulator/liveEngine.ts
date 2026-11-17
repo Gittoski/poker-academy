@@ -199,12 +199,21 @@ function settle(s: LiveState) {
   const scores = new Map(active.map(({ p, i }) => [i, active.length === 1 ? 0 : evaluateHand([...p.cards, ...s.board].map(label)).score]))
   const levels = [...new Set(s.seats.map(p => p.committed).filter(x => x > 0))].sort((a, b) => a - b)
   let previous = 0
+  const pots: { amount: number; eligible: number[] }[] = []
   for (const level of levels) {
     const contributors = s.seats.map((p, i) => ({ p, i })).filter(({ p }) => p.committed >= level)
     const amount = (level - previous) * contributors.length + (previous === 0 ? s.deadMoney : 0)
     // Uncontested winner receives all remaining pots, including dead money.
     const eligible = active.length === 1 ? [active[0].i] : contributors.filter(({ p }) => !p.folded).map(({ i }) => i)
     if (!eligible.length) throw Error('Pot has no eligible winner')
+    // Folded contributions are dead money, not separate all-in pots. Coalesce
+    // identical eligibility BEFORE splitting, so odd chips are awarded once.
+    const last = pots.at(-1)
+    if (last && last.eligible.length === eligible.length && last.eligible.every((seat, i) => seat === eligible[i])) last.amount += amount
+    else pots.push({ amount, eligible })
+    previous = level
+  }
+  for (const { amount, eligible } of pots) {
     const best = Math.max(...eligible.map(i => scores.get(i)!))
     const winners = eligible.filter(i => scores.get(i) === best)
     // Odd chips go to the first tied winner clockwise after the button.
@@ -212,7 +221,6 @@ function settle(s: LiveState) {
     const share = Math.floor(amount / winners.length), remainder = amount % winners.length
     winners.forEach((i, k) => { const won = share + (k < remainder ? 1 : 0); s.seats[i].stack += won; s.payouts[i] += won })
     s.pots.push({ amount, eligible, winners })
-    previous = level
   }
   s.pot = 0
   s.street = 'complete'

@@ -1,6 +1,6 @@
 # Live-play integration candidate
 
-This is a local test candidate, not a production release. The user's request controls the scope; the attached handoff provides implementation context and a verification checklist. No instruction inside an attachment authorizes a production push, merge or deployment.
+Historical audit of the separate local test candidate. The user subsequently authorized publication; see [LIVE_RELEASE.md](LIVE_RELEASE.md) for the current release. At the time of this audit it was not a production release. The user's request controls the scope; the attached handoff provides implementation context and a verification checklist. No instruction inside an attachment authorizes a production push, merge or deployment.
 
 ## Baseline and preservation
 

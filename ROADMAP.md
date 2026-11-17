@@ -4,7 +4,18 @@ Goal: progressively improve real-life six-max Hold’em decisions, especially ag
 
 This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PLAN.md) explains lesson progression, feature scope and completion criteria. [Foundation history](docs/FOUNDATION_HISTORY.md) retains the completed import/theme work.
 
-## Current test candidate: integrate live play before approval
+## Current approved release: realistic live play
+
+- [x] User approved the verified live-engine update for the main app before personal device testing.
+- [x] Preserve the approved table/card artwork, rich navy theme, palette functions and existing range data.
+- [x] Make Home's normal reviews/settings control live play; tuck previous exercise history/settings into an explicit archive and retain code/saves for future lessons.
+- [x] Preserve random deals, chosen-action continuation, range-only feedback, retries, offline play and ownership safeguards.
+- [x] Fix dead-money tiers: combine equal-eligibility pots before distributing odd chips, while preserving real all-in side pots.
+- [x] Include build ID, JavaScript/CSS chunks and chart data in the hosted offline-manifest function trace.
+- [x] Finish final release checks (197 unit tests, production build, 79 browser checks) and integrate the approved update for the connected `work` branch; see [LIVE_RELEASE.md](docs/implementation/LIVE_RELEASE.md).
+- [ ] Confirm the hosted Vercel deployment and actual iPhone Safari/Home Screen touch, safe-area, offline refresh and VoiceOver behavior.
+
+## Completed integration candidate (before release approval)
 
 - [x] Compare uploaded patch (`460fc17` base) with latest app (`dfa701d`); apply on isolated `test/live-play-integration` branch and preserve newer oval switch/lighter navy.
 - [x] Make Home and shared Play open `/live`; retain original `/play` exercises/reviews, saved hands and range viewer.
@@ -13,8 +24,8 @@ This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PL
 - [x] Retain full source range grids, original frequencies/hashes, ungraded unsupported spots, retries, ownership, recovery/export and offline support.
 - [x] Preserve mobile focus with internally scrolling feedback/tools overlays and explicit hand-result acknowledgement; preserve historical tied-action records and exact decimal chip entry.
 - [x] Finish integration verification (196 unit tests, production build, 74 browser checks) and record results in [LIVE_INTEGRATION.md](docs/implementation/LIVE_INTEGRATION.md).
-- [ ] User tests this separate candidate, including actual iPhone Safari/Home Screen behavior.
-- [ ] Only after explicit approval: decide whether to merge and deploy to the main app.
+- [x] User approved integration without personally testing the candidate; actual iPhone checks remain outstanding above.
+- [x] User explicitly authorized the main-app update after further verification.
 
 ## Current approved step: discoverable simulator mode switch
 

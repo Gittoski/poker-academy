@@ -7,9 +7,15 @@ async function home(page) {
 }
 async function openReviews(page) {
   await home(page)
-  await page.getByRole('link', { name: 'All reviews', exact: true }).click()
+  await page.getByText('Earlier exercise history', { exact: true }).click()
+  await page.getByRole('link', { name: 'Saved exercise reviews', exact: true }).click()
   await expect(
     page.getByRole('dialog', { name: 'Review your play' }),
   ).toBeVisible()
 }
-module.exports = { home, openReviews }
+async function openArchivedSettings(page) {
+  await home(page)
+  await page.getByText('Earlier exercise history', { exact: true }).click()
+  await page.getByRole('button', { name: 'Archived exercise settings', exact: true }).click()
+}
+module.exports = { home, openReviews, openArchivedSettings }

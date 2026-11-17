@@ -1,4 +1,4 @@
-const { home, openReviews } = require('./support/navigation.cjs')
+const { home, openReviews, openArchivedSettings } = require('./support/navigation.cjs')
 const { test, expect } = require('@playwright/test')
 const AxeBuilder = require('@axe-core/playwright').default
 const fs = require('node:fs')
@@ -204,14 +204,13 @@ test('correct feedback is compact and mobile controls remain accessible', async 
   ).toBeNull()
   expect((await state(page)).meta.resume.handId).toBe(live)
 })
-test('Home settings switch modes and keep preflop controls reachable', async ({
+test('archived settings keep earlier preflop controls reachable', async ({
   page,
 }) => {
   await boot(page)
   const original = (await state(page)).meta.cursor.handId
-  await home(page)
-  await page.getByRole('button', { name: 'Settings', exact: true }).click()
-  const settings = page.getByRole('dialog', { name: 'Settings', exact: true })
+  await openArchivedSettings(page)
+  const settings = page.getByRole('dialog', { name: 'Archived exercise settings', exact: true })
   await expect(settings).toBeVisible()
   expect((await state(page)).meta.cursor.handId).toBe(original)
   await settings.getByRole('radio', { name: 'Preflop', exact: true }).click()

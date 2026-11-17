@@ -79,3 +79,17 @@ test('approved brand artwork loads in all existing logo slots and platform icon 
   await page.screenshot({ path: info.outputPath('approved-logo-home.png') })
   expect(errors).toEqual([])
 })
+
+test('offline manifest function packages the current build id, live chunks and chart data', async ({ request }) => {
+  const fs = require('node:fs')
+  const path = require('node:path')
+  const tracePath = path.resolve('.next/server/app/offline-assets.json/route.js.nft.json')
+  const trace = JSON.parse(fs.readFileSync(tracePath, 'utf8')).files.map(f => path.resolve(path.dirname(tracePath), f))
+  const manifest = await (await request.get('/offline-assets.json')).json()
+  expect(trace).toContain(path.resolve('.next/BUILD_ID'))
+  for (const url of manifest.urls.filter(u => u.startsWith('/_next/static/'))) {
+    expect(trace).toContain(path.resolve('.next', url.slice('/_next/'.length)))
+  }
+  expect(trace).toContain(path.resolve('public/ranges/Cash_100_PTO.json'))
+  expect(manifest.urls).toContain('/live')
+})

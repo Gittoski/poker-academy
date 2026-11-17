@@ -1,0 +1,93 @@
+
+ RUN  v3.2.7 /workspace/poker-academy
+
+ ❯ src/simulator/liveEngine.test.ts (14 tests | 1 failed) 1704ms
+   ✓ posts blinds, handles heads-up order and allows the BB option 4ms
+   ✓ rejects invalid actions without changing the original hand 1ms
+   ✓ refunds uncalled bets and settles a fold without exposing a runout 1ms
+   ✓ settles unequal all-ins into independently eligible main and side pots 2ms
+   ✓ does not reopen raising after a single short all-in 1ms
+   ✓ reopens action after cumulative short all-ins reach a full raise 1ms
+   ✓ treats BBA as shared dead money rather than extra BB side-pot eligibility 0ms
+   ✓ posts per-player antes before blinds without negative stacks 0ms
+   ✓ conserves chips and unique cards through 1000 randomized legal hands  1679ms
+   ✓ splits tied pots and assigns odd chips clockwise after the button 1ms
+   ✓ runs out an all-in blind without requiring meaningless checks 0ms
+   ✓ makes a short BB ante dead money available to the main-pot winner 1ms
+   ✓ a prior checker can raise a short all-in opening bet 1ms
+   × combines dead-money layers into one pot and splits its odd chips only once 11ms
+     → expected [ { amount: 25, …(2) }, …(3) ] to deeply equal [ { amount: 98, …(2) } ]
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/simulator/liveEngine.test.ts > combines dead-money layers into one pot and splits its odd chips only once
+AssertionError: expected [ { amount: 25, …(2) }, …(3) ] to deeply equal [ { amount: 98, …(2) } ]
+
+- Expected
++ Received
+
+@@ -1,8 +1,41 @@
+  [
+    {
+-     "amount": 98,
++     "amount": 25,
++     "eligible": [
++       1,
++       2,
++     ],
++     "winners": [
++       1,
++       2,
++     ],
++   },
++   {
++     "amount": 20,
++     "eligible": [
++       1,
++       2,
++     ],
++     "winners": [
++       1,
++       2,
++     ],
++   },
++   {
++     "amount": 33,
++     "eligible": [
++       1,
++       2,
++     ],
++     "winners": [
++       1,
++       2,
++     ],
++   },
++   {
++     "amount": 20,
+      "eligible": [
+        1,
+        2,
+      ],
+      "winners": [
+
+ ❯ src/simulator/liveEngine.test.ts:178:18
+    176|   s = actLive(s, { kind: 'fold' })
+    177|   while (s.street !== 'complete') s = actLive(s, { kind: 'check' })
+    178|   expect(s.pots).toEqual([{ amount: 98, eligible: [1, 2], winners: [1,…
+       |                  ^
+    179|   expect(s.payouts).toEqual([0, 49, 49, 0, 0])
+    180|   assertLiveState(s)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 13 passed (14)
+   Start at  02:25:35
+   Duration  2.05s (transform 87ms, setup 0ms, collect 102ms, tests 1.70s, environment 0ms, prepare 61ms)
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice

@@ -1,4 +1,4 @@
-const { home, openReviews } = require('./support/navigation.cjs')
+const { home, openReviews, openArchivedSettings } = require('./support/navigation.cjs')
 const { test, expect } = require('@playwright/test')
 // Exercise desktop play; Home owns routine settings and review entry. Mobile focus has dedicated coverage.
 test.use({ viewport: { width: 1365, height: 950 } })
@@ -128,8 +128,7 @@ test('review controls, mobile dialog, focus, accessibility and another tab', asy
 }, testInfo) => {
   await boot(page)
   await wrong(page)
-  await home(page)
-  await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  await openArchivedSettings(page)
   await page.getByLabel('Mix in my mistakes').uncheck()
   await expect
     .poll(async () => (await state(page)).meta.nextScheduler?.enabled)

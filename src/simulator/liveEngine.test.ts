@@ -161,3 +161,21 @@ it('a prior checker can raise a short all-in opening bet', () => {
   expect(legalLiveActions(s).minRaiseTo).toBe(15)
   expect(() => actLive(s, { kind: 'raise', to: 15 })).not.toThrow()
 })
+
+it('combines dead-money layers into one pot and splits its odd chips only once', () => {
+  let s = rig(newLiveHand({ stacks: [100, 100, 100, 100, 100], button: 2, smallBlind: 5, bigBlind: 10 }, rng),
+    [['2h', '3h'], ['4h', '5h'], ['6h', '7h'], ['8h', '9h'], ['Th', 'Jh']], ['Ts', 'Js', 'Qs', 'Ks', 'As'])
+  s = actLive(s, { kind: 'raise', to: 21 })
+  s = actLive(s, { kind: 'call' })
+  s = actLive(s, { kind: 'call' })
+  s = actLive(s, { kind: 'fold' })
+  s = actLive(s, { kind: 'fold' })
+  s = actLive(s, { kind: 'check' })
+  s = actLive(s, { kind: 'raise', to: 10 })
+  s = actLive(s, { kind: 'call' })
+  s = actLive(s, { kind: 'fold' })
+  while (s.street !== 'complete') s = actLive(s, { kind: 'check' })
+  expect(s.pots).toEqual([{ amount: 98, eligible: [1, 2], winners: [1, 2] }])
+  expect(s.payouts).toEqual([0, 49, 49, 0, 0])
+  assertLiveState(s)
+})
