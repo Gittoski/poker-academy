@@ -4,7 +4,19 @@ Goal: progressively improve real-life six-max Hold’em decisions, especially ag
 
 This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PLAN.md) explains lesson progression, feature scope and completion criteria. [Foundation history](docs/FOUNDATION_HISTORY.md) retains the completed import/theme work.
 
-## Next planned priority: verified branching postflop grading
+## Immediate planned priority: fully graded preflop practice
+
+Complete this scoped release before the longer postflop project. [PREFLOP_GRADING_PLAN.md](docs/PREFLOP_GRADING_PLAN.md) maps the requirements, proposed training constraints, existing gaps and completion checks. [GRADED_PREFLOP.md](docs/goals/GRADED_PREFLOP.md) is the copy-ready implementation goal. The user requested planning and a goal first; application implementation has not begun.
+
+- [x] Inspect why live preflop decisions remain ungraded and confirm metadata matches for all 65 standard six-max reference contexts.
+- [x] Draft the covered-training scope, safeguards, acceptance criteria and implementation goal; distinguish guaranteed practice grading from unrestricted live play.
+- [ ] PF0: Finalize the experience preference and audit every declared context, hand class, action and boundary.
+- [ ] PF1: Implement covered generation and legal progression using fresh cards and the existing engine; preserve Full hands.
+- [ ] PF2: Grade every accepted learner choice, retaining source charts, explanations, exact retries and automatic stable mistake recording.
+- [ ] PF3: Preserve mode settings, incompatible older saves, ownership and offline support; identify the supported profile clearly.
+- [ ] PF4: Exhaustive source/action tests, randomized and player journeys, TypeScript/build/regressions and device verification; deliver an isolated candidate for user testing.
+
+## Deferred until preflop is complete: verified branching postflop grading
 
 The user requested a map of the work before implementation. [POSTFLOP_GRADING_PLAN.md](docs/POSTFLOP_GRADING_PLAN.md) is the detailed checklist and acceptance criteria. Preserve the approved simulator and existing features; do not equate this plan with implemented postflop grading.
 

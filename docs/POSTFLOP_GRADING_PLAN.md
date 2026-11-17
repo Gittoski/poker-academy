@@ -2,6 +2,8 @@
 
 Planning baseline: `42a6a1b`, inspected November 17, 2026. This is a development checklist, not a claim that postflop grading is implemented or validated.
 
+Priority update: complete the [fully graded preflop plan](PREFLOP_GRADING_PLAN.md) first. This postflop checklist is retained for subsequent work.
+
 ## Goal and boundaries
 
 Build a simulator in which every decision **inside a declared training configuration** receives applicable reference feedback, an inspectable strategy chart, explanation, retry and automatic mistake recording. Preserve the approved navy table, cards, navigation, Full hands/Preflop switch, existing range viewer and fold-stop behavior.
