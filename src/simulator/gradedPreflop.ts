@@ -15,11 +15,17 @@ import {
   preflopPrefix,
 } from './preflopCatalog'
 import { switchLiveMode } from './liveModes'
+import { selectPreflopPractice } from './preflopSelection'
 
 export const isGradedPreflop = (d: LiveDeal): boolean => !!d.graded
 export function newGradedPreflop(
   entries: RangeEntry[],
-  options: { seat?: number; seed?: number; context?: string } = {},
+  options: {
+    seat?: number
+    seed?: number
+    context?: string
+    recent?: readonly LiveDeal[]
+  } = {},
 ): LiveDeal {
   auditPreflopCharts(entries)
   if (
@@ -37,10 +43,15 @@ export function newGradedPreflop(
   const candidates = PREFLOP_CONTEXTS.filter(
     (c) => options.seat === undefined || c.hero === options.seat,
   )
-  // Context selection is independent of the card seed; never search for favorable cards.
-  const context = options.context
-    ? candidates.find((c) => c.id === options.context)
-    : candidates[Math.floor((liveSeed() / 4294967296) * candidates.length)]
+  // Explicit seeds preserve exact fixture/replay semantics. Normal new hands use
+  // the guided study mix, which conditions only on the learner's reference category.
+  const selected =
+    options.seed === undefined ? selectPreflopPractice(entries, options) : null
+  const context =
+    selected?.context ??
+    (options.context
+      ? candidates.find((c) => c.id === options.context)
+      : candidates[Math.floor((liveSeed() / 4294967296) * candidates.length)])
   if (!context) throw Error('Unknown preflop context')
   return {
     mode: 'preflop',
@@ -49,7 +60,7 @@ export function newGradedPreflop(
       context: context.id,
       ...(options.seat !== undefined ? { seat: options.seat } : {}),
     },
-    seed: options.seed ?? liveSeed(),
+    seed: selected?.seed ?? options.seed ?? liveSeed(),
     config: preflopConfig(),
     hero: context.hero,
     style: 'balanced',
@@ -134,7 +145,10 @@ export function upgradePreflop(
 ): LiveSession {
   if (session.current.mode !== 'preflop')
     throw Error('Open Preflop before upgrading')
-  const current = newGradedPreflop(entries, { seat })
+  const current = newGradedPreflop(entries, {
+    seat,
+    recent: [...session.archive, session.current],
+  })
   return {
     ...session,
     version: 4,
@@ -151,7 +165,13 @@ export function switchGradedMode(
     previous = session.current.mode ?? 'full-hands'
   const next = switchLiveMode(session, mode)
   if (mode === 'preflop' && previous !== mode && !hadTarget)
-    return { ...next, version: 4, current: newGradedPreflop(entries) }
+    return {
+      ...next,
+      version: 4,
+      current: newGradedPreflop(entries, {
+        recent: [...session.archive, session.current],
+      }),
+    }
   return next
 }
 /** Restore the learner checkpoint even when covered opponents acted afterward. */

@@ -14,6 +14,8 @@ Live play now waits for grading charts to load, offers Retry on failure and iden
 
 The `test/graded-preflop` candidate upgrades the existing Preflop switch with source-covered six-max 100 BB practice: fresh cards, supplied legal setup actions, grades for accepted choices, original charts, retries and honest reference boundaries. Existing older hands can upgrade explicitly through Practice tools. Full hands stays unrestricted. See [candidate behavior and verification](docs/implementation/GRADED_PREFLOP.md) and [how to test it](docs/verification/graded-preflop/TEST_GUIDE.md). Candidate deployment and actual iPhone verification are separate from automated checks.
 
+New preflop hands use a [balanced educational mix](docs/implementation/BALANCED_PREFLOP.md): about 60% source-supported continuing hands and 40% fold-only, with common situations favored and recent repetition reduced. Cards are conditioned for study; chart grades, saved hands/retries and unrestricted Full hands are unchanged.
+
 See [restoration scope and verification](docs/implementation/LEARNING_RESTORATION.md). This release preserves the shared table/card artwork, navy materials and chart data rather than replacing them.
 
 ## Live modes

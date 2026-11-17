@@ -4,6 +4,16 @@ Goal: progressively improve real-life six-max Hold’em decisions, especially ag
 
 This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PLAN.md) explains lesson progression, feature scope and completion criteria. [Foundation history](docs/FOUNDATION_HISTORY.md) retains the completed import/theme work.
 
+## Current follow-up: balanced preflop practice selection
+
+The user approved replacing fold-heavy sampling with a declared educational study mix on the preflop candidate branch. Preserve charts, grades, existing hands and unrestricted Full hands.
+
+- [x] Replace uniform context sampling with common-situation weights (open 40, facing open 40, facing 3-bet 12, facing 4-bet 5, facing 5-bet 3), renormalized for available positions/categories.
+- [x] Target about 60% new hands with a source-supported call/raise and 40% fold-only, using legal shuffled deals conditioned only on the learner's source category. Keep the category hidden until the answer.
+- [x] Reduce repeated setups/recent hand classes where alternatives exist; keep exact retries and old saves unchanged. Retain all 65 contexts and both source categories.
+- [x] Verify measured mix (736 continuing / 464 fold-only in 1,200 starts), 40 actual-control starts, all source/retention/offline/Full hands regressions: 235 unit tests, TypeScript/integrity, production build and 107 browser checks. Record [selection verification](docs/implementation/BALANCED_PREFLOP.md) and prepare the candidate commit.
+- [ ] Actual iPhone/preview review before production integration remains outstanding.
+
 ## Immediate planned priority: fully graded preflop practice
 
 Complete this scoped release before the longer postflop project. [PREFLOP_GRADING_PLAN.md](docs/PREFLOP_GRADING_PLAN.md) maps the requirements, proposed training constraints, existing gaps and completion checks. [GRADED_PREFLOP.md](docs/goals/GRADED_PREFLOP.md) is the copy-ready implementation goal. The user approved implementation after planning. The scoped candidate is on `test/graded-preflop`; production integration waits for candidate review.

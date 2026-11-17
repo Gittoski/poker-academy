@@ -172,7 +172,7 @@ it('rejects corrupt profile metadata, source gaps, altered setup and missing lea
     'ungraded',
   )
 })
-it('does not condition context selection on strong cards or opponent private information', () => {
+it('keeps explicit-seed fixtures varied and grades independent of opponent private information', () => {
   const labels = new Set<string>()
   for (let seed = 0; seed < 100; seed++) {
     const d = newGradedPreflop(entries, { context: 'open:LJ', seed }),

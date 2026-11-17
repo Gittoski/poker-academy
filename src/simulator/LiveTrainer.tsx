@@ -326,7 +326,7 @@ export function LiveTrainer() {
       return
     }
     try {
-      const d = newGradedPreflop(entries)
+      const d = newGradedPreflop(entries, { recent: session.archive })
       initializePreflop.current = false
       setSession({ ...session, version: 4, current: d })
       setPlayers(6)
@@ -664,6 +664,7 @@ export function LiveTrainer() {
       }
       const next = current?.graded
         ? newGradedPreflop(entries ?? [], {
+            recent: [...session.archive, session.current],
             seat: applySettings
               ? heroSeat < 0
                 ? undefined
@@ -1187,6 +1188,13 @@ export function LiveTrainer() {
           {mode === 'preflop' && (
             <section className="card">
               <h2>Graded preflop practice</h2>
+              <p>
+                Balanced study mix: about 60% of new hands support a call or
+                raise, and 40% are fold-only in the reference. Opening and
+                facing one raise are favored. This is a learning target, not
+                normal live-game frequencies; your actual answer is graded
+                against the unchanged chart.
+              </p>
               <p>
                 Six-max · 100 BB · no antes · standard reference sizes. Fresh
                 cards and supplied setup actions vary the situations. Your

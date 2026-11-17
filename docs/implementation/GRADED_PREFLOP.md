@@ -2,6 +2,8 @@
 
 Development branch: `test/graded-preflop`. The user authorized the scoped upgrade on November 17, 2026. Main-app integration/deployment is reserved for the reviewed candidate.
 
+Current follow-up: [balanced study selection](BALANCED_PREFLOP.md) replaces the initial uniform sampler for new hands. It intentionally conditions learner cards on reference categories while preserving stored deals, actual grades and Full hands.
+
 ## PF0 — Coverage audit
 
 The catalog identifies 65 standard six-max contexts: five opens and 15 position pairings in each response family (vs open/3-bet/4-bet/5-bet). Each prefix is legal replay through the current live engine with reference bet sizes. Earlier setup actions are scenario assumptions, not learner answers or claims that earlier actions are optimal for the newly dealt cards.
