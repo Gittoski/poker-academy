@@ -64,9 +64,9 @@ An unexpected missing reference in a declared covered branch is a release-blocki
 
 - [x] Inspect the live adapter, opponent behavior, existing reference trainer, mode storage and imported chart metadata.
 - [x] Count the 65 standard six-max metadata contexts and record current unsupported cases.
-- [ ] Resolve the user's preflop experience preference before implementing a materially different play flow; do not ask again if it is already established in the conversation.
-- [ ] Build an exhaustive inventory of applicable contexts, all 169 hand classes, valid weights and actual legal action sets. Distinguish missing entries, unsupported histories and corrupted data.
-- [ ] Record concrete training boundaries, size rules, mode configuration and source identity. Validate source precision before adopting a zero-support classification.
+- [x] User approved implementing this covered-practice upgrade while retaining the existing simulator interface and Full hands mode.
+- [x] Audit all 65 contexts and 169 classes with genuine shuffled/replayed deals, legal learner options and source frequencies. The current imported PTO set resolves to binary weights for these contexts; positive-frequency alternatives remain supported by the adapter.
+- [x] Record reference sizes/configuration and planned caller/cold-response boundaries. Zero support describes the selected imported reference, not an independently verified GTO error.
 
 Done when every declared context and all possible learner actions at that context have an explicit grade and transition rule. Existing imported labels must not become new claims of independently verified GTO accuracy.
 

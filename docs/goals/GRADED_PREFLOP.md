@@ -1,5 +1,7 @@
 # Goal: dependable, fully graded preflop practice
 
+Status: active. The user authorized implementation of this covered-practice upgrade on November 17, 2026. Use `test/graded-preflop` for the candidate; preserve `work` for the main app.
+
 Implement the scoped preflop release described in `docs/PREFLOP_GRADING_PLAN.md`, following PF0 through PF4 and using `ROADMAP.md` as the persistent checklist. Complete preflop before starting the deferred postflop project. First apply any user preference already established about covered versus unrestricted practice; the plan recommends a covered reference-practice profile, not an unsupported promise of universal chart coverage.
 
 Invoking this goal without different instructions adopts that recommended covered-practice scope. Do not ask the user to approve the same scope again.

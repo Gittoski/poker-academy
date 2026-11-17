@@ -10,7 +10,7 @@ Complete this scoped release before the longer postflop project. [PREFLOP_GRADIN
 
 - [x] Inspect why live preflop decisions remain ungraded and confirm metadata matches for all 65 standard six-max reference contexts.
 - [x] Draft the covered-training scope, safeguards, acceptance criteria and implementation goal; distinguish guaranteed practice grading from unrestricted live play.
-- [ ] PF0: Finalize the experience preference and audit every declared context, hand class, action and boundary.
+- [x] PF0: User approved covered-practice scope; audit all 65 contexts × 169 classes using genuine shuffled deals and legal setup replay, validate source weights and applicable actions (221 unit tests plus TypeScript/integrity checks). See [implementation record](docs/implementation/GRADED_PREFLOP.md).
 - [ ] PF1: Implement covered generation and legal progression using fresh cards and the existing engine; preserve Full hands.
 - [ ] PF2: Grade every accepted learner choice, retaining source charts, explanations, exact retries and automatic stable mistake recording.
 - [ ] PF3: Preserve mode settings, incompatible older saves, ownership and offline support; identify the supported profile clearly.
