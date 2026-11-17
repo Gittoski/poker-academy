@@ -1,5 +1,9 @@
 'use client'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { GameModeSwitch } from '@/components/trainer/GameModeSwitch'
+import { Segmented } from '@/components/Segmented'
+import { isGameMode, type GameMode } from '@/lib/gameModes'
+import { modeOf, allLiveDeals, switchLiveMode } from './liveModes'
 import { loadTheme } from '@/lib/theme'
 import { AppLogo } from '@/components/AppLogo'
 import { chipsFromBB } from './liveAmounts'
@@ -41,11 +45,13 @@ function fresh(
   config?: LiveConfig,
   hero = 0,
   style: OpponentStyle = 'balanced',
+  mode: GameMode = 'full-hands',
 ): LiveDeal {
   const seed =
     globalThis.crypto?.getRandomValues(new Uint32Array(1))[0] ??
     Math.floor(Math.random() * 4294967296)
   return {
+    mode,
     seed,
     config: config ?? {
       stacks: Array(6).fill(10000),
@@ -70,6 +76,8 @@ function download(text: string, name: string) {
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 export function LiveTrainer() {
+  const switching = useRef(false)
+  const [modeBusy, setModeBusy] = useState(false)
   const [tools, setTools] = useState(false)
   const [toolSection, setToolSection] = useState<string | null>(null)
   useEffect(() => {
@@ -152,10 +160,49 @@ export function LiveTrainer() {
         canSave = false
         setError(e instanceof Error ? e.message : 'Storage is unavailable.')
       }
-      const next = saved ?? {
+      let next: LiveSession = saved ?? {
         version: 1 as const,
         current: fresh(),
         archive: [],
+      }
+      const params = new URLSearchParams(location.search)
+      const requested = params.get('mode')
+      if (isGameMode(requested) && modeOf(next.current) !== requested) {
+        const hadTarget = !!next.parked?.[requested]
+        next = switchLiveMode(next, requested)
+        // Older setup links configure only a new slot; never replace a saved hand.
+        if (
+          !hadTarget &&
+          (params.has('players') || params.has('seat') || params.has('stack'))
+        ) {
+          const players = [6, 8, 9].includes(Number(params.get('players')))
+            ? (Number(params.get('players')) as PlayerCount)
+            : (next.current.config.stacks.length as PlayerCount)
+          let amount = next.current.config.stacks[0]
+          try {
+            const n = chipsFromBB(params.get('stack') ?? String(bb(amount)))
+            if (n > 0 && n <= 1000000) amount = n
+          } catch {
+            /* Keep the supported previous setup. */
+          }
+          const hero = Math.max(
+            0,
+            positionsFor(players).findIndex((p) => p === params.get('seat')),
+          )
+          next = {
+            ...next,
+            current: fresh(
+              {
+                ...next.current.config,
+                stacks: Array(players).fill(amount),
+                button: players - 3,
+              },
+              hero,
+              next.current.style,
+              requested,
+            ),
+          }
+        }
       }
       setSession(next)
       setOwner(canSave ? 'owner' : 'unsaved')
@@ -215,6 +262,7 @@ export function LiveTrainer() {
     }
   }, [session, owner])
   const current = session?.current
+  const mode = current ? modeOf(current) : 'full-hands'
   const active = useMemo(
     () => (current ? replayLiveDeal(current) : null),
     [current],
@@ -227,7 +275,7 @@ export function LiveTrainer() {
   const allowed = owner === 'owner' || owner === 'unsaved'
   const commit = useCallback(
     (action: LiveAction, human: boolean) => {
-      if (!current || !active || !allowed || review) return
+      if (!current || !active || !allowed || review || switching.current) return
       const index = current.actions.length,
         seed = current.seed
       const reference = human
@@ -258,6 +306,8 @@ export function LiveTrainer() {
       !active ||
       !current ||
       active.toAct === null ||
+      active.preflopComplete ||
+      modeBusy ||
       active.toAct === current.hero ||
       paused ||
       tools ||
@@ -282,7 +332,7 @@ export function LiveTrainer() {
       650,
     )
     return () => clearTimeout(timer)
-  }, [active, current, commit, paused, tools, review, allowed])
+  }, [active, current, commit, paused, tools, review, allowed, modeBusy])
   const legal = displayed ? legalLiveActions(displayed) : null
   const lastRecord = current?.feedback?.at(-1)
   const feedback = useMemo(() => {
@@ -342,8 +392,47 @@ export function LiveTrainer() {
       }
     } else commit(action, true)
   }
+  async function changeMode(nextMode: GameMode) {
+    if (!session || !allowed || switching.current || nextMode === mode) return
+    switching.current = true
+    setModeBusy(true)
+    setPaused(true)
+    try {
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve()),
+      )
+      const next = switchLiveMode(session, nextMode)
+      const encoded = encodeLiveSession(next)
+      if (owner === 'owner') localStorage.setItem(LIVE_SAVE_KEY, encoded)
+      setSession(next)
+      setReview(null)
+      setFeedbackClosed(false)
+      setError('')
+      const d = next.current
+      setPlayers(d.config.stacks.length as PlayerCount)
+      setStacks(d.config.stacks.map(bb).join(', '))
+      setHeroSeat(d.hero)
+      setStyle(d.style)
+      setAnteKind(d.config.ante?.kind ?? 'none')
+      setAnte(String(bb(d.config.ante?.amount ?? 100)))
+      const url = new URL(location.href)
+      url.searchParams.set('mode', nextMode)
+      history.replaceState(null, '', url)
+    } catch {
+      setOwner('unsaved')
+      setMessage(
+        'Not saved; current hand kept. Export a backup before leaving.',
+      )
+      setError(
+        'Could not save the mode change. Your current hand and previous save were kept. Practice can continue unsaved.',
+      )
+    } finally {
+      switching.current = false
+      setModeBusy(false)
+    }
+  }
   function startHand(applySettings: boolean) {
-    if (!session || !allowed) return
+    if (!session || !allowed || switching.current) return
     try {
       let config = current!.config,
         hero = current!.hero,
@@ -373,7 +462,7 @@ export function LiveTrainer() {
         hero = heroSeat
         nextStyle = style
       }
-      const next = fresh(config, hero, nextStyle)
+      const next = fresh(config, hero, nextStyle, mode)
       replayLiveDeal(next)
       setSession({
         ...session,
@@ -404,13 +493,14 @@ export function LiveTrainer() {
     )
   const order = positionsFor(displayed.seats.length as PlayerCount)
   const hero = displayed.seats[deal.hero]
-  const records = [...session.archive, current]
+  const records = allLiveDeals(session)
   const decisions = records.flatMap((d) =>
     (d.feedback ?? []).map((f) => ({ ...f, deal: d })),
   )
-  const completed = records.filter(
-    (d) => replayLiveDeal(d).street === 'complete',
-  ).length
+  const completed = records.filter((d) => {
+    const s = replayLiveDeal(d)
+    return s.street === 'complete' || s.preflopComplete
+  }).length
   const callOdds =
     legal && legal.call > 0
       ? (() => {
@@ -458,9 +548,11 @@ export function LiveTrainer() {
         continueLabel={
           review
             ? 'Back to retry'
-            : active.street === 'complete'
-              ? 'See hand result'
-              : 'Continue hand'
+            : active.preflopComplete
+              ? 'See preflop result'
+              : active.street === 'complete'
+                ? 'See hand result'
+                : 'Continue hand'
         }
       />
     ) : null
@@ -487,15 +579,22 @@ export function LiveTrainer() {
         >
           Practice tools
         </button>
+        <GameModeSwitch
+          mode={mode}
+          disabled={!allowed || modeBusy}
+          onChange={(next) => void changeMode(next)}
+        />
       </header>
       {error && <p role="alert">{error}</p>}
       <section className="card live-hand" aria-label="Live hand">
         <h2>
           {review
             ? 'Retry a saved decision'
-            : displayed.street === 'complete'
-              ? 'Hand settled'
-              : `${displayed.street[0].toUpperCase()}${displayed.street.slice(1)}`}
+            : displayed.preflopComplete
+              ? 'Preflop complete'
+              : displayed.street === 'complete'
+                ? 'Hand settled'
+                : `${displayed.street[0].toUpperCase()}${displayed.street.slice(1)}`}
         </h2>
         {review && (
           <p>
@@ -522,7 +621,22 @@ export function LiveTrainer() {
           pot={bb(displayed.pot)}
           acting={displayed.toAct === null ? undefined : order[displayed.toAct]}
         />
-        {displayed.street === 'complete' ? (
+        {displayed.preflopComplete ? (
+          <div aria-label="Preflop result">
+            <p>
+              Preflop betting is complete. No future cards or showdown winner
+              are shown in this mode. The pot remains {bb(displayed.pot)} BB.
+            </p>
+            {!awaitingRangeCheck && !review && (
+              <button
+                className="btn btn--primary"
+                onClick={() => startHand(false)}
+              >
+                Deal next preflop hand
+              </button>
+            )}
+          </div>
+        ) : displayed.street === 'complete' ? (
           <div aria-label="Live result">
             <p>
               Your net result:{' '}
@@ -572,7 +686,9 @@ export function LiveTrainer() {
                 className="btn btn--primary"
                 onClick={() => startHand(false)}
               >
-                Deal next live hand
+                {mode === 'preflop'
+                  ? 'Deal next preflop hand'
+                  : 'Deal next live hand'}
               </button>
             )}
           </div>
@@ -665,11 +781,14 @@ export function LiveTrainer() {
               : `${order[displayed.toAct!]} to act.`}
           </p>
         )}
-        {!review && !awaitingRangeCheck && displayed.street !== 'complete' && (
-          <button className="btn" onClick={() => setPaused((p) => !p)}>
-            {paused ? 'Continue hand' : 'Pause opponents'}
-          </button>
-        )}
+        {!review &&
+          !awaitingRangeCheck &&
+          !displayed.preflopComplete &&
+          displayed.street !== 'complete' && (
+            <button className="btn" onClick={() => setPaused((p) => !p)}>
+              {paused ? 'Continue hand' : 'Pause opponents'}
+            </button>
+          )}
         {review && (
           <button
             className="btn btn--primary"
@@ -704,8 +823,8 @@ export function LiveTrainer() {
           <section className="card">
             <h2>Recent practice</h2>
             <p>
-              Current hand plus up to 20 recent hands: {completed} completed;{' '}
-              {decisions.length} decisions;{' '}
+              Current hand, other mode’s parked hand and up to 20 recent hands:{' '}
+              {completed} completed; {decisions.length} decisions;{' '}
               {decisions.filter((d) => d.reference.status === 'outside').length}{' '}
               outside-reference decisions;{' '}
               {
@@ -753,6 +872,19 @@ export function LiveTrainer() {
               Starts a fresh practice hand. Existing hand moves to recent
               history. Blinds stay 0.5/1 BB; no rake. Each hand resets the
               configured stacks and fixed training positions.
+            </p>
+            <Segmented
+              ariaLabel="Game mode"
+              options={[
+                { value: 'full-hands', label: 'Full hands' },
+                { value: 'preflop', label: 'Preflop' },
+              ]}
+              value={mode}
+              onChange={(next) => void changeMode(next)}
+            />
+            <p>
+              Both modes use shuffled cards and your actual choices. Preflop
+              stops after its betting round; each mode keeps its own saved hand.
             </p>
             <div className="live-settings">
               <label>

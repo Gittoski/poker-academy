@@ -24,7 +24,7 @@ it('reconstructs the same deck, acting seat and ledger from seed and legal actio
 })
 it('rejects corrupt or incompatible saves and illegal stored transitions', () => {
   for (const mutate of [
-    (s: LiveSession) => { s.version = 2 as 1 },
+    (s: LiveSession) => { s.version = 999 as 1 },
     (s: LiveSession) => { s.current.hero = 0.5 },
     (s: LiveSession) => { s.current.seed = -1 },
     (s: LiveSession) => { s.current.config = { ...config, button: 0 } },

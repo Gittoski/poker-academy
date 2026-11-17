@@ -1,0 +1,30 @@
+
+> open-range-viewer@0.1.0 test:engine
+> vitest run src/lib/engineIntegrity.test.ts src/simulator/engineData.test.ts src/simulator/liveEngine.test.ts src/simulator/liveSession.test.ts src/simulator/liveModes.test.ts src/lib/cards.test.ts src/lib/fullHands.test.ts src/lib/handSim.test.ts src/lib/trainer.test.ts
+
+
+ RUN  v3.2.7 /workspace/poker-academy
+
+ ✓ src/simulator/liveSession.test.ts (14 tests) 632ms
+   ✓ all three opponent styles generate legal actions and finish hands  564ms
+ ✓ src/simulator/engineData.test.ts (4 tests) 604ms
+   ✓ poker behavior invariants > keeps stored pot accounting, stacks and hero action probabilities consistent  319ms
+ ✓ src/simulator/liveModes.test.ts (7 tests) 27ms
+ ✓ src/lib/handSim.test.ts (12 tests) 9ms
+ ✓ src/lib/fullHands.test.ts (10 tests) 18ms
+ ✓ src/lib/engineIntegrity.test.ts (6 tests) 14ms
+ ✓ src/lib/trainer.test.ts (5 tests) 10ms
+ ✓ src/lib/cards.test.ts (4 tests) 11ms
+ ✓ src/simulator/liveEngine.test.ts (14 tests) 2288ms
+   ✓ conserves chips and unique cards through 1000 randomized legal hands  2265ms
+
+ Test Files  9 passed (9)
+      Tests  76 passed (76)
+   Start at  03:03:59
+   Duration  2.73s (transform 545ms, setup 0ms, collect 1.20s, tests 3.61s, environment 4ms, prepare 779ms)
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice

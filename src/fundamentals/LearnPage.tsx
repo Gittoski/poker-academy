@@ -219,7 +219,7 @@ export function LearnPage() {
     ) ?? 'pot-odds'
   const requestedReturn = params.get('return') ?? '/live'
   const returnTo =
-    /^\/(?:play|live)(?:\?|$)/.test(requestedReturn) &&
+    /^\/(?:play|live|archive\/play)(?:\?|$)/.test(requestedReturn) &&
     requestedReturn.length < 1000
       ? requestedReturn
       : '/live'

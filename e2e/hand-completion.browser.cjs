@@ -30,7 +30,7 @@ async function fixture(page, id) {
     window.setTimeout = (fn, delay, ...args) =>
       native(fn, delay === 1000 ? 20 : delay, ...args)
   })
-  await page.goto('/play')
+  await page.goto('/archive/play')
   await expect(
     page.getByRole('group', { name: 'Your move', exact: true }),
   ).toBeVisible({ timeout: 15000 })

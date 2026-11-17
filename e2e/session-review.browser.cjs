@@ -14,7 +14,7 @@ async function boot(page, mode = 'full-hands', seat = 'LJ') {
     window.setTimeout = (fn, delay, ...args) =>
       native(fn, delay === 1000 || delay === 1200 ? 20 : delay, ...args)
   })
-  await page.goto(`/play?mode=${mode}&seat=${seat}`)
+  await page.goto(`/archive/play?mode=${mode}&seat=${seat}`)
   await expect(
     page.getByRole('group', { name: 'Your move', exact: true }),
   ).toBeVisible({ timeout: 20000 })
@@ -168,7 +168,7 @@ test('review controls, mobile dialog, focus, accessibility and another tab', asy
     page.getByRole('link', { name: 'Leave simulator' }),
   ).toBeFocused()
   const other = await context.newPage()
-  await other.goto('/play')
+  await other.goto('/archive/play')
   await expect(
     other.getByText('Another tab is playing.', { exact: false }),
   ).toBeVisible({ timeout: 15000 })
@@ -311,7 +311,7 @@ test('8/9-seat preflop and same-frame duplicate input preserve one durable attem
   page,
 }) => {
   for (const players of [8, 9]) {
-    await page.goto(`/play?mode=preflop&players=${players}&seat=UTG`)
+    await page.goto(`/archive/play?mode=preflop&players=${players}&seat=UTG`)
     const move = page.getByRole('group', { name: 'Your move', exact: true })
     await expect(move).toBeVisible({ timeout: 15000 })
     const initial = (await state(page)).decisions.length
@@ -343,7 +343,7 @@ test('storage denial gives an honest unsaved mode with export instead of breakin
       },
     }),
   )
-  await page.goto('/play?mode=preflop&seat=LJ')
+  await page.goto('/archive/play?mode=preflop&seat=LJ')
   await expect(
     page.getByRole('heading', { name: 'Saved play needs attention' }),
   ).toBeVisible()
@@ -459,7 +459,7 @@ test('reload before answering keeps the hand; NPC progression pauses throughout 
   expect(restored.decisions).toHaveLength(0)
   await page.close()
   const npc = await context.newPage()
-  await npc.goto('/play?seat=BB')
+  await npc.goto('/archive/play?seat=BB')
   await expect
     .poll(async () => {
       try {
@@ -516,7 +516,7 @@ test('LAN fallback coordinates duplicate tabs and resumes the original tab', asy
     })
     sessionStorage.setItem('poker-learning-tab', owner)
   }, owner)
-  await duplicate.goto('/play?mode=preflop')
+  await duplicate.goto('/archive/play?mode=preflop')
   await expect(
     duplicate.getByText('Another tab is playing.', { exact: false }),
   ).toBeVisible()

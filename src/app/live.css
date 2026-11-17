@@ -379,3 +379,10 @@
     grid-area: 3/2;
   }
 }
+
+/* Reuse the approved oval navy mode switch without changing table materials. */
+@media (max-width: 480px) {
+  .live-page .live-header { display:grid; grid-template-columns:40px minmax(0,1fr) auto; gap:2px 8px; }
+  .live-header > .sim-mode { grid-column:1 / -1; justify-content:center; }
+}
+.live-hand [aria-label='Preflop result'] { flex:none; }

@@ -116,7 +116,7 @@ test('Home resumes the same decision, counts answered decisions exactly once and
       return s / 4294967296
     }
   })
-  await page.goto('/play?seat=LJ')
+  await page.goto('/archive/play?seat=LJ')
   const move = page.getByRole('group', { name: 'Your move', exact: true })
   await expect(move).toBeVisible({ timeout: 20000 })
   await move.getByRole('button').last().click()
@@ -219,7 +219,7 @@ test('Home includes fundamentals answers and preserves activity offline across c
 test('Home settings persist while Resume keeps the existing configuration and scheduled reviews', async ({
   page,
 }) => {
-  await page.goto('/play?mode=preflop&seat=LJ')
+  await page.goto('/archive/play?mode=preflop&seat=LJ')
   await expect(
     page.getByRole('group', { name: 'Your move', exact: true }),
   ).toBeVisible({ timeout: 20000 })
@@ -306,7 +306,7 @@ test('preflop opponent range inspection remains reachable after moving settings'
     window.setTimeout = (fn, delay, ...args) =>
       native(fn, delay === 1000 || delay === 1200 ? 20 : delay, ...args)
   })
-  await page.goto('/play?mode=preflop&seat=BB')
+  await page.goto('/archive/play?mode=preflop&seat=BB')
   const seat = page.locator('.trainer-table .seat--clickable').first()
   await expect(seat).toBeVisible({ timeout: 20000 })
   await seat.click()

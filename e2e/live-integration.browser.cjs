@@ -10,7 +10,7 @@ async function seed(page) {
 }
 const saved = page => page.evaluate(key => localStorage.getItem(key), key)
 test('Home and shared Play navigation lead only to live play while exercise resumes stay separate', async ({ page }) => {
-  await page.goto('/play?mode=preflop&seat=CO')
+  await page.goto('/archive/play?mode=preflop&seat=CO')
   await expect(page.getByRole('switch', { name: 'Preflop mode' })).toBeEnabled()
   const before = await page.evaluate(async () => {
     const db = await new Promise(resolve => { const r = indexedDB.open('poker-learning-v1'); r.onsuccess = () => resolve(r.result) })
@@ -23,7 +23,7 @@ test('Home and shared Play navigation lead only to live play while exercise resu
   await expect(page.getByRole('link', { name: 'Start training', exact: true })).toHaveAttribute('href', '/live')
   await page.getByText('Earlier exercise history', { exact: true }).click()
   const exercise = page.getByRole('link', { name: 'Saved exercise reviews', exact: true })
-  await expect(exercise).toHaveAttribute('href', /\/play\?.*mode=preflop.*seat=CO/)
+  await expect(exercise).toHaveAttribute('href', /\/archive\/play\?.*mode=preflop.*seat=CO/)
   await page.getByRole('link', { name: 'Start training', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Poker simulator' })).toBeVisible()
   const live = await saved(page)

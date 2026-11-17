@@ -5,7 +5,7 @@ for (const mode of ['preflop', 'full-hands']) {
     const errors = []
     page.on('pageerror', e => errors.push(e.message))
     await page.route('**/ranges/Cash_100_PTO.json', route => route.fulfill({ json: [{ id: 'unrelated', scenario: 'open', rangeTypes: ['pto'], hero: ['SB'], range: { raise: 'AA' } }] }))
-    await page.goto(`/play?mode=${mode}&seat=LJ`)
+    await page.goto(`/archive/play?mode=${mode}&seat=LJ`)
     await expect(page.getByText(/No action was taken and no winner is assigned/).first()).toBeVisible({ timeout: 20000 })
     await expect(page.getByRole('group', { name: 'Your move', exact: true })).toHaveCount(0)
     await expect(page.locator('.showdown')).toHaveCount(0)

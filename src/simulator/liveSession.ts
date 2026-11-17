@@ -1,3 +1,4 @@
+import { isGameMode, type GameMode } from '@/lib/gameModes'
 import { contentHash } from '@/learning/identity'
 import { parseRangeEntries } from '@/lib/rangeEntries'
 import { resolveActions } from '@/lib/range'
@@ -6,8 +7,8 @@ import { liveReference, type LiveReference } from './liveReference'
 import { actLive, newLiveHand, type LiveAction, type LiveConfig, type LiveState } from './liveEngine'
 
 export type OpponentStyle = 'tight' | 'balanced' | 'loose'
-export interface LiveDeal { seed: number; config: LiveConfig; hero: number; style: OpponentStyle; actions: LiveAction[]; feedback?: { index: number; reference: LiveReference }[] }
-export interface LiveSession { version: 1; current: LiveDeal; archive: LiveDeal[] }
+export interface LiveDeal { mode?: GameMode; seed: number; config: LiveConfig; hero: number; style: OpponentStyle; actions: LiveAction[]; feedback?: { index: number; reference: LiveReference }[] }
+export interface LiveSession { version: 1 | 2; current: LiveDeal; archive: LiveDeal[]; parked?: Partial<Record<GameMode, LiveDeal>> }
 export const LIVE_SAVE_KEY = 'poker-academy:live:v1'
 export const LIVE_LOCK = 'poker-academy:live-writer:v1'
 export function seededLiveRandom(seed: number): () => number {
@@ -20,12 +21,12 @@ export function liveSeed(): number {
   return Math.floor(Math.random() * 4294967296)
 }
 export function playLiveDeal(deal: LiveDeal, count = deal.actions.length): LiveState {
-  let state = newLiveHand(deal.config, seededLiveRandom(deal.seed))
+  let state = newLiveHand(deal.config, seededLiveRandom(deal.seed), deal.mode === 'preflop')
   for (const action of deal.actions.slice(0, count)) state = actLive(state, action)
   return state
 }
-export function freshLiveDeal(config: LiveConfig, hero: number, style: OpponentStyle = 'balanced', seed = liveSeed()): LiveDeal {
-  const deal = { seed, config: structuredClone(config), hero, style, actions: [] }
+export function freshLiveDeal(config: LiveConfig, hero: number, style: OpponentStyle = 'balanced', seed = liveSeed(), mode: GameMode = 'full-hands'): LiveDeal {
+  const deal = { mode, seed, config: structuredClone(config), hero, style, actions: [] }
   validateDeal(deal)
   return deal
 }
@@ -33,7 +34,7 @@ export function freshLiveDeal(config: LiveConfig, hero: number, style: OpponentS
 function validateDeal(value: unknown): asserts value is LiveDeal {
   if (!value || typeof value !== 'object') throw Error('Missing live hand')
   const d = value as LiveDeal
-  if (!Number.isInteger(d.seed) || d.seed < 0 || d.seed > 4294967295
+  if ((d.mode !== undefined && !isGameMode(d.mode)) || !Number.isInteger(d.seed) || d.seed < 0 || d.seed > 4294967295
     || !d.config || !Array.isArray(d.config.stacks) || ![6, 8, 9].includes(d.config.stacks.length)
     || d.config.button !== d.config.stacks.length - 3 || d.config.smallBlind !== 50 || d.config.bigBlind !== 100
     || !Number.isSafeInteger(d.hero) || d.hero < 0 || d.hero >= d.config.stacks.length
@@ -73,22 +74,31 @@ function validateDeal(value: unknown): asserts value is LiveDeal {
   playLiveDeal(d) // Rebuild the ledger and deck from validated inputs, never trust a saved native state.
 }
 export function encodeLiveSession(session: LiveSession): string {
-  if ([session.current, ...session.archive].some(d => d.actions.length > 20000)) throw Error('Live action-history save limit reached')
-  const text = JSON.stringify(session)
+  if ([session.current, ...session.archive, ...Object.values(session.parked ?? {})].some(d => d.actions.length > 20000)) throw Error('Live action-history save limit reached')
+  // Older builds reject v2 instead of extending a preflop-only hand postflop.
+  const text = JSON.stringify({ ...session, version: 2 })
   if (text.length > 2_000_000) throw Error('Live save size limit reached')
   return text
 }
 export function decodeLiveSession(text: string): LiveSession {
   if (text.length > 2_000_000) throw Error('Live save exceeds the supported size')
   const s = JSON.parse(text) as LiveSession
-  if (s?.version !== 1 || !Array.isArray(s.archive) || s.archive.length > 20) throw Error('Unsupported live save version')
+  if (![1, 2].includes(s?.version) || !Array.isArray(s.archive) || s.archive.length > 20) throw Error('Unsupported live save version')
   validateDeal(s.current)
+  if (s.parked !== undefined) {
+    if (!s.parked || typeof s.parked !== 'object' || Array.isArray(s.parked) || Object.keys(s.parked).length > 1) throw Error('Invalid parked mode hands')
+    for (const [mode, deal] of Object.entries(s.parked)) {
+      if (!isGameMode(mode) || mode === (s.current.mode ?? 'full-hands')) throw Error('Invalid parked mode')
+      validateDeal(deal)
+      if ((deal.mode ?? 'full-hands') !== mode) throw Error('Parked hand mode mismatch')
+    }
+  }
   for (const d of s.archive) validateDeal(d)
-  return s
+  return { ...s, version: 2 }
 }
 
 export function replayLiveDeal(deal: LiveDeal, until = deal.actions.length): LiveState {
-  let state = newLiveHand(deal.config, seededLiveRandom(deal.seed))
+  let state = newLiveHand(deal.config, seededLiveRandom(deal.seed), deal.mode === 'preflop')
   for (const action of deal.actions.slice(0, until)) state = actLive(state, action)
   return state
 }

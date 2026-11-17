@@ -11,7 +11,7 @@ async function seededPlay(page) {
       return state / 4294967296
     }
   })
-  await page.goto('/play')
+  await page.goto('/archive/play')
   await expect(
     page.getByRole('group', { name: 'Your move', exact: true }),
   ).toBeVisible({ timeout: 15000 })

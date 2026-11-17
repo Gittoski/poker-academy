@@ -4,6 +4,17 @@ Goal: progressively improve real-life six-max Hold’em decisions, especially ag
 
 This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PLAN.md) explains lesson progression, feature scope and completion criteria. [Foundation history](docs/FOUNDATION_HISTORY.md) retains the completed import/theme work.
 
+## Current approved step: live-engine preflop mode
+
+- [x] Run Preflop and Full hands on the same shuffled-deck/legal-action engine; keep choices independent of chart feedback.
+- [x] Restore the approved navy oval switch to the main simulator; expose both modes through live table settings and Home Settings.
+- [x] Stop Preflop at the completed betting round, without dealing future cards or inventing a showdown result; preserve real uncontested fold wins.
+- [x] Park and restore each mode's exact hand/configuration/feedback, pause on switching/reload, and preserve the previous save on failures.
+- [x] Migrate version-one live saves to version two; protect new preflop records from older cached clients, keep bounded history and exports.
+- [x] Route normal `/play` links to the live engine, preserve explicit review links and move retained exercises to `/archive/play`; keep offline routes, learning returns and archive regressions working.
+- [x] Finish final verification (204 unit tests, production build, 88 browser checks) and integrate the verified update for the connected `work` branch; see [LIVE_PREFLOP.md](docs/implementation/LIVE_PREFLOP.md).
+- [ ] Actual iPhone/Home Screen touch, animation, safe-area and VoiceOver checks.
+
 ## Current approved release: realistic live play
 
 - [x] User approved the verified live-engine update for the main app before personal device testing.

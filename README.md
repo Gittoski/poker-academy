@@ -6,6 +6,12 @@ Live poker uses shuffled hands: shuffled hands and legal player choices determin
 
 The user approved publishing the verified live integration to the connected `work` branch. See [the release audit](docs/implementation/LIVE_RELEASE.md) for current behavior, checks, preserved visuals and deployment/device limits. [The earlier integration audit](docs/implementation/LIVE_INTEGRATION.md) records the separate test candidate. Earlier sections below describe archived reference exercises unless explicitly marked live.
 
+## Live modes
+
+Use the existing navy oval switch in Play: **Full hands** continues through the hand; **Preflop** stops after preflop betting. Both use shuffled cards, actual choices and the same range feedback. Each mode keeps its own hand and setup. Home Settings and Practice tools → Live table settings also expose the modes.
+
+Normal older `/play` links now open the live simulator. Retained chart-driven exercises and reviews live at `/archive/play`, accessible from Earlier exercise history. Saves and supplied reference data are preserved. See [the preflop migration audit](docs/implementation/LIVE_PREFLOP.md).
+
 ## Run
 
 With Node.js and npm installed, from the folder containing `package.json`:

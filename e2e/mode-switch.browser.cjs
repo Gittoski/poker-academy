@@ -25,7 +25,7 @@ async function boot(page, mode = 'full-hands') {
       return seed / 4294967296
     }
   })
-  await page.goto(`/play?mode=${mode}&seat=LJ`)
+  await page.goto(`/archive/play?mode=${mode}&seat=LJ`)
   await expect(
     page.getByRole('group', { name: 'Your move', exact: true }),
   ).toBeVisible({ timeout: 20000 })
@@ -187,7 +187,7 @@ test('an ownership failure leaves the mode and saved checkpoint unchanged', asyn
 test('switch restores a nine-seat mixed preflop setup after visiting the fixed six-max full-hands mode', async ({
   page,
 }) => {
-  await page.goto('/play?mode=preflop&players=9&rangeType=gto&open=3&seat=UTG')
+  await page.goto('/archive/play?mode=preflop&players=9&rangeType=gto&open=3&seat=UTG')
   await expect(
     page.getByRole('group', { name: 'Your move', exact: true }),
   ).toBeVisible({ timeout: 20000 })

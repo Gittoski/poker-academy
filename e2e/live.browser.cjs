@@ -126,7 +126,7 @@ test('live and scripted study keep separate saved hands when switching through H
   await group.getByRole('button', { name: /^Call / }).click()
   await expect.poll(async () => (await saved(page)).current.actions.length).toBe(1)
   const before = await saved(page)
-  await page.goto('/play')
+  await page.goto('/archive/play')
   await expect(page.getByRole('switch', { name: 'Preflop mode', exact: true })).toBeVisible()
   await page.goto('/')
   await page.getByRole('link', { name: 'Resume hand', exact: true }).click()

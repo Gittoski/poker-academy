@@ -7,6 +7,7 @@ import {
   replayLiveDeal,
   LIVE_SAVE_KEY,
 } from '@/simulator/liveSession'
+import { allLiveDeals, modeOf } from '@/simulator/liveModes'
 import { loadTheme } from '@/lib/theme'
 import { LearningRepository } from '@/learning/repository'
 import { PracticeRepository } from '@/fundamentals/progress'
@@ -36,6 +37,7 @@ export function HomePage() {
     [total, setTotal] = useState(0)
   const [live, setLive] = useState<{
     players: number
+    mode: string
     completed: boolean
     decisions: number
     outside: number
@@ -65,14 +67,15 @@ export function HomePage() {
           savedLive
             ? {
                 players: savedLive.current.config.stacks.length,
+                mode: modeOf(savedLive.current),
                 completed:
-                  savedLive.current.actions.length > 0 &&
-                  replayLiveDeal(savedLive.current).street === 'complete',
-                decisions: [savedLive.current, ...savedLive.archive].reduce(
+                  replayLiveDeal(savedLive.current).street === 'complete' ||
+                  !!replayLiveDeal(savedLive.current).preflopComplete,
+                decisions: allLiveDeals(savedLive).reduce(
                   (n, d) => n + (d.feedback?.length ?? 0),
                   0,
                 ),
-                outside: [savedLive.current, ...savedLive.archive].reduce(
+                outside: allLiveDeals(savedLive).reduce(
                   (n, d) =>
                     n +
                     (d.feedback?.filter((f) => f.reference.status === 'outside')
@@ -227,7 +230,9 @@ export function HomePage() {
             : 'Better decisions start here'}
         </h2>
         <p className="home-game">
-          {live?.players ?? 6}-max cash · Live play · Virtual chips
+          {live?.players ?? 6}-max cash ·{' '}
+          {live?.mode === 'preflop' ? 'Preflop only' : 'Full hands'} · Virtual
+          chips
         </p>
         <a className="home-primary" href={href}>
           <InterfaceIcon name="play" />

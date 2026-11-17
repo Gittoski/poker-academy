@@ -53,7 +53,7 @@ export function playParams(p: PlayPreferences): URLSearchParams {
 export function playHref(p: PlayPreferences, review = false): string {
   const params = playParams(p)
   if (review) params.set('review', '1')
-  return `/play?${params}`
+  return `/archive/play?${params}`
 }
 const KEY = 'poker-home-play-v1'
 export const defaultPreferences = () => preferencesFrom(new URLSearchParams())

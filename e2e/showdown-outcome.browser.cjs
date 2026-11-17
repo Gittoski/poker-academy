@@ -30,7 +30,7 @@ for (const [winner, id, title] of cases)
       window.setTimeout = (fn, d, ...args) =>
         native(fn, d === 1000 ? 20 : d, ...args)
     })
-    await page.goto('/play')
+    await page.goto('/archive/play')
     const move = page.getByRole('group', { name: 'Your move', exact: true }),
       view = page.getByRole('button', {
         name: 'View hand result',

@@ -215,7 +215,7 @@ test('a complete offline pack supports cold-start fundamentals and supplied simu
   await expect(
     page.getByRole('heading', { name: 'Correct', exact: true }),
   ).toBeVisible()
-  await page.goto('/play?seat=LJ')
+  await page.goto('/archive/play?seat=LJ')
   await expect(
     page.getByRole('group', { name: 'Your move', exact: true }),
   ).toBeVisible({ timeout: 20000 })
@@ -268,7 +268,7 @@ test('simulator errors open related fresh practice and preserve the paused hand'
     window.setTimeout = (fn, delay, ...args) =>
       native(fn, delay === 1000 ? 20 : delay, ...args)
   })
-  await page.goto('/play?seat=BTN')
+  await page.goto('/archive/play?seat=BTN')
   const move = page.getByRole('group', { name: 'Your move', exact: true })
   for (let i = 0; i < 10; i++) {
     await expect(move).toBeVisible()

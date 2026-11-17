@@ -60,6 +60,7 @@ export async function GET() {
             '/',
             '/ranges',
             '/play',
+            '/archive/play',
             '/live',
             '/learn',
             '/manifest.webmanifest',

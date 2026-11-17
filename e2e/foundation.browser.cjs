@@ -56,7 +56,7 @@ test('preflop trainer accepts an answer, shows feedback and continues', async ({
 }) => {
   const errors = watchErrors(page)
   await seed(page)
-  await page.goto('/play?mode=preflop')
+  await page.goto('/archive/play?mode=preflop')
   const move = page.getByRole('group', { name: 'Your move', exact: true })
   await expect(move).toBeVisible({ timeout: 15000 })
   await move.getByRole('button').last().click()
@@ -74,7 +74,7 @@ test('full-hand scripts load and play through postflop with strategy feedback', 
 }) => {
   const errors = watchErrors(page)
   await seed(page, 42)
-  await page.goto('/play')
+  await page.goto('/archive/play')
   let postflop = false
   let completed = false
   for (let step = 0; step < 36; step++) {
@@ -134,7 +134,7 @@ test('baseline phone and desktop layouts render; save actual-app and concept pre
     ).toBe(true)
   }
   await page.setViewportSize({ width: 390, height: 844 })
-  await page.goto('/play')
+  await page.goto('/archive/play')
   await expect(
     page.getByRole('group', { name: 'Your move', exact: true }),
   ).toBeVisible({ timeout: 15000 })

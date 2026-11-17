@@ -22,6 +22,9 @@ export type LiveStreet = 'preflop' | 'flop' | 'turn' | 'river' | 'complete'
 export interface LivePot { amount: number; eligible: number[]; winners: number[] }
 export interface LiveState {
   version: 1
+  /** A training boundary, never a showdown result. */
+  preflopOnly?: true
+  preflopComplete?: true
   config: LiveConfig
   seats: LiveSeat[]
   deck: Card[]
@@ -66,7 +69,7 @@ function post(s: LiveState, index: number, amount: number, street: boolean) {
   if (street) p.streetBet += paid
   s.pot += paid
 }
-export function newLiveHand(config: LiveConfig, rng: Rng = Math.random): LiveState {
+export function newLiveHand(config: LiveConfig, rng: Rng = Math.random, preflopOnly = false): LiveState {
   const n = config.stacks.length
   if (n < 2 || n > 9 || config.stacks.some(x => !integer(x) || x === 0)
     || !integer(config.button) || config.button >= n
@@ -82,7 +85,7 @@ export function newLiveHand(config: LiveConfig, rng: Rng = Math.random): LiveSta
     ;[deck[i], deck[j]] = [deck[j], deck[i]]
   }
   const s: LiveState = {
-    version: 1, config: structuredClone(config), deck, cursor: 0, board: [], burns: [],
+    version: 1, ...(preflopOnly ? { preflopOnly: true as const } : {}), config: structuredClone(config), deck, cursor: 0, board: [], burns: [],
     seats: config.stacks.map(stack => ({ cards: [] as unknown as HoleCards, stack, committed: 0, streetBet: 0, folded: false, actedAt: null })),
     street: 'preflop', toAct: null, bet: config.bigBlind, minRaise: config.bigBlind,
     pot: 0, deadMoney: 0, totalChips: config.stacks.reduce((a, b) => a + b, 0), payouts: config.stacks.map(() => 0), pots: [], refunds: [],
@@ -185,6 +188,7 @@ function advance(s: LiveState, after: number) {
     if (needs(i)) { s.toAct = i; return }
   }
   refundUncalled(s)
+  if (s.preflopOnly && s.street === 'preflop') { s.preflopComplete = true; s.toAct = null; return }
   if (s.street === 'river') { settle(s); return }
   if (funded.length < 2) {
     while (s.board.length < 5) dealStreet(s)
@@ -229,6 +233,7 @@ function settle(s: LiveState) {
 
 /** Runtime invariants also used by deterministic randomized tests. */
 export function assertLiveState(s: LiveState) {
+  if (s.preflopComplete && (!s.preflopOnly || s.street !== 'preflop' || s.board.length || s.burns.length || s.toAct !== null || s.pots.length || s.payouts.some(n => n !== 0))) throw Error('Invalid preflop boundary')
   if (!integer(s.pot) || s.seats.some(p => !integer(p.stack) || !integer(p.committed) || !integer(p.streetBet))) throw Error('Invalid chip ledger')
   if (s.seats.reduce((a, p) => a + p.stack, 0) + s.pot !== s.totalChips) throw Error('Chip conservation failure')
   const dealt = [...s.seats.flatMap(p => p.cards), ...s.burns, ...s.board].map(label)

@@ -67,6 +67,14 @@ export function HomeSettings({
           <a className="home-primary" href="/live?tools=settings">
             Table settings <InterfaceIcon name="arrow" />
           </a>
+          <nav className="live-nav" aria-label="Simulator modes">
+            <a className="home-text-link" href="/live?mode=full-hands">
+              Full hands
+            </a>
+            <a className="home-text-link" href="/live?mode=preflop">
+              Preflop
+            </a>
+          </nav>
         </section>
         <section className="card">
           <h3>Chart colors</h3>
