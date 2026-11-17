@@ -4,6 +4,20 @@ Goal: progressively improve real-life six-max Hold’em decisions, especially ag
 
 This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PLAN.md) explains lesson progression, feature scope and completion criteria. [Foundation history](docs/FOUNDATION_HISTORY.md) retains the completed import/theme work.
 
+## Next planned priority: verified branching postflop grading
+
+The user requested a map of the work before implementation. [POSTFLOP_GRADING_PLAN.md](docs/POSTFLOP_GRADING_PLAN.md) is the detailed checklist and acceptance criteria. Preserve the approved simulator and existing features; do not equate this plan with implemented postflop grading.
+
+- [x] Inspect current assets: 276 imported flop files, 780 archived hand exercises, existing solver scripts and live feedback adapter. Record missing branches, precision and source-validation gaps.
+- [x] Map the pilot scope and staged requirements in the repository: BTN versus BB, 100 BB, single-raised pot, an explicitly covered flop and complete declared branches through river.
+- [ ] P0: Finish source/permission/numerical/compute feasibility audit and specify the pilot model.
+- [ ] P1: Configure a reproducible solver and validate a small numerical reference, retaining inputs/output/logs and convergence evidence.
+- [ ] P2: Produce a complete versioned strategy pack with exact combos, full precision, documented assumptions and legal action/chance branches.
+- [ ] P3: Integrate exact public-context matching and fair range grading without hidden-card leakage or altering the learner's choices.
+- [ ] P4: Connect the existing explanation/chart/retry flow and automatic mistake review, preserving original feedback and bounded local storage.
+- [ ] P5: Verify offline size/performance, regressions and actual device behavior; present the isolated pilot for user testing before main-app integration.
+- [ ] P6: Expand board/position/pot coverage, then separate exploit models and multiway sources; measure coverage alongside accuracy.
+
 ## Current priority: dependable live decision feedback
 
 - [x] Diagnose silent chart-loading failures and the gap between random live situations and the imported preflop reference tree.
