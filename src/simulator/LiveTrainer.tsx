@@ -5,12 +5,12 @@ import { Segmented } from '@/components/Segmented'
 import { isGameMode, type GameMode } from '@/lib/gameModes'
 import { modeOf, allLiveDeals, switchLiveMode } from './liveModes'
 import { loadTheme } from '@/lib/theme'
-import { AppLogo } from '@/components/AppLogo'
 import { chipsFromBB } from './liveAmounts'
 import { LiveSheet } from './LiveSheet'
-import { LiveRangeFeedback } from './LiveRangeFeedback'
+import { LiveDecisionFeedback } from './LiveDecisionFeedback'
+import { LiveOutcome, liveOutcomeTitle } from './LiveOutcome'
+import { InterfaceIcon } from '@/components/InterfaceIcon'
 import { SimulatorTable } from '@/components/SimulatorTable'
-import { CardFace } from '@/components/HoleCards'
 import { positionsFor, type PlayerCount } from '@/lib/positions'
 import { loadRangeSet } from '@/lib/rangeSets'
 import type { RangeEntry } from '@/data/types'
@@ -21,6 +21,8 @@ import {
 } from './liveEngine'
 import {
   appendLiveAction,
+  practiceLiveDeal,
+  retryLiveDecision,
   decodeLiveSession,
   encodeLiveSession,
   LIVE_LOCK,
@@ -38,7 +40,6 @@ import {
   retryLiveReference,
   type LiveReference,
 } from './liveReference'
-import { evaluateHand } from '../../scripts/lib/handEval.mjs'
 
 const bb = (n: number) => Number((n / 100).toFixed(2))
 function fresh(
@@ -88,17 +89,11 @@ export function LiveTrainer() {
       setPaused(true)
     }
   }, [])
-  const [mobile, setMobile] = useState(false)
-  const [feedbackClosed, setFeedbackClosed] = useState(false)
-  useEffect(() => {
-    const media = matchMedia(
-      '(max-width: 768px), (max-width: 1024px) and (max-height: 600px)',
-    )
-    const sync = () => setMobile(media.matches)
-    sync()
-    media.addEventListener('change', sync)
-    return () => media.removeEventListener('change', sync)
-  }, [])
+  const [sizing, setSizing] = useState(false)
+  const [sizeError, setSizeError] = useState('')
+  const [raiseDraft, setRaiseDraft] = useState('')
+  const [outcome, setOutcome] = useState(false)
+  const outcomeSeen = useRef('')
   const [session, setSession] = useState<LiveSession | null>(null)
   const [owner, setOwner] = useState<'pending' | 'owner' | 'other' | 'unsaved'>(
     'pending',
@@ -161,7 +156,7 @@ export function LiveTrainer() {
         setError(e instanceof Error ? e.message : 'Storage is unavailable.')
       }
       let next: LiveSession = saved ?? {
-        version: 1 as const,
+        version: 3 as const,
         current: fresh(),
         archive: [],
       }
@@ -264,13 +259,42 @@ export function LiveTrainer() {
   const current = session?.current
   const mode = current ? modeOf(current) : 'full-hands'
   const active = useMemo(
-    () => (current ? replayLiveDeal(current) : null),
+    () => (current ? practiceLiveDeal(current) : null),
     [current],
   )
+  const lastRecord = current?.feedback?.at(-1)
+  const pending =
+    !!lastRecord &&
+    lastRecord.index === current!.actions.length - 1 &&
+    (current!.acknowledgedAction ?? -1) < lastRecord.index
   const displayed = useMemo(
-    () => (review ? replayLiveDeal(review.deal, review.index) : active),
-    [review, active],
+    () =>
+      review
+        ? practiceLiveDeal(review.deal, review.index)
+        : pending && current && lastRecord && !active?.heroFolded
+          ? practiceLiveDeal(current, lastRecord.index)
+          : active,
+    [review, current, lastRecord, pending, active],
   )
+  useEffect(() => {
+    if (
+      !active ||
+      !current ||
+      pending ||
+      tools ||
+      review ||
+      sizing ||
+      active.heroFolded ||
+      active.street !== 'complete' ||
+      active.board.length !== 5
+    )
+      return
+    const key = `${current.seed}:${current.actions.length}`
+    if (outcomeSeen.current !== key) {
+      outcomeSeen.current = key
+      setOutcome(true)
+    }
+  }, [active, current, pending, tools, review, sizing])
   const deal = review?.deal ?? current
   const allowed = owner === 'owner' || owner === 'unsaved'
   const commit = useCallback(
@@ -293,7 +317,6 @@ export function LiveTrainer() {
         setError('')
         if (human) {
           setPaused(true)
-          setFeedbackClosed(false)
         }
       } catch (e) {
         setError(e instanceof Error ? e.message : 'The action was rejected.')
@@ -307,6 +330,9 @@ export function LiveTrainer() {
       !current ||
       active.toAct === null ||
       active.preflopComplete ||
+      active.heroFolded ||
+      outcome ||
+      sizing ||
       modeBusy ||
       active.toAct === current.hero ||
       paused ||
@@ -332,22 +358,30 @@ export function LiveTrainer() {
       650,
     )
     return () => clearTimeout(timer)
-  }, [active, current, commit, paused, tools, review, allowed, modeBusy])
+  }, [
+    active,
+    current,
+    commit,
+    paused,
+    tools,
+    review,
+    allowed,
+    modeBusy,
+    outcome,
+    sizing,
+  ])
   const legal = displayed ? legalLiveActions(displayed) : null
-  const lastRecord = current?.feedback?.at(-1)
   const feedback = useMemo(() => {
-    const reference = review ? review.answer : lastRecord?.reference
+    const reference = review
+      ? review.answer
+      : pending
+        ? lastRecord?.reference
+        : null
     if (!reference || !deal) return null
     const index = review?.index ?? lastRecord!.index
     const chart = recoverLiveChart(reference, deal, index, entries)
     return chart ? { ...reference, chart } : reference
-  }, [review, lastRecord, deal, entries])
-  const awaitingRangeCheck =
-    !!feedback &&
-    !feedbackClosed &&
-    !review &&
-    paused &&
-    current!.actions.length === lastRecord!.index + 1
+  }, [review, lastRecord, deal, entries, pending])
   const suggestedRaise = useMemo(() => {
     if (!deal || !displayed || legal?.minRaiseTo == null) return 250
     const reference =
@@ -382,7 +416,6 @@ export function LiveTrainer() {
           actions: review.deal.actions.slice(0, review.index),
         }
         appendLiveAction(prefix, action, review.index)
-        setFeedbackClosed(false)
         setReview({
           ...review,
           answer: retryLiveReference(review.reference, action),
@@ -406,7 +439,6 @@ export function LiveTrainer() {
       if (owner === 'owner') localStorage.setItem(LIVE_SAVE_KEY, encoded)
       setSession(next)
       setReview(null)
-      setFeedbackClosed(false)
       setError('')
       const d = next.current
       setPlayers(d.config.stacks.length as PlayerCount)
@@ -430,6 +462,47 @@ export function LiveTrainer() {
       switching.current = false
       setModeBusy(false)
     }
+  }
+  function retryCurrent() {
+    if (review) {
+      setReview({ ...review, answer: undefined })
+      return
+    }
+    if (!session || !allowed) return
+    try {
+      setSession(retryLiveDecision(session))
+      setPaused(true)
+      setError('')
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : 'Could not restore this decision',
+      )
+    }
+  }
+  function continueDecision() {
+    if (review) {
+      setReview(null)
+      setPaused(true)
+      return
+    }
+    if (!current || !active || !lastRecord) return
+    if (
+      active.heroFolded ||
+      active.preflopComplete ||
+      (active.street === 'complete' && active.board.length === 0)
+    ) {
+      startHand(false)
+      return
+    }
+    setSession((prev) =>
+      !prev
+        ? prev
+        : {
+            ...prev,
+            current: { ...prev.current, acknowledgedAction: lastRecord.index },
+          },
+    )
+    setPaused(false)
   }
   function startHand(applySettings: boolean) {
     if (!session || !allowed || switching.current) return
@@ -470,7 +543,8 @@ export function LiveTrainer() {
         archive: [...session.archive, session.current].slice(-20),
       })
       setTools(false)
-      setFeedbackClosed(false)
+      setSizing(false)
+      setOutcome(false)
       setReview(null)
       setPaused(false)
       setError('')
@@ -498,110 +572,115 @@ export function LiveTrainer() {
     (d.feedback ?? []).map((f) => ({ ...f, deal: d })),
   )
   const completed = records.filter((d) => {
-    const s = replayLiveDeal(d)
-    return s.street === 'complete' || s.preflopComplete
+    const s = practiceLiveDeal(d)
+    return (
+      !d.attempt &&
+      (s.street === 'complete' || s.preflopComplete || s.heroFolded)
+    )
   }).length
-  const callOdds =
-    legal && legal.call > 0
-      ? (() => {
-          const cap = hero.committed + legal.call
-          const eligibleFinal =
-            displayed.deadMoney +
-            displayed.seats.reduce(
-              (sum, p, i) =>
-                sum + Math.min(i === deal.hero ? cap : p.committed, cap),
-              0,
-            )
-          return eligibleFinal ? (legal.call / eligibleFinal) * 100 : 0
-        })()
+  const ended =
+    !!active.heroFolded ||
+    !!active.preflopComplete ||
+    active.street === 'complete'
+  const nextLabel =
+    mode === 'preflop' ? 'Deal next preflop hand' : 'Deal next live hand'
+  const feedbackAction = review
+    ? review.deal.actions[review.index]
+    : lastRecord
+      ? current.actions[lastRecord.index]
       : null
-  const made =
-    displayed.board.length >= 3
-      ? evaluateHand(
-          [...hero.cards, ...displayed.board].map((c) => c.rank + c.suit),
-        ).name
-      : null
-  const feedbackView =
-    feedback && !tools && !feedbackClosed && (review || awaitingRangeCheck) ? (
-      <LiveRangeFeedback
-        key={`${deal.seed}-${review?.index ?? lastRecord?.index}-${review ? 'retry' : 'live'}`}
-        reference={feedback}
-        retry={!!review}
-        onContinue={
-          awaitingRangeCheck
-            ? () => {
-                setFeedbackClosed(true)
-                setPaused(false)
-              }
-            : review
-              ? () => setFeedbackClosed(true)
-              : undefined
-        }
-        onTools={
-          mobile
-            ? () => {
-                setFeedbackClosed(true)
-                setTools(true)
-              }
-            : undefined
-        }
-        continueLabel={
-          review
-            ? 'Back to retry'
-            : active.preflopComplete
-              ? 'See preflop result'
-              : active.street === 'complete'
-                ? 'See hand result'
-                : 'Continue hand'
-        }
-      />
-    ) : null
+  const actionLabel = feedbackAction
+    ? feedbackAction.kind === 'raise'
+      ? `Raise to ${bb(feedbackAction.to)} BB`
+      : feedbackAction.kind
+    : ''
   return (
-    <main className="page live-page">
-      <header className="live-header">
+    <main className="page play-page live-page learning-play">
+      <header className="sim-header live-header">
         <a className="sim-back" href="/" aria-label="Leave simulator">
-          ‹
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            aria-hidden="true"
+          >
+            <path d="m14 6-6 6 6 6" />
+          </svg>
         </a>
-        <div className="live-title">
-          <AppLogo className="app-logo--nav" />
-          <div>
-            <h1>Poker simulator</h1>
-            <p role="status">{message}</p>
-          </div>
+        <div className="sim-header__title">
+          <h1 aria-label="Poker simulator">Simulator</h1>
+          <span role="status" className="sim-save-status">
+            {message === 'Saved on this device' ? 'Saved on device' : message}
+          </span>
         </div>
+        <GameModeSwitch
+          mode={mode}
+          disabled={!allowed || modeBusy}
+          onChange={(next) => void changeMode(next)}
+        />
         <button
-          className="btn"
+          className="btn sim-menu"
+          aria-label="Practice tools"
           aria-haspopup="dialog"
           onClick={() => {
             setPaused(true)
             setTools(true)
           }}
         >
-          Practice tools
+          <InterfaceIcon name="settings" />
         </button>
-        <GameModeSwitch
-          mode={mode}
-          disabled={!allowed || modeBusy}
-          onChange={(next) => void changeMode(next)}
-        />
       </header>
-      {error && <p role="alert">{error}</p>}
-      <section className="card live-hand" aria-label="Live hand">
-        <h2>
-          {review
-            ? 'Retry a saved decision'
-            : displayed.preflopComplete
-              ? 'Preflop complete'
-              : displayed.street === 'complete'
-                ? 'Hand settled'
-                : `${displayed.street[0].toUpperCase()}${displayed.street.slice(1)}`}
-        </h2>
-        {review && (
-          <p>
-            Live play is paused. Future cards and opponents’ hole cards remain
-            hidden. This retry does not change your live hand.
-          </p>
-        )}
+      {error && (
+        <p role="alert" className="sim-mode-error">
+          {error}
+        </p>
+      )}
+      <section className="card trainer-table live-hand" aria-label="Live hand">
+        <div className="range-card__head">
+          <div className="range-card__title">
+            <h2>
+              {review
+                ? 'Retry a saved decision'
+                : active.heroFolded
+                  ? 'You folded'
+                  : active.preflopComplete
+                    ? 'Preflop complete'
+                    : active.street === 'complete'
+                      ? 'Hand settled'
+                      : `${order[deal.hero]} · ${displayed.street[0].toUpperCase() + displayed.street.slice(1)}`}
+            </h2>
+            <span>
+              {review
+                ? 'Live hand paused'
+                : pending
+                  ? 'Decision feedback'
+                  : ended
+                    ? 'Practice hand complete'
+                    : displayed.toAct === deal.hero
+                      ? 'Your move'
+                      : 'Opponents are acting'}
+            </span>
+          </div>
+          {!pending &&
+            (!ended || review) &&
+            displayed.toAct === deal.hero &&
+            legal?.minRaiseTo != null && (
+              <button
+                className="btn sizing-trigger"
+                onClick={() => {
+                  setPaused(true)
+                  setSizeError('')
+                  setRaiseDraft(raise)
+                  setSizing(true)
+                }}
+              >
+                Bet sizing
+              </button>
+            )}
+        </div>
         <SimulatorTable
           players={displayed.seats.length as PlayerCount}
           hero={order[deal.hero]}
@@ -621,199 +700,205 @@ export function LiveTrainer() {
           pot={bb(displayed.pot)}
           acting={displayed.toAct === null ? undefined : order[displayed.toAct]}
         />
-        {displayed.preflopComplete ? (
-          <div aria-label="Preflop result">
-            <p>
-              Preflop betting is complete. No future cards or showdown winner
-              are shown in this mode. The pot remains {bb(displayed.pot)} BB.
-            </p>
-            {!awaitingRangeCheck && !review && (
-              <button
-                className="btn btn--primary"
-                onClick={() => startHand(false)}
-              >
-                Deal next preflop hand
+        {feedback ? (
+          <LiveDecisionFeedback
+            key={`${deal.seed}:${review?.index ?? lastRecord?.index}:${review ? 'review' : 'live'}`}
+            reference={feedback}
+            suspended={tools || sizing || modeBusy}
+            action={actionLabel}
+            retry={!!review}
+            onRetry={retryCurrent}
+            onContinue={continueDecision}
+            continueLabel={
+              review
+                ? 'Return to live hand'
+                : active.heroFolded ||
+                    active.preflopComplete ||
+                    (active.street === 'complete' && active.board.length === 0)
+                  ? nextLabel
+                  : active.street === 'complete'
+                    ? 'View hand result'
+                    : 'Continue hand'
+            }
+          />
+        ) : !review && ended ? (
+          <section
+            className="hand-result live-result"
+            aria-label={
+              active.preflopComplete
+                ? 'Preflop result'
+                : active.heroFolded
+                  ? 'Fold result'
+                  : 'Hand summary'
+            }
+          >
+            <h3>
+              {active.heroFolded
+                ? 'You folded. Your practice hand ends here.'
+                : active.preflopComplete
+                  ? 'Preflop complete — no future cards dealt.'
+                  : active.board.length === 5
+                    ? liveOutcomeTitle(active, deal.hero)
+                    : `${liveOutcomeTitle(active, deal.hero)} · ${active.pots.reduce((n, p) => n + p.amount, 0) / 100} BB pot`}
+            </h3>
+            {active.street === 'complete' && active.board.length === 5 && (
+              <button className="btn" onClick={() => setOutcome(true)}>
+                Show result
               </button>
             )}
-          </div>
-        ) : displayed.street === 'complete' ? (
-          <div aria-label="Live result">
-            <p>
-              Your net result:{' '}
-              <strong>
-                {bb(hero.stack - displayed.config.stacks[deal.hero])} BB
-              </strong>
-              . Payouts include returned invested chips; results do not measure
-              decision quality.
-            </p>
-            <ul>
-              {displayed.pots.map((p, i) => (
-                <li key={i}>
-                  {i === 0 ? 'Main pot' : `Side pot ${i}`}: {bb(p.amount)} BB to{' '}
-                  {p.winners.map((w) => order[w]).join(', ')}
-                </li>
-              ))}
-            </ul>
-            {displayed.refunds.length > 0 && (
-              <p>
-                Uncalled refunds:{' '}
-                {displayed.refunds
-                  .map((r) => `${order[r.seat]} ${bb(r.amount)} BB`)
-                  .join('; ')}
-                .
-              </p>
-            )}
-            {displayed.board.length === 5 &&
-              displayed.seats.filter((p) => !p.folded).length > 1 && (
-                <div className="live-showdown" aria-label="Showdown">
-                  {displayed.seats.map(
-                    (p, i) =>
-                      !p.folded && (
-                        <div key={i}>
-                          <strong>{order[i]}</strong>
-                          <div className="hole-cards">
-                            {p.cards.map((c) => (
-                              <CardFace key={c.rank + c.suit} card={c} small />
-                            ))}
-                          </div>
-                        </div>
-                      ),
-                  )}
-                </div>
-              )}
-            {!awaitingRangeCheck && (
-              <button
-                className="btn btn--primary"
-                onClick={() => startHand(false)}
-              >
-                {mode === 'preflop'
-                  ? 'Deal next preflop hand'
-                  : 'Deal next live hand'}
-              </button>
-            )}
-          </div>
-        ) : displayed.toAct === deal.hero ? (
-          <div>
-            <p className="live-hand-description">
-              You are {order[deal.hero]}.{' '}
-              {made && (
-                <>Current made hand: {made}. This is not an equity estimate.</>
-              )}
-            </p>
-            {callOdds !== null && (
-              <p className="live-price">
-                Calling costs {bb(legal!.call)} BB. Break-even terminal equity:{' '}
-                {callOdds.toFixed(1)}% against the currently contestable pot,
-                before rake or future betting.
-              </p>
-            )}
-            <div
-              className="actions live-actions"
-              role="group"
-              aria-label="Your live move"
+            <button
+              className="btn btn--primary"
+              aria-label={nextLabel}
+              onClick={() => startHand(false)}
             >
-              {legal?.check && (
+              Next hand
+            </button>
+          </section>
+        ) : displayed.toAct === deal.hero ? (
+          <div
+            className="actions live-actions"
+            role="group"
+            aria-label="Your move"
+          >
+            {legal?.minRaiseTo != null && (
+              <button
+                className="action-btn action-btn--raise"
+                aria-label="Raise / bet"
+                onClick={raiseEntered}
+              >
+                <InterfaceIcon name="raise" />
+                <span>
+                  {legal.check ? 'Bet' : 'Raise'} {raise} BB
+                </span>
+              </button>
+            )}
+            {legal?.check ? (
+              <button
+                className="action-btn action-btn--check"
+                onClick={() => submit({ kind: 'check' })}
+              >
+                <InterfaceIcon name="check" />
+                <span>Check</span>
+              </button>
+            ) : (
+              !!legal?.call && (
                 <button
-                  className="action-btn live-action-call"
-                  onClick={() => submit({ kind: 'check' })}
-                >
-                  Check
-                </button>
-              )}
-              {!!legal?.call && (
-                <button
-                  className="action-btn live-action-call"
+                  className="action-btn action-btn--call"
                   onClick={() => submit({ kind: 'call' })}
                 >
-                  Call {bb(legal.call)} BB
+                  <InterfaceIcon name="call" />
+                  <span>Call {bb(legal.call)} BB</span>
                 </button>
-              )}
+              )
+            )}
+            <button
+              className="action-btn action-btn--fold"
+              onClick={() => submit({ kind: 'fold' })}
+            >
+              <InterfaceIcon name="fold" />
+              <span>Fold</span>
+            </button>
+            {review && (
               <button
-                className="action-btn live-action-fold"
-                onClick={() => submit({ kind: 'fold' })}
+                className="btn live-return"
+                onClick={() => {
+                  setReview(null)
+                  setPaused(true)
+                }}
               >
-                Fold
+                Return to live hand
               </button>
-            </div>
-            {legal?.minRaiseTo !== null && legal?.minRaiseTo !== undefined && (
-              <div className="live-raise">
-                <label>
-                  Raise to (BB)
-                  <input
-                    aria-label="Raise to (BB)"
-                    type="number"
-                    step="0.01"
-                    min={bb(legal.minRaiseTo)}
-                    max={bb(legal.maxRaiseTo!)}
-                    value={raise}
-                    onChange={(e) => {
-                      raiseEdit.current.edited = true
-                      setRaise(e.target.value)
-                    }}
-                  />
-                </label>
-                <button
-                  className="btn live-action-raise"
-                  onClick={raiseEntered}
-                >
-                  Raise / bet
-                </button>
-                <button
-                  className="btn live-action-raise"
-                  onClick={() =>
-                    submit({ kind: 'raise', to: legal.maxRaiseTo! })
-                  }
-                >
-                  All-in {bb(legal.maxRaiseTo!)} BB
-                </button>
-                <small>
-                  Minimum {bb(legal.minRaiseTo)} BB; maximum{' '}
-                  {bb(legal.maxRaiseTo!)} BB. Amount is your total for this
-                  street.
-                </small>
-              </div>
             )}
           </div>
         ) : (
-          <p>
-            {hero.folded
-              ? 'You folded. Opponents will finish the hand.'
-              : `${order[displayed.toAct!]} to act.`}
-          </p>
-        )}
-        {!review &&
-          !awaitingRangeCheck &&
-          !displayed.preflopComplete &&
-          displayed.street !== 'complete' && (
-            <button className="btn" onClick={() => setPaused((p) => !p)}>
-              {paused ? 'Continue hand' : 'Pause opponents'}
-            </button>
-          )}
-        {review && (
-          <button
-            className="btn btn--primary"
-            onClick={() => {
-              setReview(null)
-              setError('')
-            }}
-          >
-            Return to live hand
-          </button>
+          <div className="actions actions--waiting live-wait">
+            <span>{order[displayed.toAct!]} is thinking…</span>
+            {paused && (
+              <button className="btn" onClick={() => setPaused(false)}>
+                Continue hand
+              </button>
+            )}
+          </div>
         )}
       </section>
-      {feedbackView &&
-        (mobile ? (
-          <LiveSheet
-            title="Decision feedback"
-            onClose={() => {
-              setFeedbackClosed(true)
-            }}
-          >
-            {feedbackView}
-          </LiveSheet>
-        ) : (
-          feedbackView
-        ))}
+      {sizing && legal?.minRaiseTo != null && (
+        <LiveSheet
+          title="Bet sizing"
+          onClose={() => setSizing(false)}
+          footer={
+            <>
+              <button
+                className="btn"
+                onClick={() => {
+                  setSizing(false)
+                  submit({ kind: 'raise', to: legal.maxRaiseTo! })
+                }}
+              >
+                All-in {bb(legal.maxRaiseTo!)} BB
+              </button>
+              <button
+                className="btn btn--primary"
+                onClick={() => {
+                  try {
+                    const n = chipsFromBB(raiseDraft)
+                    if (n < legal.minRaiseTo! || n > legal.maxRaiseTo!)
+                      throw Error(
+                        'Choose a size within the legal minimum and maximum.',
+                      )
+                    setSizeError('')
+                    raiseEdit.current.edited = true
+                    setRaise(raiseDraft)
+                    setSizing(false)
+                  } catch (e) {
+                    setSizeError(
+                      e instanceof Error ? e.message : 'Invalid size',
+                    )
+                  }
+                }}
+              >
+                Apply size
+              </button>
+            </>
+          }
+        >
+          {sizeError && <p role="alert">{sizeError}</p>}
+          <label>
+            Raise to (BB)
+            <input
+              aria-label="Raise to (BB)"
+              type="number"
+              step="0.01"
+              min={bb(legal.minRaiseTo)}
+              max={bb(legal.maxRaiseTo!)}
+              value={raiseDraft}
+              onChange={(e) => {
+                setRaiseDraft(e.target.value)
+              }}
+            />
+          </label>
+          <p>
+            Minimum {bb(legal.minRaiseTo)} BB; maximum {bb(legal.maxRaiseTo!)}{' '}
+            BB. This is your total contribution for this street.
+          </p>
+          <p>
+            Custom sizes remain legal but receive no chart grade unless the
+            reference matches.
+          </p>
+        </LiveSheet>
+      )}
+      {outcome &&
+        !tools &&
+        !review &&
+        !pending &&
+        active.street === 'complete' &&
+        !active.heroFolded && (
+          <LiveOutcome
+            state={active}
+            hero={deal.hero}
+            onClose={() => setOutcome(false)}
+            onNext={() => startHand(false)}
+          />
+        )}
       {tools && (
         <LiveSheet title="Practice tools" onClose={() => setTools(false)}>
           <nav className="live-nav" aria-label="Practice pages">
@@ -846,7 +931,6 @@ export function LiveTrainer() {
                         className="btn"
                         onClick={() => {
                           setTools(false)
-                          setFeedbackClosed(false)
                           setPaused(true)
                           setReview({
                             deal: r.deal,
@@ -993,7 +1077,7 @@ export function LiveTrainer() {
             <button
               className="btn"
               onClick={() =>
-                download(JSON.stringify(session), 'poker-live-practice.json')
+                download(JSON.stringify({ ...session, version: 3 }), 'poker-live-practice.json')
               }
             >
               Export live practice

@@ -1,5 +1,7 @@
 # Realistic live simulator release
 
+The later [learning-interface restoration](LEARNING_RESTORATION.md) supersedes the feedback, result presentation and fold-continuation behavior described below.
+
 The later [live preflop release](LIVE_PREFLOP.md) updates mode controls, save format and archive routes described here.
 
 The user explicitly approved updating the main app after further tests. This approval supersedes the earlier requirement to hold the integration candidate unmerged and undeployed. Actual iPhone testing has not been performed or asserted.

@@ -4,6 +4,19 @@ Goal: progressively improve real-life six-max Hold’em decisions, especially ag
 
 This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PLAN.md) explains lesson progression, feature scope and completion criteria. [Foundation history](docs/FOUNDATION_HISTORY.md) retains the completed import/theme work.
 
+## Current priority: restore the approved learning simulator
+
+- [x] Restore the approved simulator surface/table proportions, three action buttons, compact header and navy materials around the live engine.
+- [x] Put custom sizing in its own small panel; validate Apply and preserve the original size when cancelling.
+- [x] Supported answers stay compact and green; ungraded answers stay neutral; only reference errors automatically open the explanation.
+- [x] Restore Explanation/Chart tabs and fixed Retry/Continue controls outside overlay scrolling; hide inactive panels on every viewport.
+- [x] End the learner's hand immediately on Fold in both modes, including old saves and closing-round folds; no later actions, cards or fictitious payouts.
+- [x] Retry restores the actual decision and preserves the original error once, without silently choosing a chart action. Keep manual saved-spot practice non-mutating.
+- [x] Restore clear calculated showdown results; keep modes, source charts, settings, archive, ownership and offline support.
+- [x] Accept v1/v2 saves and write v3 so old cached clients cannot resume folded hands or discard learning checkpoints.
+- [x] Finish final regression verification (209 unit tests, production build, 93 browser checks) and prepare the verified correction for the connected `work` branch; see [LEARNING_RESTORATION.md](docs/implementation/LEARNING_RESTORATION.md).
+- [ ] Actual iPhone Safari/Home Screen confirmation of the restored layout, touch and safe areas.
+
 ## Current approved step: live-engine preflop mode
 
 - [x] Run Preflop and Full hands on the same shuffled-deck/legal-action engine; keep choices independent of chart feedback.

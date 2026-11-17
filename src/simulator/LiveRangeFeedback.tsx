@@ -12,12 +12,13 @@ export function LiveRangeFeedback({
   retry,
   onContinue,
   onTools,
-  continueLabel,
+  continueLabel, regionLabel = 'Decision feedback',
 }: {
   reference: LiveReference
   retry: boolean
   onContinue?: () => void
   onTools?: () => void
+  regionLabel?: string
   continueLabel: string
 }) {
   const [hovered, setHovered] = useState<Hand | null>(null)
@@ -40,7 +41,7 @@ export function LiveRangeFeedback({
   return (
     <section
       className="card live-range-feedback"
-      aria-label="Decision feedback"
+      aria-label={regionLabel}
       id="live-range-feedback"
     >
       <div className="live-range-heading">

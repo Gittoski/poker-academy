@@ -1,3 +1,4 @@
+const { readyRaise, setRaise, feedback: openFeedback, closeFeedback: closeLiveFeedback, tools: openLiveTools } = require('./support/live.cjs')
 const { test, expect } = require('@playwright/test')
 const AxeBuilder = require('@axe-core/playwright').default
 const key = 'poker-academy:live:v1'
@@ -12,21 +13,22 @@ async function seed(page, { mode, hero = 0, actions = [] } = {}) {
 const read = page => page.evaluate(k => JSON.parse(localStorage.getItem(k)), key)
 const modeSwitch = page => page.locator('.live-header').getByRole('switch', { name: 'Preflop mode' })
 async function dismiss(page) {
-  const overlay = page.getByRole('dialog', { name: 'Decision feedback', exact: true })
-  if (await overlay.isVisible()) await overlay.getByRole('button', { name: 'Back to hand', exact: true }).click()
+  const overlay = page.getByRole('dialog', { name: 'Review this decision', exact: true })
+  if (await overlay.isVisible()) await overlay.getByRole('button', { name: 'Close explanation', exact: true }).click()
 }
 test('live toggle parks both exact hands, reloads, settings and retries without changing reference data', async ({ page }) => {
   await seed(page); await page.goto('/live')
   await expect(modeSwitch(page)).toBeEnabled()
-  await page.getByRole('group', { name: 'Your live move', exact: true }).getByRole('button', { name: /^Call / }).click()
+  await page.getByRole('group', { name: 'Your move', exact: true }).getByRole('button', { name: /^Call / }).click()
   await dismiss(page)
   const full = (await read(page)).current
   await modeSwitch(page).click()
   await expect(modeSwitch(page)).toBeChecked()
   expect((await read(page)).parked['full-hands']).toEqual(full)
-  await expect(page.getByLabel('Raise to (BB)', { exact: true })).toHaveValue('2.5')
+  await readyRaise(page)
   await page.getByRole('button', { name: 'Raise / bet', exact: true }).click()
-  const panel = page.getByRole('region', { name: 'Decision feedback' })
+  await openFeedback(page)
+      const panel = page.getByRole('region', { name: 'Decision feedback' })
   await expect(panel.getByRole('gridcell')).toHaveCount(169)
   const pre = (await read(page)).current
   expect(pre.actions[0]).toEqual({ kind: 'raise', to: 250 })
@@ -37,7 +39,7 @@ test('live toggle parks both exact hands, reloads, settings and retries without 
   await page.reload()
   await expect(modeSwitch(page)).not.toBeChecked()
   await dismiss(page)
-  await page.getByRole('button', { name: 'Practice tools', exact: true }).click()
+  await openLiveTools(page)
   await page.getByText('Live table settings', { exact: true }).click()
   await page.getByRole('radio', { name: 'Preflop', exact: true }).click()
   await expect(page.getByRole('radio', { name: 'Preflop', exact: true })).toHaveAttribute('aria-checked', 'true')
@@ -58,22 +60,18 @@ for (const allIn of [false, true]) test(`preflop ${allIn ? 'all-in' : 'BB check'
   const actions = allIn ? [{ kind: 'raise', to: 10000 }, ...Array(4).fill({ kind: 'call' })] : Array(5).fill({ kind: 'call' })
   await seed(page, { mode: 'preflop', hero: 5, actions }); await page.goto('/live')
   await expect(modeSwitch(page)).toBeChecked()
-  const moves = page.getByRole('group', { name: 'Your live move', exact: true })
+  const moves = page.getByRole('group', { name: 'Your move', exact: true })
   await moves.getByRole('button', { name: allIn ? /^Call / : 'Check', exact: !allIn }).click()
-  const overlay = page.getByRole('dialog', { name: 'Decision feedback', exact: true })
-  await expect(overlay).toBeVisible()
-  await overlay.getByRole('button', { name: 'See preflop result', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'Preflop complete', exact: true })).toBeVisible()
-  await expect(page.getByLabel('Preflop result', { exact: true })).toContainText('No future cards or showdown winner')
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await expect(page.getByRole('heading', { name:'Preflop complete',exact:true })).toBeVisible()
+  await expect(page.locator('.live-decision')).toContainText('No matching range')
   await expect(page.locator('.table-board .playing-card')).toHaveCount(0)
   await expect(page.locator('.live-showdown')).toHaveCount(0)
-  await expect(page.getByLabel('Live result', { exact: true })).toHaveCount(0)
   expect((await read(page)).current.actions).toHaveLength(6)
-  expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1)).toBe(true)
-  await page.screenshot({ path: info.outputPath(allIn ? 'preflop-all-in-phone.png' : 'preflop-complete-phone.png') })
-  await page.reload(); await expect(modeSwitch(page)).toBeChecked()
-  await dismiss(page)
-  await page.getByRole('button', { name: 'Deal next preflop hand', exact: true }).click()
+  expect(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+1)).toBe(true)
+  await page.screenshot({path:info.outputPath(allIn?'preflop-all-in-phone.png':'preflop-complete-phone.png')})
+  await page.reload();await expect(modeSwitch(page)).toBeChecked()
+  await page.getByRole('button',{name:'Deal next preflop hand',exact:true}).click()
   const saved = await read(page)
   expect(saved.current.mode).toBe('preflop')
   expect(saved.archive.at(-1).actions).toHaveLength(6)
@@ -136,8 +134,9 @@ test('offline cold starts support the updated preflop link and retained archive'
   await context.setOffline(true)
   await page.goto('/play?mode=preflop')
   await expect(modeSwitch(page)).toBeChecked()
-  await expect(page.getByLabel('Raise to (BB)', { exact: true })).toHaveValue('2.5')
+  await readyRaise(page)
   await page.getByRole('button', { name: 'Raise / bet', exact: true }).click()
+  await openFeedback(page)
   await expect(page.getByRole('region', { name: 'Decision feedback' }).getByRole('gridcell')).toHaveCount(169)
   await page.goto('/play?mode=preflop&review=1')
   await expect(page.getByRole('dialog', { name: 'Review your play' })).toBeVisible()
@@ -151,23 +150,21 @@ for (const device of ['phone', 'desktop']) test(`${device}: play five shuffled p
   await expect(modeSwitch(page)).toBeChecked()
   let completed = 0, decisions = 0
   for (let step = 0; step < 350 && completed < 5; step++) {
-    for (const label of ['Continue hand','See preflop result','See hand result']) {
-      const next = page.getByRole('button', { name:label,exact:true })
-      if (await next.isVisible()) await next.click()
-    }
-    const next = page.getByRole('button', { name:'Deal next preflop hand',exact:true })
-    if (await next.isVisible()) {
+    const phase=await page.locator('.live-hand h2').first().innerText()
+    if(['You folded','Preflop complete','Hand settled'].includes(phase)) {
       await expect(page.locator('.table-board .playing-card')).toHaveCount(0)
-      await expect(page.locator('.live-showdown')).toHaveCount(0)
       completed++
-      if (completed < 5) await next.click()
+      if(completed<5) await page.getByRole('button',{name:'Deal next preflop hand',exact:true}).click()
       continue
     }
-    const moves = page.getByRole('group', { name:'Your live move',exact:true })
+    const acknowledgment=page.getByRole('button',{name:'Continue hand',exact:true})
+    if(await acknowledgment.isVisible()) await acknowledgment.click()
+    const moves = page.getByRole('group', { name:'Your move',exact:true })
     if (await moves.isVisible()) {
       if (!decisions) {
-        await expect(page.getByLabel('Raise to (BB)', { exact:true })).toHaveValue('2.5')
+        await readyRaise(page)
         await page.getByRole('button', { name:'Raise / bet',exact:true }).click()
+        await openFeedback(page)
         await expect(page.getByRole('region', { name:'Decision feedback' }).getByRole('gridcell')).toHaveCount(169)
       } else if (completed === 2) await moves.getByRole('button', { name:'Fold',exact:true }).click()
       else if (await moves.getByRole('button', { name:'Check',exact:true }).isVisible()) await moves.getByRole('button', { name:'Check',exact:true }).click()

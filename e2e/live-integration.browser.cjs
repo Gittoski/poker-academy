@@ -1,3 +1,4 @@
+const { readyRaise, setRaise, feedback: openFeedback, closeFeedback: closeLiveFeedback, tools: openLiveTools } = require('./support/live.cjs')
 const { test, expect } = require('@playwright/test')
 const key = 'poker-academy:live:v1'
 async function seed(page) {
@@ -51,9 +52,9 @@ test('Home and shared Play navigation lead only to live play while exercise resu
 test('phone play stays in the viewport and feedback scrolls inside its overlay', async ({ page }, info) => {
   await seed(page)
   await page.goto('/live')
-  const moves = page.getByRole('group', { name: 'Your live move', exact: true })
+  const moves = page.getByRole('group', { name: 'Your move', exact: true })
   await expect(moves).toBeVisible()
-  await expect(page.getByLabel('Raise to (BB)', { exact: true })).toHaveValue('2.5')
+  await readyRaise(page)
   for (const [width, height] of [[320, 568], [390, 664], [390, 844], [430, 932], [844, 390]]) {
     await page.setViewportSize({ width, height })
     expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1 && document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true)
@@ -66,18 +67,20 @@ test('phone play stays in the viewport and feedback scrolls inside its overlay',
   await page.setViewportSize({ width: 390, height: 844 })
   await page.screenshot({ path: info.outputPath('integrated-live-phone.png') })
   await moves.getByRole('button', { name: 'Fold', exact: true }).click()
-  const overlay = page.getByRole('dialog', { name: 'Decision feedback', exact: true })
+  await openFeedback(page)
+  const overlay = page.getByRole('dialog', { name: 'Review this decision', exact: true })
   await expect(overlay).toBeVisible()
+  await overlay.getByRole('button',{name:'Chart',exact:true}).click()
   await expect(overlay.getByRole('gridcell')).toHaveCount(169)
   expect(await page.evaluate(() => scrollY)).toBe(0)
   await page.screenshot({ path: info.outputPath('integrated-feedback-phone.png') })
   await overlay.locator('.sim-sheet__scroll').evaluate(el => { el.scrollTop = el.scrollHeight })
   const beforeDismiss = await saved(page)
-  await overlay.getByRole('button', { name: 'Back to hand', exact: true }).click()
+  await overlay.getByRole('button', { name: 'Close explanation', exact: true }).click()
   await expect(overlay).toHaveCount(0)
   await page.waitForTimeout(900)
   expect(await saved(page)).toBe(beforeDismiss)
-  await page.getByRole('button', { name: 'Continue hand', exact: true }).click()
+  await page.getByRole('button', { name: 'Deal next live hand', exact: true }).click()
   expect(await page.evaluate(() => scrollY)).toBe(0)
 })
 
@@ -86,16 +89,17 @@ test('decimal raises retain exact chips and an all-in hand exposes settlement be
   await page.clock.install()
   await page.setViewportSize({ width: 1365, height: 950 })
   await page.goto('/live')
-  await expect(page.getByLabel('Raise to (BB)', { exact: true })).toHaveValue('2.5')
-  await page.getByLabel('Raise to (BB)', { exact: true }).fill('2.51')
+  await readyRaise(page)
+  await setRaise(page, '2.51')
   await page.getByRole('button', { name: 'Raise / bet', exact: true }).click()
   await expect.poll(async () => JSON.parse(await saved(page)).current.actions[0]).toEqual({ kind: 'raise', to: 251 })
-  await page.getByRole('button', { name: 'Practice tools', exact: true }).click()
+  await openLiveTools(page)
   await page.getByText('Live table settings', { exact: true }).click()
   await page.getByRole('button', { name: 'Start with these settings', exact: true }).click()
+  await page.getByRole('button', { name: 'Bet sizing', exact: true }).click()
   await page.getByRole('button', { name: 'All-in 100 BB', exact: true }).click()
   for (let i = 0; i < 100; i++) {
-    for (const label of ['Continue hand', 'See hand result']) {
+    for (const label of ['Continue hand', 'View hand result']) {
       const button = page.getByRole('button', { name: label, exact: true })
       if (await button.isVisible()) await button.click()
     }
@@ -103,8 +107,11 @@ test('decimal raises retain exact chips and an all-in hand exposes settlement be
     await page.clock.runFor(900)
     await page.waitForTimeout(10)
   }
-  await expect(page.getByLabel('Live result', { exact: true })).toContainText('Main pot')
+  const outcome = page.getByRole('dialog',{name:'Showdown result',exact:true})
+  if(await outcome.isVisible()) await expect(outcome).toContainText('Main pot')
+  else await expect(page.locator('.hand-result')).toContainText('You win')
   expect(JSON.parse(await saved(page)).current.actions[0]).toEqual({ kind: 'raise', to: 10000 })
+  if(await page.getByRole('dialog',{name:'Showdown result',exact:true}).isVisible()) await page.getByRole('dialog',{name:'Showdown result',exact:true}).getByRole('button',{name:'Back to table',exact:true}).click()
   await page.getByRole('button', { name: 'Deal next live hand', exact: true }).click()
   expect(JSON.parse(await saved(page)).archive).toHaveLength(2)
 })

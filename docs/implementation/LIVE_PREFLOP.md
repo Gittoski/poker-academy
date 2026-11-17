@@ -1,5 +1,7 @@
 # Preflop on the live engine
 
+The later [learning-interface restoration](LEARNING_RESTORATION.md) supersedes the feedback, result presentation and fold-continuation behavior described below.
+
 The user authorized converting the separate Preflop mode to the same random-deal/live-action engine, preserving the theme, functions and ways to reach both modes. Baseline: published `455240d` on `work`.
 
 ## Behavior and entry points

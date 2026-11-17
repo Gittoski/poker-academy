@@ -7,8 +7,8 @@ import { liveReference, type LiveReference } from './liveReference'
 import { actLive, newLiveHand, type LiveAction, type LiveConfig, type LiveState } from './liveEngine'
 
 export type OpponentStyle = 'tight' | 'balanced' | 'loose'
-export interface LiveDeal { mode?: GameMode; seed: number; config: LiveConfig; hero: number; style: OpponentStyle; actions: LiveAction[]; feedback?: { index: number; reference: LiveReference }[] }
-export interface LiveSession { version: 1 | 2; current: LiveDeal; archive: LiveDeal[]; parked?: Partial<Record<GameMode, LiveDeal>> }
+export interface LiveDeal { attempt?: true; acknowledgedAction?: number; mode?: GameMode; seed: number; config: LiveConfig; hero: number; style: OpponentStyle; actions: LiveAction[]; feedback?: { index: number; reference: LiveReference }[] }
+export interface LiveSession { version: 1 | 2 | 3; current: LiveDeal; archive: LiveDeal[]; parked?: Partial<Record<GameMode, LiveDeal>> }
 export const LIVE_SAVE_KEY = 'poker-academy:live:v1'
 export const LIVE_LOCK = 'poker-academy:live-writer:v1'
 export function seededLiveRandom(seed: number): () => number {
@@ -39,6 +39,7 @@ function validateDeal(value: unknown): asserts value is LiveDeal {
     || d.config.button !== d.config.stacks.length - 3 || d.config.smallBlind !== 50 || d.config.bigBlind !== 100
     || !Number.isSafeInteger(d.hero) || d.hero < 0 || d.hero >= d.config.stacks.length
     || !['tight', 'balanced', 'loose'].includes(d.style) || !Array.isArray(d.actions) || d.actions.length > 20000) throw Error('Unsupported live hand format')
+  if ((d.attempt !== undefined && d.attempt !== true) || (d.acknowledgedAction !== undefined && (!Number.isInteger(d.acknowledgedAction) || d.acknowledgedAction < -1 || d.acknowledgedAction >= d.actions.length))) throw Error('Invalid learning checkpoint')
   if (d.feedback !== undefined && !Array.isArray(d.feedback)) throw Error('Invalid saved feedback list')
   if (new Set((d.feedback ?? []).map(f => f.index)).size !== (d.feedback ?? []).length) throw Error('Duplicate saved feedback')
   for (const f of d.feedback ?? []) {
@@ -75,15 +76,15 @@ function validateDeal(value: unknown): asserts value is LiveDeal {
 }
 export function encodeLiveSession(session: LiveSession): string {
   if ([session.current, ...session.archive, ...Object.values(session.parked ?? {})].some(d => d.actions.length > 20000)) throw Error('Live action-history save limit reached')
-  // Older builds reject v2 instead of extending a preflop-only hand postflop.
-  const text = JSON.stringify({ ...session, version: 2 })
+  // Older builds reject v3 instead of resuming opponents after a learning fold.
+  const text = JSON.stringify({ ...session, version: 3 })
   if (text.length > 2_000_000) throw Error('Live save size limit reached')
   return text
 }
 export function decodeLiveSession(text: string): LiveSession {
   if (text.length > 2_000_000) throw Error('Live save exceeds the supported size')
   const s = JSON.parse(text) as LiveSession
-  if (![1, 2].includes(s?.version) || !Array.isArray(s.archive) || s.archive.length > 20) throw Error('Unsupported live save version')
+  if (![1, 2, 3].includes(s?.version) || !Array.isArray(s.archive) || s.archive.length > 20) throw Error('Unsupported live save version')
   validateDeal(s.current)
   if (s.parked !== undefined) {
     if (!s.parked || typeof s.parked !== 'object' || Array.isArray(s.parked) || Object.keys(s.parked).length > 1) throw Error('Invalid parked mode hands')
@@ -94,7 +95,7 @@ export function decodeLiveSession(text: string): LiveSession {
     }
   }
   for (const d of s.archive) validateDeal(d)
-  return { ...s, version: 2 }
+  return { ...s, version: 3 }
 }
 
 export function replayLiveDeal(deal: LiveDeal, until = deal.actions.length): LiveState {
@@ -104,6 +105,26 @@ export function replayLiveDeal(deal: LiveDeal, until = deal.actions.length): Liv
 }
 export function appendLiveAction(deal: LiveDeal, action: LiveAction, expectedIndex: number, reference?: LiveReference): LiveDeal {
   if (deal.actions.length !== expectedIndex) return deal
-  actLive(replayLiveDeal(deal), action) // Legality also checked for manual and stale input.
+  actLive(practiceLiveDeal(deal), action) // Legality also checked for manual and stale input.
   return { ...deal, actions: [...deal.actions, structuredClone(action)], feedback: [...(deal.feedback ?? []), ...(reference ? [{ index: expectedIndex, reference: structuredClone(reference) }] : [])] }
+}
+
+/** Focused presentation/replay also truncates old saves at the learner's fold.
+ * Historical raw replay above remains available for validating old action logs. */
+export function practiceLiveDeal(deal: LiveDeal, until = deal.actions.length): LiveState {
+  let state = newLiveHand(deal.config, seededLiveRandom(deal.seed), deal.mode === 'preflop', deal.hero)
+  for (const action of deal.actions.slice(0, until)) {
+    if (state.heroFolded) break
+    state = actLive(state, action)
+  }
+  return state
+}
+/** Restore the last answered spot while retaining its source-backed mistake. */
+export function retryLiveDecision(session: LiveSession): LiveSession {
+  const deal = session.current, record = deal.feedback?.at(-1)
+  if (!record || record.index !== deal.actions.length - 1) throw Error('This decision is no longer the live checkpoint')
+  const attempt = { ...structuredClone(deal), attempt: true as const, feedback: [structuredClone(record)] }
+  const current = { ...deal, actions: deal.actions.slice(0, record.index), feedback: (deal.feedback ?? []).filter(f => f.index < record.index), acknowledgedAction: Math.min(deal.acknowledgedAction ?? -1, record.index - 1) }
+  delete current.attempt
+  return { ...session, current, archive: [...session.archive, attempt].slice(-20) }
 }

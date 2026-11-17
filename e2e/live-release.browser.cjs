@@ -1,3 +1,4 @@
+const { readyRaise, setRaise, feedback: openFeedback, closeFeedback: closeLiveFeedback, tools: openLiveTools } = require('./support/live.cjs')
 const { test, expect } = require('@playwright/test')
 const AxeBuilder = require('@axe-core/playwright').default
 const key = 'poker-academy:live:v1'
@@ -35,9 +36,9 @@ test('main settings control live play; entering settings pauses opponents withou
 test('Home live reviews open the saved decision list with one overlay and preserve the current hand', async ({ page }) => {
   await seed(page)
   await page.goto('/live')
-  await expect(page.getByLabel('Raise to (BB)', { exact: true })).toHaveValue('2.5')
-  await page.getByRole('group', { name: 'Your live move', exact: true }).getByRole('button', { name: 'Fold', exact: true }).click()
-  await expect(page.getByRole('dialog', { name: 'Decision feedback', exact: true })).toBeVisible()
+  await readyRaise(page)
+  await page.getByRole('group', { name: 'Your move', exact: true }).getByRole('button', { name: 'Fold', exact: true }).click()
+  await expect(page.locator('.live-decision')).toBeVisible()
   const before = await read(page)
   await page.goto('/')
   await expect(page.getByRole('link', { name: 'All reviews', exact: true })).toHaveAttribute('href', '/live?tools=review')
@@ -56,10 +57,10 @@ test('Home live reviews open the saved decision list with one overlay and preser
 test('actual mobile play keeps primary text and controls unclipped across viewport sizes', async ({ page }, info) => {
   await seed(page)
   await page.goto('/live')
-  await expect(page.getByRole('group', { name: 'Your live move', exact: true })).toBeVisible()
+  await expect(page.getByRole('group', { name: 'Your move', exact: true })).toBeVisible()
   for (const [width, height] of [[320, 568], [390, 664], [390, 844], [430, 932], [768, 1024], [844, 390], [1365, 950]]) {
     await page.setViewportSize({ width, height })
-    for (const selector of ['.live-title h1', '.live-header p', '.live-actions button', '.live-raise button', '.live-raise small', '.live-price', '.live-hand-description']) {
+    for (const selector of ['.live-header h1', '.sim-save-status', '.live-actions button', '.range-card__title h2']) {
       const clipped = await page.locator(selector).evaluateAll(nodes => nodes.filter(n => n.clientWidth && (n.scrollWidth > n.clientWidth + 1 || n.scrollHeight > n.clientHeight + 1)).map(n => n.textContent))
       expect(clipped, `${width}x${height}: ${selector}`).toEqual([])
     }
@@ -70,7 +71,7 @@ test('actual mobile play keeps primary text and controls unclipped across viewpo
 
 test('a completed normal pot includes folded chips without inventing side pots', async ({ page }) => {
   await page.addInitScript(key => localStorage.setItem(key, JSON.stringify({ version: 1, current: {
-    seed: 42, hero: 0, style: 'balanced', feedback: [],
+    seed: 42, hero: 1, style: 'balanced', feedback: [],
     config: { stacks: Array(6).fill(10000), button: 3, smallBlind: 50, bigBlind: 100 },
     actions: [
       { kind: 'raise', to: 250 }, { kind: 'call' }, { kind: 'call' },
@@ -84,5 +85,5 @@ test('a completed normal pot includes folded chips without inventing side pots',
   const result = page.getByLabel('Live result', { exact: true })
   await expect(result).toContainText('Main pot: 11 BB')
   await expect(result).not.toContainText('Side pot')
-  await expect(result.getByRole('button', { name: 'Deal next live hand', exact: true })).toBeVisible()
+  await expect(page.getByRole('dialog',{name:'Showdown result',exact:true}).getByRole('button',{name:'Next hand',exact:true})).toBeVisible()
 })

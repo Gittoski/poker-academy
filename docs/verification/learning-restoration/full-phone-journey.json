@@ -1,0 +1,163 @@
+{
+  "completed": 5,
+  "heroDecisions": 26,
+  "turns": [
+    {
+      "ownHand": "Your hand: 6♣ 3♦",
+      "chosen": "raise 2.5 BB",
+      "street": "LJ Open",
+      "result": "outside"
+    },
+    {
+      "ownHand": "Your hand: 6♣ 3♦",
+      "chosen": "call",
+      "street": "ungraded",
+      "result": "ungraded"
+    },
+    {
+      "ownHand": "Your hand: 6♣ 3♦",
+      "chosen": "check",
+      "street": "ungraded",
+      "result": "ungraded"
+    },
+    {
+      "ownHand": "Your hand: 6♣ 3♦",
+      "chosen": "check",
+      "street": "ungraded",
+      "result": "ungraded"
+    },
+    {
+      "ownHand": "Your hand: 6♣ 3♦",
+      "chosen": "check",
+      "street": "ungraded",
+      "result": "ungraded"
+    },
+    {
+      "ownHand": "Your hand: T♥ 6♣",
+      "chosen": "call",
+      "street": "LJ Open",
+      "result": "outside"
+    },
+    {
+      "ownHand": "Your hand: T♥ 6♣",
+      "chosen": "call",
+      "street": "ungraded",
+      "result": "ungraded"
+    },
+    {
+      "ownHand": "Your hand: T♥ 6♣",
+      "chosen": "check",
+      "street": "ungraded",
+      "result": "ungraded"
+    },
+    {
+      "ownHand": "Your hand: T♥ 6♣",
+      "chosen": "check",
+      "street": "ungraded",
+      "result": "ungraded"
+    },
+    {
+      "ownHand": "Your hand: T♥ 6♣",
+      "chosen": "check",
+      "street": "ungraded",
+      "result": "ungraded"
+    },
+    {
+      "ownHand": "Your hand: 7♣ A♣",
+      "chosen": "call",
+      "street": "LJ Open",
+      "result": "outside"
+    },
+    {
+      "ownHand": "Your hand: 7♣ A♣",
+      "chosen": "call",
+      "street": "ungraded",
+      "result": "ungraded"
+    },
+    {
+      "ownHand": "Your hand: 7♣ A♣",
+      "chosen": "check",
+      "street": "ungraded",
+      "result": "ungraded"
+    },
+    {
+      "ownHand": "Your hand: 7♣ A♣",
+      "chosen": "check",
+      "street": "ungraded",
+      "result": "ungraded"
+    },
+    {
+      "ownHand": "Your hand: 7♣ A♣",
+      "chosen": "check",
+      "street": "ungraded",
+      "result": "ungraded"
+    },
+    {
+      "ownHand": "Your hand: A♠ T♣",
+      "chosen": "call",
+      "street": "LJ Open",
+      "result": "outside"
+    },
+    {
+      "ownHand": "Your hand: A♠ T♣",
+      "chosen": "call",
+      "street": "ungraded",
+      "result": "ungraded"
+    },
+    {
+      "ownHand": "Your hand: A♠ T♣",
+      "chosen": "call",
+      "street": "ungraded",
+      "result": "ungraded"
+    },
+    {
+      "ownHand": "Your hand: A♠ T♣",
+      "chosen": "check",
+      "street": "ungraded",
+      "result": "ungraded"
+    },
+    {
+      "ownHand": "Your hand: A♠ T♣",
+      "chosen": "check",
+      "street": "ungraded",
+      "result": "ungraded"
+    },
+    {
+      "ownHand": "Your hand: A♠ T♣",
+      "chosen": "check",
+      "street": "ungraded",
+      "result": "ungraded"
+    },
+    {
+      "ownHand": "Your hand: 3♦ 6♦",
+      "chosen": "call",
+      "street": "LJ Open",
+      "result": "outside"
+    },
+    {
+      "ownHand": "Your hand: 3♦ 6♦",
+      "chosen": "call",
+      "street": "ungraded",
+      "result": "ungraded"
+    },
+    {
+      "ownHand": "Your hand: 3♦ 6♦",
+      "chosen": "check",
+      "street": "ungraded",
+      "result": "ungraded"
+    },
+    {
+      "ownHand": "Your hand: 3♦ 6♦",
+      "chosen": "check",
+      "street": "ungraded",
+      "result": "ungraded"
+    },
+    {
+      "ownHand": "Your hand: 3♦ 6♦",
+      "chosen": "check",
+      "street": "ungraded",
+      "result": "ungraded"
+    }
+  ],
+  "errors": []
+}

@@ -75,9 +75,9 @@ it('parks and resumes exact hands, settings, actions and feedback across reloads
 it('accepts old full-hand saves without mode fields and rejects corrupt parked slots', () => {
   const old = session(); delete old.current.mode
   const migrated = decodeLiveSession(JSON.stringify(old))
-  expect(migrated.version).toBe(2)
+  expect(migrated.version).toBe(3)
   expect(migrated.current).toEqual(old.current)
-  expect(JSON.parse(encodeLiveSession(old)).version).toBe(2)
+  expect(JSON.parse(encodeLiveSession(old)).version).toBe(3)
   expect(old.version).toBe(1)
   expect(modeOf(migrated.current)).toBe('full-hands')
   const parked = switchLiveMode(old, 'preflop')

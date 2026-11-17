@@ -1,3 +1,4 @@
+const { readyRaise, setRaise, feedback: openFeedback, closeFeedback: closeLiveFeedback, tools: openLiveTools } = require('./support/live.cjs')
 const { test, expect } = require('@playwright/test')
 const AxeBuilder = require('@axe-core/playwright').default
 const fs = require('node:fs')
@@ -11,23 +12,23 @@ for (const device of ['desktop', 'phone']) test(`${device}: play five complete r
   await page.setViewportSize(viewport)
   await page.clock.install()
   await page.goto('/live')
-  await expect(page.getByRole('group', { name: 'Your live move', exact: true })).toBeVisible()
-  await expect(page.getByLabel('Raise to (BB)', { exact: true })).toHaveValue('2.5')
+  await expect(page.getByRole('group', { name: 'Your move', exact: true })).toBeVisible()
+  await readyRaise(page)
   let heroDecisions = 0, completed = 0, captured = false
   for (let step = 0; step < 450 && completed < 5; step++) {
-    // A modal can cover a new hero turn; acknowledge feedback before inspecting it.
-    for (const label of ['Continue hand', 'See hand result']) {
-      const acknowledgment = page.getByRole('button', { name: label, exact: true })
-      if (await acknowledgment.isVisible()) await acknowledgment.click()
-    }
-    if (await page.getByRole('heading', { name: 'Hand settled', exact: true }).isVisible()) {
-      const result = page.getByRole('button', { name: 'See hand result', exact: true })
-      if (await result.isVisible()) await result.click()
+    const phase=await page.locator('.live-hand h2').first().innerText()
+    if (['You folded','Hand settled','Preflop complete'].includes(phase)) {
+      const view=page.getByRole('button',{name:'View hand result',exact:true})
+      if(await view.isVisible()) await view.click()
+      const outcome=page.getByRole('dialog',{name:'Showdown result',exact:true})
+      if(await outcome.isVisible()) await outcome.getByRole('button',{name:'Back to table',exact:true}).click()
       completed++
-      if (completed < 5) await page.getByRole('button', { name: 'Deal next live hand', exact: true }).click()
+      if(completed<5) await page.getByRole('button',{name:'Deal next live hand',exact:true}).click()
       continue
     }
-    const moves = page.getByRole('group', { name: 'Your live move', exact: true })
+    const acknowledgment=page.getByRole('button',{name:'Continue hand',exact:true})
+    if(await acknowledgment.isVisible()) await acknowledgment.click()
+    const moves = page.getByRole('group', { name: 'Your move', exact: true })
     if (await moves.isVisible()) {
       const ownHand = await page.getByRole('img', { name: /^Your hand:/ }).getAttribute('aria-label')
       let chosen
@@ -36,6 +37,7 @@ for (const device of ['desktop', 'phone']) test(`${device}: play five complete r
       else if (await moves.getByRole('button', { name: 'Check', exact: true }).isVisible()) { chosen = 'check'; await moves.getByRole('button', { name: 'Check', exact: true }).click() }
       else { chosen = 'call'; await moves.getByRole('button', { name: /^Call / }).click() }
       heroDecisions++
+      await openFeedback(page)
       const panel = page.getByRole('region', { name: 'Decision feedback' })
       await expect(panel).toBeVisible()
       const pack = await page.evaluate(k => JSON.parse(localStorage.getItem(k)), key)

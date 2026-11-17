@@ -4,7 +4,7 @@ import { InterfaceIcon } from '@/components/InterfaceIcon'
 import { AppLogo } from '@/components/AppLogo'
 import {
   decodeLiveSession,
-  replayLiveDeal,
+  practiceLiveDeal,
   LIVE_SAVE_KEY,
 } from '@/simulator/liveSession'
 import { allLiveDeals, modeOf } from '@/simulator/liveModes'
@@ -69,8 +69,9 @@ export function HomePage() {
                 players: savedLive.current.config.stacks.length,
                 mode: modeOf(savedLive.current),
                 completed:
-                  replayLiveDeal(savedLive.current).street === 'complete' ||
-                  !!replayLiveDeal(savedLive.current).preflopComplete,
+                  practiceLiveDeal(savedLive.current).heroFolded ||
+                  practiceLiveDeal(savedLive.current).street === 'complete' ||
+                  !!practiceLiveDeal(savedLive.current).preflopComplete,
                 decisions: allLiveDeals(savedLive).reduce(
                   (n, d) => n + (d.feedback?.length ?? 0),
                   0,

@@ -201,7 +201,7 @@ test('Home includes fundamentals answers and preserves activity offline across c
   await expect(page.getByRole('gridcell')).toHaveCount(169)
   await page.getByRole('link', { name: 'Home', exact: true }).click()
   await page.getByRole('link', { name: 'Start training', exact: true }).click()
-  await expect(page.getByRole('group', { name: 'Your live move', exact: true })).toBeVisible()
+  await expect(page.getByRole('group', { name: 'Your move', exact: true })).toBeVisible()
   await home(page)
   await openReviews(page)
   await page.getByRole('button', { name: 'Back to simulator', exact: true }).click()
@@ -229,7 +229,7 @@ test('Home settings persist while Resume keeps the existing configuration and sc
   await page
     .getByRole('link', { name: 'Back to simulator', exact: true })
     .click()
-  await expect(page.getByRole('group', { name: 'Your live move', exact: true })).toBeVisible()
+  await expect(page.getByRole('group', { name: 'Your move', exact: true })).toBeVisible()
   expect((await snapshot(page)).meta.cursor.handId).toBe(before.meta.cursor.handId)
   await openArchivedSettings(page)
   const settings = page.getByRole('dialog', { name: 'Archived exercise settings', exact: true })

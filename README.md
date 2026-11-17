@@ -6,6 +6,12 @@ Live poker uses shuffled hands: shuffled hands and legal player choices determin
 
 The user approved publishing the verified live integration to the connected `work` branch. See [the release audit](docs/implementation/LIVE_RELEASE.md) for current behavior, checks, preserved visuals and deployment/device limits. [The earlier integration audit](docs/implementation/LIVE_INTEGRATION.md) records the separate test candidate. Earlier sections below describe archived reference exercises unless explicitly marked live.
 
+## Restored learning experience
+
+The live engine sits inside the approved simulator layout. Supported answers use compact green feedback; errors automatically open the familiar Explanation/Chart overlay with fixed Retry/Continue controls. Ungraded spots do not interrupt with a large popup. Folding ends your practice hand immediately. Retry restores the decision while retaining the original mistake; it never silently substitutes an action. Custom bet sizing remains available in a small separate panel.
+
+See [restoration scope and verification](docs/implementation/LEARNING_RESTORATION.md). This release preserves the shared table/card artwork, navy materials and chart data rather than replacing them.
+
 ## Live modes
 
 Use the existing navy oval switch in Play: **Full hands** continues through the hand; **Preflop** stops after preflop betting. Both use shuffled cards, actual choices and the same range feedback. Each mode keeps its own hand and setup. Home Settings and Practice tools → Live table settings also expose the modes.

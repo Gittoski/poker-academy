@@ -6,10 +6,18 @@ export function LiveSheet({
   title,
   onClose,
   children,
+  footer,
+  navigation,
+  closeLabel = 'Back to hand',
+  className = '',
 }: {
   title: string
   onClose: () => void
   children: ReactNode
+  footer?: ReactNode
+  navigation?: ReactNode
+  closeLabel?: string
+  className?: string
 }) {
   const dialog = useRef<HTMLDialogElement>(null)
   useEffect(() => {
@@ -28,7 +36,7 @@ export function LiveSheet({
   return (
     <dialog
       ref={dialog}
-      className="sim-sheet live-sheet"
+      className={`sim-sheet live-sheet ${className}`}
       aria-label={title}
       onCancel={(event) => {
         event.preventDefault()
@@ -38,10 +46,12 @@ export function LiveSheet({
       <header>
         <strong>{title}</strong>
         <button className="btn" onClick={onClose}>
-          Back to hand
+          {closeLabel}
         </button>
       </header>
+      {navigation}
       <div className="sim-sheet__scroll">{children}</div>
+      {footer && <footer className="sim-sheet__actions">{footer}</footer>}
     </dialog>
   )
 }
