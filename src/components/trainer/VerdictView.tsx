@@ -92,7 +92,7 @@ export function VerdictView({
   let text: string
   if (result === 'correct') text = `${expected} is the ${source}'s move.`
   else {
-    text = `The ${source} ${mostly ? 'mostly ' : ''}plays ${expected.toLowerCase()}${mostly ? ` (${prompt.probs[prompt.expected]}%)` : ''}`
+    text = `The ${source} ${mostly ? 'mostly ' : ''}plays ${expected.toLowerCase()}${mostly ? ` (${formatFrequency(prompt.probs[prompt.expected] / 100)})` : ''}`
     text += continues ? ', so the hand continues that way.' : '.'
   }
   if (learning) {
@@ -126,7 +126,7 @@ export function VerdictView({
               ? formatFrequency(
                   verdict.reference.values[i] / verdict.reference.scale,
                 )
-              : `${prompt.probs[i]}%`}
+              : formatFrequency(prompt.probs[i] / 100)}
           </small>
         </button>
       ))}
@@ -266,7 +266,7 @@ export function VerdictView({
                   ? formatFrequency(
                       verdict.reference.values[i] / verdict.reference.scale,
                     )
-                  : `${prompt.probs[i]}%`}
+                  : formatFrequency(prompt.probs[i] / 100)}
               </small>
             </button>
           )

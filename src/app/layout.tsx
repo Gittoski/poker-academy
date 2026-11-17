@@ -5,6 +5,7 @@ import './interface.css'
 import './navy-table.css'
 import './home.css'
 import './mode-switch.css'
+import './live.css'
 
 export const metadata: Metadata = {
   title: 'Poker Trainer by Greg',

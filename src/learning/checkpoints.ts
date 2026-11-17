@@ -132,7 +132,7 @@ export function unpackHand(p: PackedHand, source: SourceRecord): HandState {
     (p.aggressor && !order.includes(p.aggressor)) ||
     (p.responder && !order.includes(p.responder)) ||
     (p.ended &&
-      (!['walk', 'uncontested', 'flop', 'all-in', 'hero-folded'].includes(
+      (!['walk', 'uncontested', 'flop', 'all-in', 'hero-folded', 'unsupported'].includes(
         p.ended.kind,
       ) ||
         typeof p.ended.message !== 'string' ||

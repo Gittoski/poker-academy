@@ -53,10 +53,10 @@ const prompt: SavedPrompt = {
   reference: preflopReference(decision),
 }
 
-describe('learning classification independent of the legacy drill', () => {
-  it('retains tiny positive support even when the legacy display rounds to zero', () => {
-    expect(prompt.probs[0]).toBe(0)
-    expect(gradeIndex(prompt.probs, 0)).toBe('wrong')
+describe('learning classification and drill reference precision', () => {
+  it('retains tiny positive support in both the drill and learning feedback', () => {
+    expect(prompt.probs[0]).toBe(0.4)
+    expect(gradeIndex(prompt.probs, 0)).toBe('partial')
     expect(classify(preflopReference(decision), 0)).toEqual({
       version: 1,
       kind: 'alternative',
@@ -210,7 +210,7 @@ it('captures immutable attempts with chosen and scripted actions distinct, witho
     rng: 42,
   }
   const record = buildDecision(h, before, prompt, 0, 101, 'skill:open', true)
-  expect(record.legacyGrade).toBe('wrong')
+  expect(record.legacyGrade).toBe('partial')
   expect(record.learning.kind).toBe('alternative')
   expect(record.problemId).toBeNull()
   expect(record.executed).toBe(0)

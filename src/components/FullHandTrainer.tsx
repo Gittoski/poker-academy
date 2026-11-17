@@ -37,6 +37,7 @@ import {
   heroSeat,
   seatToAct,
   startHand,
+  stopWithoutReference,
   type Decision,
   type HandState,
 } from '@/lib/handSim'
@@ -315,8 +316,10 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
     }
     const seat = seatToAct(hand)
     if (!seat) return
-    if (seat.position === hand.hero && decisionFor(hand, setup, entries)) {
-      setPhase('hero')
+    if (seat.position === hand.hero) {
+      if (!decisionFor(hand, setup, entries)) {
+        setLive((prev) => prev ? { ...prev, hand: stopWithoutReference(prev.hand) } : prev)
+      } else setPhase('hero')
       return
     }
     const timer = setTimeout(() => {
@@ -531,7 +534,7 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
             ).subtitle
           : ''
   } else if (handOverMessage && resultShown) {
-    title = 'Hand complete'
+    title = live?.hand.ended?.kind === 'unsupported' ? 'Reference unavailable' : 'Hand complete'
     subtitle =
       live?.play?.done && live.script.result.kind === 'showdown'
         ? 'Showdown complete'
@@ -574,6 +577,7 @@ export function FullHandTrainer({ entries, setup, index }: Props) {
               showdown={
                 resultShown &&
                 handOver &&
+                live.play?.done &&
                 !foldedPreflop &&
                 live.script.result.kind === 'showdown' && (
                   <div className="showdown">

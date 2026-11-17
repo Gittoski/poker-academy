@@ -2,7 +2,9 @@
 
 A fresh start based on [jensbaagaard/poker-practice](https://github.com/jensbaagaard/poker-practice), pinned to `449993f78d995c77b72d0bcac418a8507dd6f783`. The previous Expo academy and custom simulator have been removed from this branch. Their last version is preserved on `backup/academy-before-poker-practice`.
 
-The imported Next.js app provides a range viewer, preflop training and scripted full-hand training. Its poker engine, grading functions, chart data and supplied hand scripts are unchanged; reviewed controller seams now add local learning history and recovery. The approved black/graphite interface now uses navy accents, plain white cards and subtle CSS motion. Full-hand training follows pre-generated lines and corrects choices along those lines; it is not an unrestricted poker engine.
+This test candidate adds live poker: shuffled hands and legal player choices determine the continuation, streets and chip payouts. Home and shared **Play** navigation open `/live`. The familiar range grid and navy/graphite table, card artwork and oval preflop switch are preserved. `/play` remains available as **Reference exercises** (preflop and scripted full hands), with its existing saves, reviews and adaptive practice.
+
+The attached patch was compared with latest `dfa701d` and integrated on local branch `test/live-play-integration`; nothing has been merged, pushed or deployed. See [integration notes and the testing guide](docs/implementation/LIVE_INTEGRATION.md). Earlier sections below describe the retained reference exercises unless explicitly marked live.
 
 ## Run
 
@@ -43,7 +45,7 @@ Play normally: answers save automatically before Continue. From **Home → All r
 
 Supported mixed alternatives stay separate from zero-support reference errors. History stays in this browser origin (address and port) on this device; use export/import for transfer. Storage failures are shown explicitly. Actual iPhone/Safari verification remains outstanding.
 
-## Hand results and phone-only use
+## Reference exercise results and phone-only use
 
 Full hands now finish with a distinct **Hand complete** screen. After your final decision, choose **View hand result**, inspect the stored showdown runout or actual fold outcome, then **Next hand**. Results survive reload. The screen names both your selection and the scripted action when they differ; a supported Call is not the same as playing a new calling branch in this scripted trainer. Preflop mode explicitly stops before postflop. See [the completion audit](docs/implementation/HAND_COMPLETION.md).
 
@@ -55,7 +57,7 @@ Learn teaches pot odds → outs and draw probabilities → hand/range equity →
 
 Supported simulator mistakes now offer **Practice this skill**, with fresh examples and return to the same saved hand. Related links do not diagnose every chart deviation as a math error. Feedback identifies exact calculations, supplied strategy references and opponent assumptions; it does not invent solver EV losses. See the [usage guide](docs/FUNDAMENTALS_GUIDE.md), [provenance and verification audit](docs/implementation/FUNDAMENTALS_VERIFICATION.md) and [remaining fundamentals roadmap](docs/FUNDAMENTALS_ROADMAP.md).
 
-## Mobile simulator focus
+## Reference exercise mobile focus
 
 On phones, Play now dedicates the screen to the simulator. **Settings & review** opens the existing setup, session and review controls. Errors automatically open the explanation overlay; its Chart tab contains the existing range/strategy grids. Scroll within the overlay while Retry and Continue remain at the bottom. Correct/supported answers keep compact feedback. Closing feedback does not advance the hand. Exact retries preserve your live hand as separate manual practice. The hand-result panel also keeps Next hand reachable.
 

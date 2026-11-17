@@ -2,6 +2,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { InterfaceIcon } from '@/components/InterfaceIcon'
 import { AppLogo } from '@/components/AppLogo'
+import {
+  decodeLiveSession,
+  replayLiveDeal,
+  LIVE_SAVE_KEY,
+} from '@/simulator/liveSession'
 import { loadTheme } from '@/lib/theme'
 import { LearningRepository } from '@/learning/repository'
 import { PracticeRepository } from '@/fundamentals/progress'
@@ -29,6 +34,13 @@ export function HomePage() {
     [available, setAvailable] = useState(false),
     [due, setDue] = useState(0),
     [total, setTotal] = useState(0)
+  const [live, setLive] = useState<{
+    players: number
+    completed: boolean
+  } | null>(null)
+  const [liveStatus, setLiveStatus] = useState(
+    'Live hands save separately on this device',
+  )
   const trigger = useRef<HTMLButtonElement>(null)
   useEffect(() => {
     setNow(new Date())
@@ -43,10 +55,35 @@ export function HomePage() {
     let stopped = false,
       refreshing = false,
       ready = false
+    function readLive() {
+      try {
+        const raw = localStorage.getItem(LIVE_SAVE_KEY)
+        const savedLive = raw ? decodeLiveSession(raw) : null
+        setLive(
+          savedLive
+            ? {
+                players: savedLive.current.config.stacks.length,
+                completed:
+                  savedLive.current.actions.length > 0 &&
+                  replayLiveDeal(savedLive.current).street === 'complete',
+              }
+            : null,
+        )
+        setLiveStatus(
+          savedLive
+            ? 'Live hand saved on this device'
+            : 'Live hands save separately on this device',
+        )
+      } catch {
+        setLiveStatus('Live save unavailable. Open play for recovery details.')
+      }
+    }
+    readLive()
     async function refresh() {
       if (refreshing || stopped || !ready) return
       refreshing = true
       setNow(new Date())
+      readLive()
       try {
         const [meta, skillsActivity, problems] = await Promise.all([
           learning.meta(),
@@ -128,7 +165,8 @@ export function HomePage() {
     }
   }, [])
   const play = saved ?? preferences,
-    href = playHref(play),
+    href = '/live',
+    referenceHref = playHref(play),
     review = playHref(play, true)
   return (
     <main className="home-page">
@@ -169,33 +207,32 @@ export function HomePage() {
         aria-labelledby="continue-title"
       >
         <p className="home-eyebrow">
-          {hasHand ? 'CONTINUE TRAINING' : 'YOUR NEXT HAND'}
+          {live ? 'CONTINUE LIVE PLAY' : 'YOUR NEXT HAND'}
         </p>
         <h2 id="continue-title">
-          {hasHand
-            ? completed
+          {live
+            ? live.completed
               ? 'Ready for your next hand?'
               : 'Pick up where you left off'
             : 'Better decisions start here'}
         </h2>
         <p className="home-game">
-          {play.mode === 'full-hands'
-            ? '6-max cash · Full hands'
-            : `${play.setup.players}-max ${play.setup.format === 'cash' ? 'cash' : 'MTT'} · Preflop`}
+          {live?.players ?? 6}-max cash · Live play · Virtual chips
         </p>
         <a className="home-primary" href={href}>
           <InterfaceIcon name="play" />
-          {hasHand
-            ? completed
+          {live
+            ? live.completed
               ? 'Continue training'
               : 'Resume hand'
             : 'Start training'}
         </a>
+        <p className="home-help">{liveStatus}</p>
         <p
           className={`home-save${available ? '' : ' home-save--pending'}`}
           role="status"
         >
-          {status}
+          Reference exercises & lessons: {status}
         </p>
       </section>
       {now ? (
@@ -221,7 +258,7 @@ export function HomePage() {
             <InterfaceIcon name="review" />
           </span>
           <span>
-            <strong>Revisit saved mistakes</strong>
+            <strong>Reference exercise mistakes</strong>
             <small>
               {available
                 ? due
@@ -233,6 +270,16 @@ export function HomePage() {
             </small>
           </span>
           <InterfaceIcon name="arrow" />
+        </a>
+        <p className="home-help">
+          Live decisions and retries are in Play → Practice tools. The activity
+          calendar counts reference exercises and lessons.
+        </p>
+        <a className="home-text-link" href={referenceHref}>
+          {hasHand && !completed
+            ? 'Resume reference hand'
+            : 'Reference exercises'}{' '}
+          · Full hands / Preflop
         </a>
         <a className="home-text-link home-all-reviews" href={review}>
           All reviews <InterfaceIcon name="arrow" />

@@ -15,7 +15,8 @@
     "build:hands": "node scripts/generate-hands.mjs",
     "solve:flops": "node scripts/solve-postflop.mjs",
     "test:browser": "playwright test",
-    "test:integrity": "node scripts/verification/check-simulator.cjs"
+    "test:integrity": "node scripts/verification/check-simulator.cjs",
+    "test:engine": "vitest run src/lib/engineIntegrity.test.ts src/simulator/engineData.test.ts src/simulator/liveEngine.test.ts src/simulator/liveSession.test.ts src/lib/cards.test.ts src/lib/fullHands.test.ts src/lib/handSim.test.ts src/lib/trainer.test.ts"
   },
   "dependencies": {
     "next": "^15.5.0",

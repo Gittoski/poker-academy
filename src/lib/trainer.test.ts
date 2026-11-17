@@ -12,7 +12,8 @@ describe('grading', () => {
   it('grades the best option as correct, a played option as partial, and an unplayed one as wrong', () => {
     const mixed = [0, 50, 50]
     expect(gradeIndex(mixed, 1)).toBe('correct')
-    expect(gradeIndex(mixed, 2)).toBe('partial')
+    expect(gradeIndex(mixed, 2)).toBe('correct')
+    expect(gradeIndex([70, 30, 0], 1)).toBe('partial')
     expect(gradeIndex(mixed, 0)).toBe('wrong')
   })
 })

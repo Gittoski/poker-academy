@@ -3,7 +3,7 @@ import type { Score } from '@/lib/trainer'
 export function ScoreBar({ score, unit }: { score: Score; unit: string }) {
   const items: [string | number, string][] = [
     [score.answered, unit],
-    [score.answered ? `${Math.round((score.correct / score.answered) * 100)}%` : '–', 'correct'],
+    [score.answered ? `${Math.round((score.correct / score.answered) * 100)}%` : '–', 'reference match'],
     [score.streak, 'streak'],
     [score.bestStreak, 'best'],
   ]

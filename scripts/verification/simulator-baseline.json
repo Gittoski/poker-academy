@@ -2,8 +2,8 @@
   "revision": "c4732f2",
   "paths": {
     "src/lib": {
-      "files": 23,
-      "sha256": "126d1ad72b8af7cdd8c661d6d8f2c6f4371b5451fed2ddcfdc18261b1dd2563c"
+      "files": 24,
+      "sha256": "06d4d2c4af603fe0eb0b51cda94f60717db1c2ae4062330e00877af9ff80ac10"
     },
     "src/data": {
       "files": 1,
@@ -19,11 +19,11 @@
     },
     "src/components/FullHandTrainer.tsx": {
       "files": 1,
-      "sha256": "1b1b2e476eae819da0a70379716df2adff920319ed70d2ce3140213ea50d007c"
+      "sha256": "922ac07bf0d91cddee11f40a0caefbbc004b59688b1d26aab5e546f61fe2c667"
     },
     "src/components/HandTrainer.tsx": {
       "files": 1,
-      "sha256": "e51fe0db5432dd51df07881a9d4494a167f93aff2543e8f688748081048cd745"
+      "sha256": "cad9f621e39b9702f6570122af53153e5924a0839b815e1944c0677ac6b5432e"
     },
     "src/components/PlayPage.tsx": {
       "files": 1,
@@ -55,7 +55,7 @@
     },
     "src/components/trainer/VerdictView.tsx": {
       "files": 1,
-      "sha256": "c0dbcd021f4e535fd7a91dfb9741a54fbd0306e18a89aee259c466170508bc5a"
+      "sha256": "a4bc7032b78d293ea730085f7bc1b37823d13a3385a5751a16d5937f3ffb2c46"
     },
     "src/components/trainer/useAnswerKeys.ts": {
       "files": 1,
@@ -145,5 +145,11 @@
     ],
     "scope": "Expose the two existing modes through a header switch and normalize/persist their existing setup. The journal parks/restores mode-specific checkpoints. No engine, grading, chart/palette or supplied-data changes.",
     "audit": "docs/implementation/MODE_SWITCH.md"
+  },
+  "engineCorrectnessIntegration": {
+    "scope": "Board reservation, explicit chart coverage stops, saved-state support, tied and source-precise scoring; no solver data changes.",
+    "evidence": "docs/implementation/ENGINE_CORRECTNESS_LOCAL.md",
+    "baseCommit": "460fc170ca3e424bbcf9e11935e41fe064988742",
+    "previousLibraryHash": "126d1ad72b8af7cdd8c661d6d8f2c6f4371b5451fed2ddcfdc18261b1dd2563c"
   }
 }

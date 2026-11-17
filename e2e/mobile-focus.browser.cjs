@@ -217,7 +217,7 @@ test('Home settings switch modes and keep preflop controls reachable', async ({
   await settings.getByRole('radio', { name: 'Preflop', exact: true }).click()
   await settings.getByRole('button', { name: 'Game setup' }).click()
   await settings.getByRole('radio', { name: 'LJ', exact: true }).click()
-  await settings.getByRole('link', { name: /Play with these settings/ }).click()
+  await settings.getByRole('link', { name: /Practice with these settings/ }).click()
   const move = page.getByRole('group', { name: 'Your move', exact: true })
   await expect(move).toBeVisible({ timeout: 20000 })
   await fits(page, move)

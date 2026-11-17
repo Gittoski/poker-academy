@@ -135,7 +135,14 @@ export function HomeSettings({
           </p>
         )}
         <section className="card">
-          <h3>Training</h3>
+          <h3>Reference exercises</h3>
+          <p className="home-help">
+            These controls apply to the original chart exercises. Live play has
+            its own table settings and recent decisions in Practice tools.
+          </p>
+          <a className="home-text-link" href="/live">
+            Open live simulator
+          </a>
           <Segmented
             ariaLabel="Game mode"
             options={GAME_MODES.map((mode) => ({
@@ -162,10 +169,10 @@ export function HomeSettings({
           }}
         />
         <a href={playHref({ ...preferences, setup })} className="home-primary">
-          Play with these settings <InterfaceIcon name="arrow" />
+          Practice with these settings <InterfaceIcon name="arrow" />
         </a>
         <section className="card">
-          <h3>Recurring mistakes</h3>
+          <h3>Recurring reference mistakes</h3>
           {scheduler ? (
             <>
               <label className="learning-toggle">

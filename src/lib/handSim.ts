@@ -21,7 +21,7 @@ export interface Seat {
 }
 
 export interface HandEnd {
-  kind: 'walk' | 'uncontested' | 'flop' | 'all-in' | 'hero-folded'
+  kind: 'walk' | 'uncontested' | 'flop' | 'all-in' | 'hero-folded' | 'unsupported'
   message: string
 }
 
@@ -41,7 +41,7 @@ export interface HandState {
   ended: HandEnd | null
 }
 
-/** What a player faces when it is their turn. Null when no chart covers the spot, which means folding. */
+/** What a player faces when it is their turn. Null when no chart covers the spot; callers must not infer a poker action from that absence. */
 export interface Decision {
   scenario: Scenario
   position: Position
@@ -102,7 +102,13 @@ function advance(state: HandState, setup: TrainerSetup): HandState {
     if (seat.position === state.aggressor) return finishRound(state, setup)
     if (state.acted.includes(seat.position)) continue
     if (state.raises === 0 && seat.position === 'BB') {
-      return end(state, { kind: 'walk', message: 'Everyone folded. BB takes the blinds.' })
+      if (activeSeats(state).length === 1) {
+        return end(state, { kind: 'walk', message: 'Everyone folded. BB takes the blinds.' })
+      }
+      return end(state, {
+        kind: 'unsupported',
+        message: 'Training stops here: the pot was limped and these charts do not cover the BB response. No winner is assigned.',
+      })
     }
     return { ...state, toAct: idx }
   }
@@ -123,6 +129,8 @@ function weightsFor(entry: RangeEntry): Map<string, ActionWeights> {
 export function decisionFor(state: HandState, setup: TrainerSetup, entries: RangeEntry[]): Decision | null {
   if (state.toAct === null) return null
   const seat = state.seats[state.toAct]
+  // Supplied two-position charts do not define responses to prior limps or callers.
+  if (state.raises <= 1 && state.acted.length > 0) return null
   let scenario: Scenario
   if (state.raises === 0) scenario = 'open'
   else if (state.raises === 1) scenario = 'vs-raise'
@@ -139,6 +147,23 @@ export function decisionFor(state: HandState, setup: TrainerSetup, entries: Rang
   actions.push('fold')
   const weights = weightsFor(resolved.entry).get(seat.hand.label) ?? { raise: 0, call: 0, fold: 1 }
   return { scenario, position: seat.position, villain, entry: resolved.entry, actions, weights }
+}
+
+/** Stop a reference-only exercise without changing cards, contributions, or player actions.
+ * Live simulation must instead request an ungraded legal action from its own rules engine.
+ */
+export function stopWithoutReference(state: HandState): HandState {
+  if (state.toAct === null || state.ended) return state
+  const seat = state.seats[state.toAct]
+  const context = state.raises >= 2 && seat.position !== state.responder
+    ? 'This cold re-raise response is outside the supplied charts.'
+    : state.acted.length > 0 && state.raises <= 1
+      ? 'Responses to prior limps or callers are outside the supplied charts.'
+      : 'The supplied charts do not cover this decision.'
+  return end(state, {
+    kind: 'unsupported',
+    message: `Reference exercise paused at ${POSITION_LABELS[seat.position]}. ${context} No action was taken and no winner is assigned.`,
+  })
 }
 
 /** Draw an action from the chart's frequencies. */

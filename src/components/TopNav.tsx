@@ -5,13 +5,13 @@ export type NavPage = 'viewer' | 'play' | 'learn'
 
 interface Props {
   active: NavPage
-  /** Carried between pages so the game uses the same charts as the viewer. */
+  /** Preserved for range/lesson navigation; live play has its own setup. */
   setupParams: URLSearchParams
 }
 
 const PAGES: { id: NavPage; label: string; href: string }[] = [
   { id: 'viewer', label: 'Ranges', href: '/ranges' },
-  { id: 'play', label: 'Play', href: '/play' },
+  { id: 'play', label: 'Play', href: '/live' },
   { id: 'learn', label: 'Learn', href: '/learn' },
 ]
 
@@ -29,7 +29,9 @@ export function TopNav({ active, setupParams }: Props) {
         {PAGES.map((page) => (
           <a
             key={page.id}
-            href={query ? `${page.href}?${query}` : page.href}
+            href={
+              query && page.id !== 'play' ? `${page.href}?${query}` : page.href
+            }
             className={`topbar__link${page.id === active ? ' topbar__link--active' : ''}`}
             aria-current={page.id === active ? 'page' : undefined}
           >

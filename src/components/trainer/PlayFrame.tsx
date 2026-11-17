@@ -136,7 +136,7 @@ export function PlayFrame({
             </svg>
           </a>
           <div className="sim-header__title">
-            <strong>Simulator</strong>
+            <strong>Reference exercises</strong>
             <span role="status" className="sim-save-status" title={status}>
               {changingMode
                 ? 'Switching mode…'

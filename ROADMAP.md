@@ -4,6 +4,18 @@ Goal: progressively improve real-life six-max Hold’em decisions, especially ag
 
 This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PLAN.md) explains lesson progression, feature scope and completion criteria. [Foundation history](docs/FOUNDATION_HISTORY.md) retains the completed import/theme work.
 
+## Current test candidate: integrate live play before approval
+
+- [x] Compare uploaded patch (`460fc17` base) with latest app (`dfa701d`); apply on isolated `test/live-play-integration` branch and preserve newer oval switch/lighter navy.
+- [x] Make Home and shared Play open `/live`; retain original `/play` exercises/reviews, saved hands and range viewer.
+- [x] Scope old Home settings, activity and mistake counts to reference exercises/lessons; keep live settings/history in Practice tools.
+- [x] Integrate shuffled-deck legal actions, streets, all-ins, integer chip ledgers, refunds and side pots; keep chosen actions independent from references.
+- [x] Retain full source range grids, original frequencies/hashes, ungraded unsupported spots, retries, ownership, recovery/export and offline support.
+- [x] Preserve mobile focus with internally scrolling feedback/tools overlays and explicit hand-result acknowledgement; preserve historical tied-action records and exact decimal chip entry.
+- [x] Finish integration verification (196 unit tests, production build, 74 browser checks) and record results in [LIVE_INTEGRATION.md](docs/implementation/LIVE_INTEGRATION.md).
+- [ ] User tests this separate candidate, including actual iPhone Safari/Home Screen behavior.
+- [ ] Only after explicit approval: decide whether to merge and deploy to the main app.
+
 ## Current approved step: discoverable simulator mode switch
 
 - [x] Expose the existing Full hands / Preflop modes with a navy iOS-style header switch and short sliding animation.

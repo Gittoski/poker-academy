@@ -173,7 +173,9 @@ export function dealForScript(script: HandScript, suitMap: SuitMap, setup: Train
   const order = positionsFor(setup.players)
   const hero = heroCards ?? mapHole(script.heroCards, suitMap)
   const villain = mapHole(script.villainCards, suitMap)
-  const used = new Set([...hero, ...villain].map((c) => c.rank + c.suit))
+  // Reserve the entire stored runout, including cards not revealed yet.
+  const board = script.board.map((c) => mapCard(c, suitMap))
+  const used = new Set([...hero, ...villain, ...board].map((c) => c.rank + c.suit))
   const deck = DECK.filter((c) => !used.has(c.rank + c.suit))
   const second = responder(script)
   const openerIdx = order.indexOf(script.opener)

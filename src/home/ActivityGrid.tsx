@@ -31,6 +31,9 @@ export function ActivityGrid({
         <h2 id="activity-title">Your activity</h2>
         <span>Last 12 weeks</span>
       </div>
+      <p className="home-help">
+        Reference exercises & lessons · Live history is in Practice tools.
+      </p>
       <div
         className="activity-calendar"
         aria-label="Answered training decisions and practice questions"

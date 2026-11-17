@@ -243,7 +243,7 @@ export function validateRecords(d: LearningBackup) {
     const calculated = classify(a.prompt.reference, a.chosen)
     if (
       canonicalJson(calculated) !== canonicalJson(a.learning) ||
-      gradeIndex(a.prompt.probs, a.chosen) !== a.legacyGrade
+      !compatibleLegacyGrade(a.prompt.probs, a.chosen, a.legacyGrade)
     )
       throw Error('Inconsistent version-one classification')
   }
@@ -303,4 +303,17 @@ export function validateRecords(d: LearningBackup) {
         throw Error('Invalid saved mode hand')
     }
   }
+}
+
+/** Version-one history used first-maximum grading. Keep its stored display grade
+ * on restore; new attempts grade all tied maxima equally. Reference-based
+ * learning classification is still validated exactly above. */
+function compatibleLegacyGrade(probs: number[], chosen: number, grade: string) {
+  const historical =
+    chosen === probs.indexOf(Math.max(...probs))
+      ? 'correct'
+      : probs[chosen] > 0
+        ? 'partial'
+        : 'wrong'
+  return grade === gradeIndex(probs, chosen) || grade === historical
 }

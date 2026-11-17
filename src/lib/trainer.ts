@@ -23,7 +23,8 @@ export function bestIndex(probs: number[]): number {
  * plays it some of the time (mixed strategies), wrong otherwise.
  */
 export function gradeIndex(probs: number[], guess: number): Grade {
-  if (guess === bestIndex(probs)) return 'correct'
+  if (!Number.isInteger(guess) || guess < 0 || guess >= probs.length) return 'wrong'
+  if (probs[guess] > 0 && probs[guess] === Math.max(...probs)) return 'correct'
   return probs[guess] > 0 ? 'partial' : 'wrong'
 }
 
@@ -73,7 +74,7 @@ const PREFLOP_KEYS: Record<Action, string> = { raise: 'r', call: 'c', fold: 'f' 
 export function preflopPrompt(decision: Decision, setup: GameSetup, expected?: Action): Prompt {
   const raise = heroRaise(decision.scenario, setup, decision.position, decision.villain)
   const label = (a: Action) => (a === 'raise' && raise ? raise.label : a === 'call' && !raise ? 'Call all-in' : a[0].toUpperCase() + a.slice(1))
-  const probs = decision.actions.map((a) => Math.round(decision.weights[a] * 100))
+  const probs = decision.actions.map((a) => decision.weights[a] * 100)
   const scripted = expected ? decision.actions.indexOf(expected) : -1
   return {
     options: decision.actions.map((a) => ({ label: label(a), key: PREFLOP_KEYS[a], kind: a })),

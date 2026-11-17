@@ -217,11 +217,12 @@ export function LearnPage() {
     TOPICS.find(
       (t) => !ready(skills.find((s) => s.id === t) ?? emptySkill(t)),
     ) ?? 'pot-odds'
-  const requestedReturn = params.get('return') ?? '/play'
+  const requestedReturn = params.get('return') ?? '/live'
   const returnTo =
-    /^\/play(?:\?|$)/.test(requestedReturn) && requestedReturn.length < 1000
+    /^\/(?:play|live)(?:\?|$)/.test(requestedReturn) &&
+    requestedReturn.length < 1000
       ? requestedReturn
-      : '/play'
+      : '/live'
   const learnHref = (t: Topic) =>
     `/learn?topic=${t}&return=${encodeURIComponent(returnTo)}${from ? '&from=' + encodeURIComponent(from) : ''}`
   const elapsed = active ? Math.max(0, now - active.startedAt) : 0

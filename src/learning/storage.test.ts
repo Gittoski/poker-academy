@@ -53,14 +53,17 @@ class MemoryStorage implements Storage {
     this.data.set(k, v)
   }
 }
-function fixture(): { source: SourceRecord; event: WriteEvent } {
+function fixture(range: RangeEntry['range'] = { raise: 'AA' }): {
+  source: SourceRecord
+  event: WriteEvent
+} {
   const entries: RangeEntry[] = [
     {
       id: 'open',
       scenario: 'open',
       rangeTypes: ['gto'],
       hero: ['LJ'],
-      range: { raise: 'AA' },
+      range,
     },
   ]
   const source = createSource('ranges', 'test', entries, Date.now())
@@ -1017,5 +1020,24 @@ it('switching during a manual retry parks the preserved live hand rather than th
   expect((await repo.meta()).resume).toBeNull()
   await repo.switchMode('full-hands', 'preflop')
   expect((await repo.meta()).cursor).toEqual(live)
+  repo.close()
+})
+
+it('restores historical tied-action grades without rewriting history or accepting wrong classifications', async () => {
+  const { source, event } = fixture({ raise: '22+:0.5', call: '22+:0.5' })
+  const repo = await repository()
+  await repo.cache(source)
+  expect(event.decision!.prompt.probs.slice(0, 2)).toEqual([50, 50])
+  expect(event.decision!.legacyGrade).toBe('correct')
+  // Older releases counted only the first tied action as correct.
+  event.decision!.legacyGrade = 'partial'
+  event.cursor.verdict!.legacyGrade = 'partial'
+  await repo.submit(event)
+  const backup = await repo.backup()
+  expect(() => validateBackup(backup)).not.toThrow()
+  expect(backup.decisions[0].legacyGrade).toBe('partial')
+  const invalid = structuredClone(backup)
+  invalid.decisions[0].legacyGrade = 'wrong'
+  expect(() => validateBackup(invalid)).toThrow()
   repo.close()
 })

@@ -11,6 +11,7 @@ import {
   sampleAction,
   seatToAct,
   startHand,
+  stopWithoutReference,
   type Decision,
   type HandState,
 } from '@/lib/handSim'
@@ -44,8 +45,8 @@ interface Props {
 
 const NPC_DELAY_MS = 1000
 const AUTO_NEXT_MS = 1200
-const COLD_3BET_NOTE =
-  'The charts only cover the previous raiser facing a re-raise, so a cold 3-bet is an automatic fold.'
+const LEGACY_FOLD_NOTE =
+  'This saved hand used an older automatic-fold policy for a missing chart. New hands stop without assigning an action.'
 
 /** npc: opponents are acting · hero: waiting for the player · verdict: showing feedback on the player's move */
 type Phase = 'npc' | 'hero' | 'verdict'
@@ -144,20 +145,23 @@ export function HandTrainer({ entries, setup }: Props) {
   useEffect(() => {
     if (paused || phase !== 'npc') return
     if (hand.ended) {
-      if (decisionsThisHand > 0 || inspected) return
+      if (decisionsThisHand > 0 || inspected || hand.ended.kind === 'unsupported') return
       const timer = setTimeout(newHand, AUTO_NEXT_MS)
       return () => clearTimeout(timer)
     }
     const seat = seatToAct(hand)
     if (!seat) return
     const current = decisionFor(hand, setup, entries)
-    if (seat.position === hand.hero && current) {
+    if (!current) {
+      setHand(stopWithoutReference(hand))
+      return
+    }
+    if (seat.position === hand.hero) {
       setPhase('hero')
       return
     }
-    if (seat.position === hand.hero) setForcedFold(true)
     const timer = setTimeout(() => {
-      const action = current ? sampleAction(current, journal.random) : 'fold'
+      const action = sampleAction(current, journal.random)
       setHand(act(hand, setup, action, current))
     }, NPC_DELAY_MS)
     return () => clearTimeout(timer)
@@ -260,7 +264,7 @@ export function HandTrainer({ entries, setup }: Props) {
   const labels = useMemo(() => {
     const out: Partial<Record<Position, string>> = {}
     const reveal =
-      hand.ended && !['hero-folded', 'walk'].includes(hand.ended.kind)
+      hand.ended && !['hero-folded', 'walk', 'unsupported'].includes(hand.ended.kind)
     for (const s of hand.seats) {
       if (reveal && !s.folded && s.position !== hand.hero)
         out[s.position] = [s.lastAction, s.hand.label]
@@ -299,7 +303,7 @@ export function HandTrainer({ entries, setup }: Props) {
   const shown = prompt ?? verdict?.prompt ?? null
   const shownDecision = decision ?? verdict?.decision ?? null
   const handOver = hand.ended
-    ? `${hand.ended.message}${forcedFold ? ` ${COLD_3BET_NOTE}` : ''}`
+    ? `${hand.ended.message}${forcedFold ? ` ${LEGACY_FOLD_NOTE}` : ''}`
     : null
   const chartWeights = useMemo(
     () =>
@@ -325,7 +329,9 @@ export function HandTrainer({ entries, setup }: Props) {
             ).subtitle
           : ''
   } else if (handOver) {
-    title = hand.ended?.kind === 'flop' ? 'Preflop round complete' : 'Hand over'
+    title = hand.ended?.kind === 'unsupported'
+      ? 'Reference unavailable'
+      : hand.ended?.kind === 'flop' ? 'Preflop round complete' : 'Hand over'
     subtitle = handOver
   } else {
     title = `You are ${POSITION_LABELS[hand.hero]}`
@@ -393,7 +399,7 @@ export function HandTrainer({ entries, setup }: Props) {
         ) : handOver ? (
           <div className="verdict" aria-live="polite">
             <strong>{handOver}</strong>
-            {decisionsThisHand > 0 || inspected ? (
+            {decisionsThisHand > 0 || inspected || hand.ended?.kind === 'unsupported' ? (
               <button
                 type="button"
                 className="btn btn--primary verdict__next"
@@ -409,7 +415,7 @@ export function HandTrainer({ entries, setup }: Props) {
         ) : (
           <div className="actions actions--waiting" aria-live="polite">
             {acting?.position === hand.hero
-              ? 'No chart for this spot, you fold…'
+              ? 'Checking reference coverage…'
               : acting
                 ? `${POSITION_LABELS[acting.position]} is thinking…`
                 : ''}
@@ -449,7 +455,7 @@ export function HandTrainer({ entries, setup }: Props) {
               weights={inspectedWeights}
               highlight={
                 hand.ended &&
-                !['hero-folded', 'walk'].includes(hand.ended.kind) &&
+                !['hero-folded', 'walk', 'unsupported'].includes(hand.ended.kind) &&
                 !inspectedSeat.folded
                   ? inspectedSeat.hand.label
                   : undefined

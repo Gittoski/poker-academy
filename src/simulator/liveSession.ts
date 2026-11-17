@@ -1,0 +1,99 @@
+import { contentHash } from '@/learning/identity'
+import { parseRangeEntries } from '@/lib/rangeEntries'
+import { resolveActions } from '@/lib/range'
+import { handOf } from '@/lib/cards'
+import { liveReference, type LiveReference } from './liveReference'
+import { actLive, newLiveHand, type LiveAction, type LiveConfig, type LiveState } from './liveEngine'
+
+export type OpponentStyle = 'tight' | 'balanced' | 'loose'
+export interface LiveDeal { seed: number; config: LiveConfig; hero: number; style: OpponentStyle; actions: LiveAction[]; feedback?: { index: number; reference: LiveReference }[] }
+export interface LiveSession { version: 1; current: LiveDeal; archive: LiveDeal[] }
+export const LIVE_SAVE_KEY = 'poker-academy:live:v1'
+export const LIVE_LOCK = 'poker-academy:live-writer:v1'
+export function seededLiveRandom(seed: number): () => number {
+  let value = seed >>> 0
+  return () => { value = (Math.imul(value, 1664525) + 1013904223) >>> 0; return value / 4294967296 }
+}
+export function liveSeed(): number {
+  const seed = new Uint32Array(1)
+  if (globalThis.crypto?.getRandomValues) return globalThis.crypto.getRandomValues(seed)[0]
+  return Math.floor(Math.random() * 4294967296)
+}
+export function playLiveDeal(deal: LiveDeal, count = deal.actions.length): LiveState {
+  let state = newLiveHand(deal.config, seededLiveRandom(deal.seed))
+  for (const action of deal.actions.slice(0, count)) state = actLive(state, action)
+  return state
+}
+export function freshLiveDeal(config: LiveConfig, hero: number, style: OpponentStyle = 'balanced', seed = liveSeed()): LiveDeal {
+  const deal = { seed, config: structuredClone(config), hero, style, actions: [] }
+  validateDeal(deal)
+  return deal
+}
+/** Expected history length guards same-frame duplicate or stale timer submissions. */
+function validateDeal(value: unknown): asserts value is LiveDeal {
+  if (!value || typeof value !== 'object') throw Error('Missing live hand')
+  const d = value as LiveDeal
+  if (!Number.isInteger(d.seed) || d.seed < 0 || d.seed > 4294967295
+    || !d.config || !Array.isArray(d.config.stacks) || ![6, 8, 9].includes(d.config.stacks.length)
+    || d.config.button !== d.config.stacks.length - 3 || d.config.smallBlind !== 50 || d.config.bigBlind !== 100
+    || !Number.isSafeInteger(d.hero) || d.hero < 0 || d.hero >= d.config.stacks.length
+    || !['tight', 'balanced', 'loose'].includes(d.style) || !Array.isArray(d.actions) || d.actions.length > 20000) throw Error('Unsupported live hand format')
+  if (d.feedback !== undefined && !Array.isArray(d.feedback)) throw Error('Invalid saved feedback list')
+  if (new Set((d.feedback ?? []).map(f => f.index)).size !== (d.feedback ?? []).length) throw Error('Duplicate saved feedback')
+  for (const f of d.feedback ?? []) {
+    if (!Number.isInteger(f.index) || f.index < 0 || f.index >= d.actions.length || !f.reference
+      || !['match', 'alternative', 'outside', 'ungraded'].includes(f.reference.status)
+      || typeof f.reference.explanation !== 'string' || typeof f.reference.source !== 'string'
+      || (f.reference.referenceHash !== undefined && !/^[0-9a-f]{64}$/.test(f.reference.referenceHash))
+      || (f.reference.frequencies && Math.abs(Object.values(f.reference.frequencies).reduce((a, b) => a + b, 0) - 1) > 0.000001)
+      || (f.reference.frequency !== undefined && (!Number.isFinite(f.reference.frequency) || f.reference.frequency < 0 || f.reference.frequency > 1))
+      || (f.reference.frequencies && ['raise', 'call', 'fold'].some(k => { const v = f.reference.frequencies![k as 'raise']; return !Number.isFinite(v) || v < 0 || v > 1 }))) throw Error('Invalid saved feedback')
+  }
+  for (const f of d.feedback ?? []) {
+    const chart = f.reference.chart
+    if (!chart) continue // v1 saves without a chart remain compatible.
+    if (chart.version !== 1 || typeof chart.title !== 'string' || chart.title.length > 200
+      || !['raise', 'call', 'fold'].includes(chart.action) || f.reference.status === 'ungraded') throw Error('Invalid saved range grid')
+    const [entry] = parseRangeEntries(JSON.stringify([chart.entry]))
+    if (entry.id !== f.reference.entryId || contentHash(entry) !== f.reference.referenceHash) throw Error('Saved range source hash mismatch')
+    const before = playLiveDeal(d, f.index)
+    if (before.toAct !== d.hero || handOf(before.seats[d.hero].cards).label !== chart.hand) throw Error('Saved range hand mismatch')
+    const action = d.actions[f.index]
+    if (action.kind !== chart.action) throw Error('Saved range action mismatch')
+    const weights = resolveActions(entry.range).get(chart.hand)
+    if (!weights || !f.reference.frequencies || ['raise', 'call', 'fold'].some(k => weights[k as 'raise'] !== f.reference.frequencies![k as 'raise'])) throw Error('Saved range frequencies mismatch')
+    const applicable = liveReference({ ...d, actions: d.actions.slice(0, f.index) }, before, action, [entry])
+    if (!applicable.chart || applicable.referenceHash !== f.reference.referenceHash
+      || applicable.frequency !== f.reference.frequency || applicable.status !== f.reference.status) throw Error('Saved range classification or context mismatch')
+  }
+  for (const a of d.actions) {
+    if (!a || !['fold', 'check', 'call', 'raise'].includes(a.kind)
+      || (a.kind === 'raise' && (!Number.isSafeInteger(a.to) || a.to < 0))) throw Error('Invalid saved action')
+  }
+  playLiveDeal(d) // Rebuild the ledger and deck from validated inputs, never trust a saved native state.
+}
+export function encodeLiveSession(session: LiveSession): string {
+  if ([session.current, ...session.archive].some(d => d.actions.length > 20000)) throw Error('Live action-history save limit reached')
+  const text = JSON.stringify(session)
+  if (text.length > 2_000_000) throw Error('Live save size limit reached')
+  return text
+}
+export function decodeLiveSession(text: string): LiveSession {
+  if (text.length > 2_000_000) throw Error('Live save exceeds the supported size')
+  const s = JSON.parse(text) as LiveSession
+  if (s?.version !== 1 || !Array.isArray(s.archive) || s.archive.length > 20) throw Error('Unsupported live save version')
+  validateDeal(s.current)
+  for (const d of s.archive) validateDeal(d)
+  return s
+}
+
+export function replayLiveDeal(deal: LiveDeal, until = deal.actions.length): LiveState {
+  let state = newLiveHand(deal.config, seededLiveRandom(deal.seed))
+  for (const action of deal.actions.slice(0, until)) state = actLive(state, action)
+  return state
+}
+export function appendLiveAction(deal: LiveDeal, action: LiveAction, expectedIndex: number, reference?: LiveReference): LiveDeal {
+  if (deal.actions.length !== expectedIndex) return deal
+  actLive(replayLiveDeal(deal), action) // Legality also checked for manual and stale input.
+  return { ...deal, actions: [...deal.actions, structuredClone(action)], feedback: [...(deal.feedback ?? []), ...(reference ? [{ index: expectedIndex, reference: structuredClone(reference) }] : [])] }
+}
