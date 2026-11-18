@@ -20,6 +20,8 @@ For a local checkout of the candidate branch, run `npm ci`, `npm run build`, the
 8. Toggle Full hands and back. Both exact hands should be preserved. Full hands still supports unrestricted legal play and its existing settings; its unsupported strategy situations remain ungraded.
 
    Flow update: Full hands automatically continues after ungraded choices without an empty feedback panel. Real grades still pause for their explanation. Reload/settings/manual review can still require a normal resume, and results/Next hand controls remain. Ungraded decisions stay saved and can be inspected deliberately through Recent practice. Preflop feedback remains unchanged.
+
+   Position update: In **Full hands → Practice tools → Live table settings → Your position**, choose **Random each hand**, then **Start with these settings**. Next hand should change your position without repeating the previous one. Reload and retry must keep the current position/cards; switching modes and back must restore that exact hand. Fixed positions remain available. Existing fixed saves are preserved, so enable this setting explicitly. Covered Preflop continues to use **Any position** as before.
 9. Reload during an answer/feedback/retry and confirm the same state returns. The retained-history counts are bounded and are not a lifetime mastery score. Reference-boundary counts and visited setup contexts are separate from grades.
 10. For offline use on the preview origin, install the complete pack through **Home → Settings → Use offline on this device**. Once it reports available, test a cold reload without internet. Missing/corrupt charts must pause covered answers with recovery controls, never silently accept an ungraded decision.
 

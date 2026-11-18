@@ -1,0 +1,22 @@
+
+> open-range-viewer@0.1.0 test:browser
+> playwright test e2e/live-positions.browser.cjs
+
+[WebServer] (node:21217) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:21230) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:21246) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 e2e/live-positions.browser.cjs:45:1 › random positions survive real Next hand, reload and mode parking without changing the saved hand (1.7s)
+  ✓  2 e2e/live-positions.browser.cjs:95:1 › existing fixed saves stay fixed; settings enable random 6/8/9 seats and can restore fixed focus (1.6s)
+
+  2 passed (5.6s)
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.3
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.3
+npm notice To update run: npm install -g npm@12.2.3
+npm notice

@@ -4,6 +4,13 @@ Goal: progressively improve real-life six-max Hold’em decisions, especially ag
 
 This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PLAN.md) explains lesson progression, feature scope and completion criteria. [Foundation history](docs/FOUNDATION_HISTORY.md) retains the completed import/theme work.
 
+## Current follow-up: random simulator positions
+
+- [x] Add Random each hand to Full hands position settings for six/eight/nine players, excluding the previous seat without inspecting cards. Preserve named fixed positions and covered Preflop's existing Any position sampler.
+- [x] Persist the preference separately from the current seat; preserve exact retries/reloads/parked hands and older fixed-position saves. Keep existing engine, charts, theme and feedback behavior.
+- [x] Finish integrity/TypeScript checks, 246 unit tests across 30 files, production build and all 114 browser regression checks; record [position verification](docs/implementation/RANDOM_POSITIONS.md) and prepare the candidate commit.
+- [ ] Actual iPhone/preview review before production integration.
+
 ## Current follow-up: uninterrupted ungraded Full hands play
 
 - [x] Save and automatically acknowledge ungraded Full hands choices without pausing for empty feedback; keep real reference feedback and Preflop behavior.

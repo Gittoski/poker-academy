@@ -6,6 +6,7 @@ import { isGameMode, type GameMode } from '@/lib/gameModes'
 import { modeOf, allLiveDeals, switchLiveMode } from './liveModes'
 import { loadTheme } from '@/lib/theme'
 import { chipsFromBB } from './liveAmounts'
+import { newPositionedDeal, positionChoice } from './livePositions'
 import {
   appendLearnerAction,
   pendingLiveFeedback,
@@ -62,22 +63,21 @@ function fresh(
   hero = 0,
   style: OpponentStyle = 'balanced',
   mode: GameMode = 'full-hands',
+  previousHero?: number,
 ): LiveDeal {
-  const seed =
-    globalThis.crypto?.getRandomValues(new Uint32Array(1))[0] ??
-    Math.floor(Math.random() * 4294967296)
   return {
-    mode,
-    seed,
-    config: config ?? {
-      stacks: Array(6).fill(10000),
-      button: 3,
-      smallBlind: 50,
-      bigBlind: 100,
-    },
-    hero,
-    style,
-    actions: [],
+    ...newPositionedDeal(
+      config ?? {
+        stacks: Array(6).fill(10000),
+        button: 3,
+        smallBlind: 50,
+        bigBlind: 100,
+      },
+      hero < 0 ? 'random' : hero,
+      style,
+      mode,
+      previousHero,
+    ),
     feedback: [],
   }
 }
@@ -241,11 +241,7 @@ export function LiveTrainer() {
       )
       setPlayers(next.current.config.stacks.length as PlayerCount)
       setStacks(next.current.config.stacks.map(bb).join(', '))
-      setHeroSeat(
-        next.current.graded
-          ? (next.current.graded.seat ?? -1)
-          : next.current.hero,
-      )
+      setHeroSeat(positionChoice(next.current))
       setStyle(next.current.style)
       setAnteKind(next.current.config.ante?.kind ?? 'none')
       setAnte(String(bb(next.current.config.ante?.amount ?? 100)))
@@ -568,7 +564,7 @@ export function LiveTrainer() {
       const d = next.current
       setPlayers(d.config.stacks.length as PlayerCount)
       setStacks(d.config.stacks.map(bb).join(', '))
-      setHeroSeat(d.graded ? (d.graded.seat ?? -1) : d.hero)
+      setHeroSeat(positionChoice(d))
       setStyle(d.style)
       setAnteKind(d.config.ante?.kind ?? 'none')
       setAnte(String(bb(d.config.ante?.amount ?? 100)))
@@ -639,7 +635,7 @@ export function LiveTrainer() {
     if (!session || !allowed || switching.current) return
     try {
       let config = current!.config,
-        hero = current!.hero,
+        hero = current!.randomPosition ? -1 : current!.hero,
         nextStyle = current!.style
       if (applySettings) {
         const amounts = stacks.split(',').map(chipsFromBB)
@@ -675,7 +671,7 @@ export function LiveTrainer() {
                 : heroSeat
               : current.graded.seat,
           })
-        : fresh(config, hero, nextStyle, mode)
+        : fresh(config, hero, nextStyle, mode, current!.hero)
       replayLiveDeal(next)
       setSession({
         ...session,
@@ -1329,7 +1325,7 @@ export function LiveTrainer() {
             <p>
               Starts a fresh practice hand. Existing hand moves to recent
               history. Blinds stay 0.5/1 BB; no rake. Each hand resets the
-              configured stacks and fixed training positions.
+              configured stacks; your position follows the choice below.
             </p>
             <Segmented
               ariaLabel="Game mode"
@@ -1346,6 +1342,13 @@ export function LiveTrainer() {
               hands keeps unrestricted live play. Each mode keeps its own saved
               hand.
             </p>
+            {!current.graded && (
+              <p>
+                Choose Random each hand to vary your position on new deals
+                without repeating the previous position. Current hands and
+                retries keep their exact seat.
+              </p>
+            )}
             <div className="live-settings">
               <label>
                 Players
@@ -1356,7 +1359,7 @@ export function LiveTrainer() {
                     const n = Number(e.target.value) as PlayerCount
                     setPlayers(n)
                     setStacks(Array(n).fill('100').join(', '))
-                    setHeroSeat(0)
+                    setHeroSeat((previous) => (previous < 0 ? -1 : 0))
                   }}
                 >
                   {[6, 8, 9].map((n) => (
@@ -1370,7 +1373,9 @@ export function LiveTrainer() {
                   value={heroSeat}
                   onChange={(e) => setHeroSeat(Number(e.target.value))}
                 >
-                  {current.graded && <option value={-1}>Any position</option>}
+                  <option value={-1}>
+                    {current.graded ? 'Any position' : 'Random each hand'}
+                  </option>
                   {positionsFor(players).map((p, i) => (
                     <option key={p} value={i}>
                       {p}

@@ -8,8 +8,8 @@ import { actLive, newLiveHand, type LiveAction, type LiveConfig, type LiveState 
 import { PREFLOP_CONTEXTS, preflopPrefix } from './preflopCatalog'
 
 export type OpponentStyle = 'tight' | 'balanced' | 'loose'
-export interface LiveDeal { graded?: { version: 1; context: string; seat?: number }; attempt?: true; acknowledgedAction?: number; mode?: GameMode; seed: number; config: LiveConfig; hero: number; style: OpponentStyle; actions: LiveAction[]; feedback?: { index: number; reference: LiveReference }[] }
-export interface LiveSession { version: 1 | 2 | 3 | 4; current: LiveDeal; archive: LiveDeal[]; parked?: Partial<Record<GameMode, LiveDeal>> }
+export interface LiveDeal { randomPosition?: true; graded?: { version: 1; context: string; seat?: number }; attempt?: true; acknowledgedAction?: number; mode?: GameMode; seed: number; config: LiveConfig; hero: number; style: OpponentStyle; actions: LiveAction[]; feedback?: { index: number; reference: LiveReference }[] }
+export interface LiveSession { version: 1 | 2 | 3 | 4 | 5; current: LiveDeal; archive: LiveDeal[]; parked?: Partial<Record<GameMode, LiveDeal>> }
 export const LIVE_SAVE_KEY = 'poker-academy:live:v1'
 export const LIVE_LOCK = 'poker-academy:live-writer:v1'
 export function seededLiveRandom(seed: number): () => number {
@@ -35,6 +35,7 @@ export function freshLiveDeal(config: LiveConfig, hero: number, style: OpponentS
 function validateDeal(value: unknown): asserts value is LiveDeal {
   if (!value || typeof value !== 'object') throw Error('Missing live hand')
   const d = value as LiveDeal
+  if(d.randomPosition!==undefined && (d.randomPosition!==true || d.graded!==undefined))throw Error('Invalid random-position preference')
   if ((d.mode !== undefined && !isGameMode(d.mode)) || !Number.isInteger(d.seed) || d.seed < 0 || d.seed > 4294967295
     || !d.config || !Array.isArray(d.config.stacks) || ![6, 8, 9].includes(d.config.stacks.length)
     || d.config.button !== d.config.stacks.length - 3 || d.config.smallBlind !== 50 || d.config.bigBlind !== 100
@@ -98,20 +99,24 @@ function validateDeal(value: unknown): asserts value is LiveDeal {
 }
 export function encodeLiveSession(session: LiveSession): string {
   if ([session.current, ...session.archive, ...Object.values(session.parked ?? {})].some(d => d.actions.length > 20000)) throw Error('Live action-history save limit reached')
-  // Older builds reject v3 instead of resuming opponents after a learning fold.
+  // Older builds must reject unsupported learning checkpoints / position preferences.
   const version = liveSessionVersion(session)
   const text = JSON.stringify({ ...session, version })
   if (text.length > 2_000_000) throw Error('Live save size limit reached')
   return text
 }
-export function liveSessionVersion(session:LiveSession):3|4 {
-  return session.version===4 || [session.current,...session.archive,...Object.values(session.parked??{})].some(d=>d.graded) ? 4 : 3
+export function liveSessionVersion(session:LiveSession):3|4|5 {
+  const deals=[session.current,...session.archive,...Object.values(session.parked??{})]
+  if(session.version===5 || deals.some(d=>d.randomPosition))return 5
+  return session.version===4 || deals.some(d=>d.graded) ? 4 : 3
 }
 export function decodeLiveSession(text: string): LiveSession {
   if (text.length > 2_000_000) throw Error('Live save exceeds the supported size')
   const s = JSON.parse(text) as LiveSession
-  if (![1, 2, 3, 4].includes(s?.version) || !Array.isArray(s.archive) || s.archive.length > 20) throw Error('Unsupported live save version')
-  if(s.version!==4 && [s.current,...s.archive,...Object.values(s.parked??{})].some(d=>d?.graded!==undefined)) throw Error('Graded practice requires save version four')
+  if (![1, 2, 3, 4, 5].includes(s?.version) || !Array.isArray(s.archive) || s.archive.length > 20) throw Error('Unsupported live save version')
+  const deals=[s.current,...s.archive,...Object.values(s.parked??{})]
+  if(s.version<4 && deals.some(d=>d?.graded!==undefined)) throw Error('Graded practice requires save version four')
+  if(s.version<5 && deals.some(d=>d?.randomPosition!==undefined))throw Error('Random positions require save version five')
   validateDeal(s.current)
   if (s.parked !== undefined) {
     if (!s.parked || typeof s.parked !== 'object' || Array.isArray(s.parked) || Object.keys(s.parked).length > 1) throw Error('Invalid parked mode hands')
@@ -122,7 +127,7 @@ export function decodeLiveSession(text: string): LiveSession {
     }
   }
   for (const d of s.archive) validateDeal(d)
-  return { ...s, version: s.version===4 ? 4 : 3 }
+  return { ...s, version: s.version===5 ? 5 : s.version===4 ? 4 : 3 }
 }
 
 export function replayLiveDeal(deal: LiveDeal, until = deal.actions.length): LiveState {
