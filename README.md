@@ -16,6 +16,8 @@ The `test/graded-preflop` candidate upgrades the existing Preflop switch with so
 
 New preflop hands use a [balanced educational mix](docs/implementation/BALANCED_PREFLOP.md): about 60% source-supported continuing hands and 40% fold-only, with common situations favored and recent repetition reduced. Cards are conditioned for study; chart grades, saved hands/retries and unrestricted Full hands are unchanged.
 
+Full hands now [continues automatically after ungraded decisions](docs/implementation/FULL_HANDS_FLOW.md), saving their original status without empty feedback prompts. Real reference feedback, fold stops, actual showdown results and explicit saved-decision review remain available. Preflop behavior is unchanged by this flow update.
+
 See [restoration scope and verification](docs/implementation/LEARNING_RESTORATION.md). This release preserves the shared table/card artwork, navy materials and chart data rather than replacing them.
 
 ## Live modes

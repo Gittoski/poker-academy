@@ -54,7 +54,7 @@ test('no chart for a different size; user-entered sizes are preserved while sour
   let release
   const gate = new Promise(resolve => { release = resolve })
   await page.route('**/ranges/Cash_100_PTO.json', async r => { await gate; await r.fulfill({ json: chart }) })
-  await page.goto('/live')
+  await page.clock.install(); await page.goto('/live')
   await page.getByRole('button',{name:'Bet sizing',exact:true}).click()
   const amount = page.getByLabel('Raise to (BB)', { exact: true })
   await expect(amount).toBeVisible()
@@ -64,12 +64,14 @@ test('no chart for a different size; user-entered sizes are preserved while sour
   await expect(amount).toHaveValue('3')
   await page.getByRole('button',{name:'Apply size',exact:true}).click()
   await page.getByRole('button', { name: 'Raise / bet', exact: true }).click()
+  await expect(page.locator('.live-decision')).toHaveCount(0)
+  expect((await saved(page)).current.actions[0]).toEqual({kind:'raise',to:300})
+  expect((await saved(page)).current.feedback[0].reference.status).toBe('ungraded')
+  await require('./support/live.cjs').reviewLatest(page)
+  await page.getByRole('button',{name:'Fold',exact:true}).click()
   await openFeedback(page)
-  const feedback = page.getByRole('region', { name: 'Decision feedback' })
-  await expect(feedback.getByRole('heading', { name: 'No matching range', exact: true })).toBeVisible()
-  await expect(feedback.getByRole('grid')).toHaveCount(0)
-  expect((await saved(page)).current.actions[0]).toEqual({ kind: 'raise', to: 300 })
-  await page.getByRole('button', { name: 'Continue hand', exact: true }).click()
+  await expect(page.getByRole('region',{name:'Range chart',exact:true}).getByRole('grid')).toHaveCount(0)
+  await page.getByRole('button',{name:'Return to live hand',exact:true}).click()
 })
 
 for (const theme of ['classic', 'cool']) {

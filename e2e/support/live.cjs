@@ -16,4 +16,10 @@ async function closeFeedback(page) {
   if(await dialog.isVisible()) await dialog.getByRole('button',{name:'Close explanation',exact:true}).click()
 }
 async function tools(page) { await closeFeedback(page); await page.getByRole('button',{name:'Practice tools',exact:true}).click() }
-module.exports={readyRaise,setRaise,feedback,closeFeedback,tools}
+async function reviewLatest(page) {
+ await tools(page)
+ const summary=page.locator('summary').filter({hasText:/Review recent decisions/})
+ if(!await summary.evaluate(e=>e.parentElement.open))await summary.click()
+ await page.getByRole('button',{name:'Retry decision',exact:true}).first().click()
+}
+module.exports={readyRaise,setRaise,feedback,closeFeedback,tools,reviewLatest}

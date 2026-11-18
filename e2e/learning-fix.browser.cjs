@@ -39,7 +39,7 @@ test('supported answers stay compact; errors auto-open explanation and retry res
 })
 for(const mode of ['full-hands','preflop'])test(`${mode}: fold ends immediately without any later opponent actions or future cards`,async({page})=>{
  await seed(page,{hero:5,mode,actions:Array(5).fill({kind:'call'})});await page.clock.install();await page.goto('/live');await page.getByRole('button',{name:'Fold',exact:true}).click()
- await expect(page.locator('.live-decision')).toContainText('No matching range');await expect(page.getByRole('dialog')).toHaveCount(0)
+ if(mode==='preflop')await expect(page.locator('.live-decision')).toContainText('No matching range');else await expect(page.locator('.live-decision')).toHaveCount(0);await expect(page.getByRole('dialog')).toHaveCount(0)
  await expect(page.getByRole('heading',{name:'You folded',exact:true})).toBeVisible()
  const before=await saved(page);await page.clock.runFor(20000);expect(await saved(page)).toEqual(before)
  await expect(page.locator('.table-board .playing-card')).toHaveCount(0);await expect(page.locator('.live-showdown')).toHaveCount(0)
@@ -57,7 +57,7 @@ test('approved layout keeps table, cards and three action buttons separated at p
   if(width===390&&height===844)await page.screenshot({path:info.outputPath('restored-phone.png')})
  }
  await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'Bet sizing',exact:true}).click();await page.getByLabel('Raise to (BB)',{exact:true}).fill('1.999');await page.getByRole('button',{name:'Apply size',exact:true}).click();await expect(page.getByRole('dialog',{name:'Bet sizing',exact:true}).getByRole('alert')).toBeVisible();await page.getByRole('dialog',{name:'Bet sizing',exact:true}).getByRole('button',{name:'Back to hand',exact:true}).click();await expect(page.getByRole('button',{name:'Raise / bet',exact:true})).toContainText('2.5');await setRaise(page,'2.51');await page.getByRole('button',{name:'Raise / bet',exact:true}).click();expect((await saved(page)).current.actions[0]).toEqual({kind:'raise',to:251})
- await expect(page.getByRole('dialog')).toHaveCount(0);await expect(page.locator('.live-decision')).toContainText('No matching range')
+ await expect(page.getByRole('dialog')).toHaveCount(0);await expect(page.locator('.live-decision')).toHaveCount(0);expect((await saved(page)).current.feedback.at(-1).reference.status).toBe('ungraded')
 })
 
 test('exports the current learning format with the original folded action intact',async({page})=>{

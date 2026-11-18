@@ -6,6 +6,11 @@ import { isGameMode, type GameMode } from '@/lib/gameModes'
 import { modeOf, allLiveDeals, switchLiveMode } from './liveModes'
 import { loadTheme } from '@/lib/theme'
 import { chipsFromBB } from './liveAmounts'
+import {
+  appendLearnerAction,
+  pendingLiveFeedback,
+  requiresDecisionFeedback,
+} from './liveFeedbackFlow'
 import { LiveSheet } from './LiveSheet'
 import { LiveDecisionFeedback } from './LiveDecisionFeedback'
 import { LiveOutcome, liveOutcomeTitle } from './LiveOutcome'
@@ -340,10 +345,7 @@ export function LiveTrainer() {
       setError(String(e))
     }
   }, [session, entries, owner, preflopAuditError])
-  const pending =
-    !!lastRecord &&
-    lastRecord.index === current!.actions.length - 1 &&
-    (current!.acknowledgedAction ?? -1) < lastRecord.index
+  const pending = pendingLiveFeedback(current)
   const displayed = useMemo(
     () =>
       review
@@ -389,7 +391,9 @@ export function LiveTrainer() {
           throw Error(
             'This decision has no applicable reference. Your action was not recorded; reload the charts.',
           )
-        const next = appendLiveAction(current, action, index, reference)
+        const next = human
+          ? appendLearnerAction(current, action, index, reference!)
+          : appendLiveAction(current, action, index)
         setSession((prev) =>
           !prev ||
           prev.current.seed !== seed ||
@@ -399,7 +403,7 @@ export function LiveTrainer() {
         )
         setError('')
         if (human) {
-          setPaused(true)
+          setPaused(requiresDecisionFeedback(current, reference!))
         }
       } catch (e) {
         setError(e instanceof Error ? e.message : 'The action was rejected.')

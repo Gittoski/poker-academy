@@ -18,6 +18,8 @@ For a local checkout of the candidate branch, run `npm ci`, `npm run build`, the
 6. Fold: no opponents should continue acting afterward. An all-in call in Preflop ends at the betting boundary with no board runout or invented showdown.
 7. Open Practice tools and review a saved decision. A manual retry must leave the current live hand untouched. In Live table settings, **Any position** varies the context; selecting a position focuses applicable situations. Six players, 100 BB, no antes and reference-opponent policy are fixed in covered practice.
 8. Toggle Full hands and back. Both exact hands should be preserved. Full hands still supports unrestricted legal play and its existing settings; its unsupported strategy situations remain ungraded.
+
+   Flow update: Full hands automatically continues after ungraded choices without an empty feedback panel. Real grades still pause for their explanation. Reload/settings/manual review can still require a normal resume, and results/Next hand controls remain. Ungraded decisions stay saved and can be inspected deliberately through Recent practice. Preflop feedback remains unchanged.
 9. Reload during an answer/feedback/retry and confirm the same state returns. The retained-history counts are bounded and are not a lifetime mastery score. Reference-boundary counts and visited setup contexts are separate from grades.
 10. For offline use on the preview origin, install the complete pack through **Home → Settings → Use offline on this device**. Once it reports available, test a cold reload without internet. Missing/corrupt charts must pause covered answers with recovery controls, never silently accept an ungraded decision.
 

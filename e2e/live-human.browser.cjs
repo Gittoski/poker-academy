@@ -37,18 +37,18 @@ for (const device of ['desktop', 'phone']) test(`${device}: play five complete r
       else if (await moves.getByRole('button', { name: 'Check', exact: true }).isVisible()) { chosen = 'check'; await moves.getByRole('button', { name: 'Check', exact: true }).click() }
       else { chosen = 'call'; await moves.getByRole('button', { name: /^Call / }).click() }
       heroDecisions++
-      await openFeedback(page)
       const panel = page.getByRole('region', { name: 'Decision feedback' })
-      await expect(panel).toBeVisible()
       const pack = await page.evaluate(k => JSON.parse(localStorage.getItem(k)), key)
       const reference = pack.current.feedback.at(-1).reference
       if (reference.chart) {
+        await openFeedback(page)
+        await expect(panel).toBeVisible()
         await expect(panel.getByRole('gridcell')).toHaveCount(169)
         await expect(panel.locator('.cell--highlight')).toHaveText(reference.chart.hand)
         await expect(panel.getByRole('heading', { name: reference.frequency > 0 ? 'In range' : 'Outside range', exact: true })).toBeVisible()
       } else {
-        await expect(panel.getByRole('heading', { name: 'No matching range', exact: true })).toBeVisible()
-        await expect(panel.getByRole('grid')).toHaveCount(0)
+        await expect(page.locator('.live-decision')).toHaveCount(0)
+        await expect(page.getByRole('dialog',{name:'Review this decision',exact:true})).toHaveCount(0)
       }
       turns.push({ ownHand, chosen, street: reference.chart?.title ?? 'ungraded', result: reference.status })
       if (!captured && reference.chart) {

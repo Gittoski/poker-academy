@@ -4,6 +4,13 @@ Goal: progressively improve real-life six-max Hold’em decisions, especially ag
 
 This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PLAN.md) explains lesson progression, feature scope and completion criteria. [Foundation history](docs/FOUNDATION_HISTORY.md) retains the completed import/theme work.
 
+## Current follow-up: uninterrupted ungraded Full hands play
+
+- [x] Save and automatically acknowledge ungraded Full hands choices without pausing for empty feedback; keep real reference feedback and Preflop behavior.
+- [x] Ignore older empty live feedback checkpoints while retaining source/history and deliberate saved-decision review.
+- [x] Preserve immediate fold stops, actual showdown results, normal reload/settings pause control, existing poker rules and theme.
+- [x] Finish TypeScript/integrity checks, 239 unit tests, production build and 112 browser checks; record [flow verification](docs/implementation/FULL_HANDS_FLOW.md) and prepare the tested candidate commit. Actual iPhone/preview review remains pending.
+
 ## Current follow-up: balanced preflop practice selection
 
 The user approved replacing fold-heavy sampling with a declared educational study mix on the preflop candidate branch. Preserve charts, grades, existing hands and unrestricted Full hands.

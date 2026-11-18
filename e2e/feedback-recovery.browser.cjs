@@ -61,10 +61,13 @@ test('playing without charts is explicit; saved ungraded decisions never become 
  await page.route('**/ranges/Cash_100_PTO.json',r=>available?r.fulfill({json:charts}):r.fulfill({status:503,body:'Unavailable'}))
  await page.goto('/live');await page.getByRole('button',{name:'Play ungraded',exact:true}).click()
  await page.getByRole('button',{name:'Fold',exact:true}).click()
- await expect(page.locator('.live-decision')).toContainText('Charts unavailable; this choice is not graded.')
+ await expect(page.locator('.live-decision')).toHaveCount(0)
  const original=(await saved(page)).current
+ await require('./support/live.cjs').reviewLatest(page)
+ await page.getByRole('button',{name:'Fold',exact:true}).click()
  await feedback(page,'Explanation')
  await expect(page.getByRole('dialog',{name:'Review this decision',exact:true})).toContainText('cannot label this decision correct or incorrect')
+ await page.getByRole('button',{name:'Return to live hand',exact:true}).click()
  await tools(page);await page.getByText('Save and source details',{exact:true}).click()
  available=true;await page.getByRole('button',{name:'Retry charts',exact:true}).click()
  await expect(page.getByRole('dialog',{name:'Practice tools',exact:true}).getByRole('status')).toContainText('Grading charts: loaded.')
@@ -76,24 +79,26 @@ test('playing without charts is explicit; saved ungraded decisions never become 
  expect((await saved(page)).archive.at(-1).feedback.at(-1).reference.status).toBe('ungraded')
 })
 
-test('random postflop decisions explain the missing reference without a false green or red grade',async({page},info)=>{
+test('random postflop choices continue without false grades; missing reference details stay available in manual review',async({page},info)=>{
  await seed(page,{hero:4,actions:[...Array(5).fill({kind:'call'}),{kind:'check'}]})
- await page.goto('/live');await expect(page.getByRole('group',{name:'Your move',exact:true})).toBeVisible()
+ await page.clock.install();await page.goto('/live');await expect(page.getByRole('group',{name:'Your move',exact:true})).toBeVisible()
  await expect(page.locator('.range-card__title')).toContainText('Postflop ungraded')
  await page.getByRole('button',{name:'Check',exact:true}).click()
- await expect(page.locator('.live-decision')).toContainText('No postflop strategy reference for this spot.')
+ await expect(page.locator('.live-decision')).toHaveCount(0)
  expect((await saved(page)).current.feedback.at(-1).reference.status).toBe('ungraded')
+ await expect(page.getByRole('button',{name:'Continue hand',exact:true})).toHaveCount(0)
  for(const [width,height] of [[320,568],[390,844],[844,390]]) {
   await page.setViewportSize({width,height})
   expect(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+1)).toBe(true)
-  const compact=page.locator('.live-decision')
-  expect(await compact.locator('span').first().evaluate(e=>e.scrollHeight<=e.clientHeight+1)).toBe(true)
-  for(const button of await compact.getByRole('button').all()){
-   const b=await button.boundingBox();expect(b.y+b.height).toBeLessThanOrEqual(height+1)
-  }
  }
- await page.setViewportSize({width:390,height:844});await page.screenshot({path:info.outputPath('postflop-coverage.png')})
+ await page.setViewportSize({width:390,height:844});await page.screenshot({path:info.outputPath('postflop-uninterrupted.png')})
+ await page.clock.runFor(900)
+ await expect.poll(async()=>(await saved(page)).current.actions.length).toBeGreaterThan(7)
+ const actual=(await saved(page)).current
+ await require('./support/live.cjs').reviewLatest(page)
+ await page.getByRole('button',{name:'Check',exact:true}).click()
  await feedback(page,'Explanation')
- await expect(page.getByRole('dialog',{name:'Review this decision',exact:true})).toContainText('No verified live postflop reference')
+ await expect(page.getByRole('dialog',{name:'Review this decision',exact:true})).toContainText('cannot label this decision correct or incorrect')
  await feedback(page,'Chart');await expect(page.getByRole('region',{name:'Range chart',exact:true}).getByRole('grid')).toHaveCount(0)
+ expect((await saved(page)).current).toEqual(actual)
 })
