@@ -1,6 +1,8 @@
 # Random simulator positions
 
-Candidate branch: `test/graded-preflop`. Production integration remains pending user review.
+Release status: the user authorized production promotion of tested candidate `351c20e` on November 18, 2026. See [the production release record](PREFLOP_RELEASE.md). Earlier candidate verification is retained below; actual iPhone checks remain outstanding.
+
+Development branch: `test/graded-preflop`. Production branch: `work`.
 
 ## Behavior
 

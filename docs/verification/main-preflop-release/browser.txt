@@ -1,0 +1,40 @@
+
+> open-range-viewer@0.1.0 test:browser
+> playwright test e2e/graded-preflop.browser.cjs e2e/live-positions.browser.cjs e2e/setup-playback.browser.cjs e2e/full-hands-flow.browser.cjs --workers=2
+
+[WebServer] (node:56431) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:56444) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 18 tests using 2 workers
+
+(node:56460) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56461) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 e2e/full-hands-flow.browser.cjs:11:1 › an ungraded postflop choice continues automatically and remains inspectable through explicit review (1.6s)
+  ✓   2 e2e/graded-preflop.browser.cjs:14:1 › wrong call is graded with a full chart; retry retains it once and a supported answer stays compact (2.0s)
+  ✓   3 e2e/full-hands-flow.browser.cjs:28:1 › older ungraded checkpoints do not reopen the empty feedback prompt on reload (862ms)
+  ✓   5 e2e/full-hands-flow.browser.cjs:40:1 › an ungraded fold stops immediately without a feedback acknowledgment or later actions (672ms)
+  ✓   6 e2e/full-hands-flow.browser.cjs:50:1 › a graded mistake still pauses and shows its chart before play resumes (667ms)
+  ✓   7 e2e/full-hands-flow.browser.cjs:60:1 › an ungraded all-in call reaches the actual showdown result without an empty decision dialog (522ms)
+  ✓   8 e2e/live-positions.browser.cjs:45:1 › random positions survive real Next hand, reload and mode parking without changing the saved hand (1.2s)
+  ✓   9 e2e/live-positions.browser.cjs:95:1 › existing fixed saves stay fixed; settings enable random 6/8/9 seats and can restore fixed focus (1.6s)
+  ✓  10 e2e/setup-playback.browser.cjs:55:1 › new supplied setups show blinds, thinking and individual actions before accepting a graded answer (1.0s)
+  ✓   4 e2e/graded-preflop.browser.cjs:34:1 › explicit upgrade preserves an old custom hand and the parked Full hands game (7.0s)
+  ✓  11 e2e/setup-playback.browser.cjs:105:1 › settings pause setup playback and reload preserves the exact supplied decision without extra actions (1.4s)
+  ✓  12 e2e/graded-preflop.browser.cjs:55:1 › facing a 5bet gives a real graded all-in call and stops before postflop cards (941ms)
+  ✓  14 e2e/graded-preflop.browser.cjs:66:1 › missing or partial charts pause covered practice and recover without losing the decision (748ms)
+  ✓  13 e2e/setup-playback.browser.cjs:137:1 › setup playback cancels on mode switches, keeps the navy layout in the viewport and respects reduced motion (1.7s)
+  ✓  16 e2e/setup-playback.browser.cjs:203:1 › Full hands keeps its real opponent timing and displays each public action while the next player thinks (514ms)
+  ✓  15 e2e/graded-preflop.browser.cjs:79:1 › fresh preflop link uses graded practice with accessible no-scroll layouts (5.1s)
+  ✓  17 e2e/graded-preflop.browser.cjs:93:1 › a fresh preflop setup recovers from an incomplete catalog without leaving a stale error (5.1s)
+  ✓  18 e2e/graded-preflop.browser.cjs:104:1 › saved-decision retry does not inherit the live hand reference-boundary message (809ms)
+
+  18 passed (24.0s)
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.3
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.3
+npm notice To update run: npm install -g npm@12.2.3
+npm notice

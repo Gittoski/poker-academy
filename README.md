@@ -12,13 +12,15 @@ The live engine sits inside the approved simulator layout. Supported answers use
 
 Live play now waits for grading charts to load, offers Retry on failure and identifies why a decision is ungraded. Heuristic opponents use documented preflop raise sizes where a matching chart exists, preserving covered responses. Arbitrary postflop play still has no verified strategy grade; see [feedback recovery and remaining coverage](docs/implementation/FEEDBACK_RECOVERY.md).
 
-The `test/graded-preflop` candidate upgrades the existing Preflop switch with source-covered six-max 100 BB practice: fresh cards, supplied legal setup actions, grades for accepted choices, original charts, retries and honest reference boundaries. Existing older hands can upgrade explicitly through Practice tools. Full hands stays unrestricted. See [candidate behavior and verification](docs/implementation/GRADED_PREFLOP.md) and [how to test it](docs/verification/graded-preflop/TEST_GUIDE.md). Candidate deployment and actual iPhone verification are separate from automated checks.
+The production upgrade, developed on `test/graded-preflop`, improves the existing Preflop switch with source-covered six-max 100 BB practice: fresh cards, supplied legal setup actions, grades for accepted choices, original charts, retries and honest reference boundaries. Existing older hands can upgrade explicitly through Practice tools. Full hands stays unrestricted. See [candidate behavior and verification](docs/implementation/GRADED_PREFLOP.md) and [how to test it](docs/verification/graded-preflop/TEST_GUIDE.md). The user authorized production promotion on November 18, 2026; see [the release record](docs/implementation/PREFLOP_RELEASE.md). Actual iPhone verification remains separate from automated checks.
 
 New preflop hands use a [balanced educational mix](docs/implementation/BALANCED_PREFLOP.md): about 60% source-supported continuing hands and 40% fold-only, with common situations favored and recent repetition reduced. Cards are conditioned for study; chart grades, saved hands/retries and unrestricted Full hands are unchanged.
 
 Full hands now [continues automatically after ungraded decisions](docs/implementation/FULL_HANDS_FLOW.md), saving their original status without empty feedback prompts. Real reference feedback, fold stops, actual showdown results and explicit saved-decision review remain available. Preflop behavior is unchanged by this flow update.
 
 See [restoration scope and verification](docs/implementation/LEARNING_RESTORATION.md). This release preserves the shared table/card artwork, navy materials and chart data rather than replacing them.
+
+Full hands also offers **Practice tools → Live table settings → Your position → Random each hand**. New covered Preflop hands replay their supplied setup before your decision. Existing saved hands and retries keep their exact state.
 
 ## Live modes
 

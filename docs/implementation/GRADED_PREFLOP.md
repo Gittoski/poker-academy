@@ -1,6 +1,8 @@
 # Graded preflop candidate
 
-Development branch: `test/graded-preflop`. The user authorized the scoped upgrade on November 17, 2026. Main-app integration/deployment is reserved for the reviewed candidate.
+Release status: the user authorized production promotion of tested candidate `351c20e` on November 18, 2026. See [the production release record](PREFLOP_RELEASE.md). Earlier candidate verification is retained below; actual iPhone checks remain outstanding.
+
+Development branch: `test/graded-preflop`. The user authorized the scoped upgrade on November 17, 2026. The user subsequently authorized main-app promotion on November 18, 2026, as recorded above.
 
 Current follow-up: [balanced study selection](BALANCED_PREFLOP.md) replaces the initial uniform sampler for new hands. It intentionally conditions learner cards on reference categories while preserving stored deals, actual grades and Full hands.
 

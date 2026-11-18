@@ -1,6 +1,6 @@
 # Goal: dependable, fully graded preflop practice
 
-Status: implemented candidate with automated verification; actual iPhone and user review remain pending. The user authorized implementation of this covered-practice upgrade on November 17, 2026. Use `test/graded-preflop` for the candidate; preserve `work` for the main app.
+Status: implemented and verified candidate; the user authorized production promotion on November 18, 2026. See [the release record](../implementation/PREFLOP_RELEASE.md). Actual iPhone verification remains outstanding.
 
 Approved follow-up: use the [balanced preflop study mix](../implementation/BALANCED_PREFLOP.md) for new hands: about 60% source-supported continuing hands and 40% fold-only, favoring common situations and reducing recent repetition. This intentionally conditions practice selection; preserve all source grades, saved deals/retries and unrestricted Full hands. Keep the target category hidden before answering and label the mix as educational.
 

@@ -1,0 +1,75 @@
+
+> open-range-viewer@0.1.0 check
+> npm run test:integrity && tsc --noEmit && vitest run
+
+
+> open-range-viewer@0.1.0 test:integrity
+> node scripts/verification/check-simulator.cjs
+
+PASS file integrity baselines (not a poker correctness check); run npm run test:engine for behavior checks
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.3
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.3
+npm notice To update run: npm install -g npm@12.2.3
+npm notice
+
+ RUN  v3.2.7 /workspace/poker-academy
+
+stdout | src/simulator/preflopSelection.test.ts > balanced preflop study selection > reproducibly offers about 60% continuing hands and favors common situations without altering reference grades
+Balanced preflop sample: {"hands":1200,"playable":736,"foldOnly":464,"common":977,"advanced":223,"contexts":62,"handClasses":159,"maxDraws":102,"averageDraws":5.699166666666667}
+
+ ✓ src/simulator/preflopSelection.test.ts (6 tests) 4368ms
+   ✓ balanced preflop study selection > reproducibly offers about 60% continuing hands and favors common situations without altering reference grades  3936ms
+stdout | src/simulator/gradedPreflop.test.ts > runs all scenario families with fresh cards, actual choices, graded prompts and honest boundaries
+Covered preflop sample: {"hands":325,"learnerDecisions":340,"referenceBoundaries":50,"pokerTerminals":275}
+
+ ✓ src/simulator/gradedPreflop.test.ts (8 tests) 4770ms
+   ✓ runs all scenario families with fresh cards, actual choices, graded prompts and honest boundaries  4410ms
+ ✓ src/simulator/liveEngine.test.ts (14 tests) 1623ms
+   ✓ conserves chips and unique cards through 1000 randomized legal hands  1603ms
+ ✓ src/fundamentals/math.test.ts (5 tests) 3101ms
+   ✓ all 2,598,960 five-card combinations have standard category frequencies  3084ms
+ ✓ src/lib/rangeSets.test.ts (21 tests) 400ms
+ ✓ src/learning/storage.test.ts (33 tests) 1305ms
+   ✓ compacts thousands of real-shaped records without losing aggregate session counts  1047ms
+ ✓ src/simulator/liveSession.test.ts (14 tests) 469ms
+   ✓ all three opponent styles generate legal actions and finish hands  434ms
+ ✓ src/fundamentals/practice.test.ts (12 tests) 451ms
+   ✓ all topics generate deterministic, valid, explained questions with explicit basis and assumptions  366ms
+ ✓ src/simulator/liveSetupPlayback.test.ts (3 tests) 457ms
+   ✓ replays all 65 supplied setups through legal public states without altering the saved decision  451ms
+ ✓ src/learning/contracts.test.ts (8 tests) 400ms
+   ✓ validates every supplied full-hand reference without changing or regenerating it  377ms
+ ✓ src/simulator/completion.test.ts (6 tests) 73ms
+ ✓ src/simulator/engineData.test.ts (4 tests) 254ms
+ ✓ src/activity/calendar.test.ts (3 tests) 129ms
+ ✓ src/simulator/liveAmounts.test.ts (1 test) 97ms
+ ✓ src/simulator/referenceCoverage.test.ts (4 tests) 63ms
+ ✓ src/simulator/learningFlow.test.ts (5 tests) 37ms
+ ✓ src/simulator/liveModes.test.ts (7 tests) 23ms
+ ✓ src/simulator/livePositions.test.ts (7 tests) 18ms
+ ✓ src/simulator/liveCharts.test.ts (5 tests) 15ms
+ ✓ src/offline/worker.test.ts (2 tests) 21ms
+ ✓ src/fundamentals/links.test.ts (3 tests) 11ms
+ ✓ src/lib/engineIntegrity.test.ts (6 tests) 14ms
+ ✓ src/lib/fullHands.test.ts (10 tests) 9ms
+ ✓ src/simulator/liveFeedbackFlow.test.ts (4 tests) 8ms
+ ✓ src/lib/scenarios.test.ts (15 tests) 6ms
+ ✓ src/lib/handSim.test.ts (12 tests) 9ms
+ ✓ src/lib/trainer.test.ts (5 tests) 5ms
+ ✓ src/lib/range.test.ts (12 tests) 6ms
+ ✓ src/lib/cards.test.ts (4 tests) 4ms
+ ✓ src/lib/viewerState.test.ts (7 tests) 6ms
+ ✓ src/simulator/preflopCatalog.test.ts (3 tests) 30931ms
+   ✓ replays all 65 legal contexts and grades every hand class and applicable action from actual shuffled deals  30912ms
+
+ Test Files  31 passed (31)
+      Tests  249 passed (249)
+   Start at  20:34:34
+   Duration  31.32s (transform 856ms, setup 0ms, collect 2.11s, tests 49.08s, environment 5ms, prepare 1.73s)
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.3
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.3
+npm notice To update run: npm install -g npm@12.2.3
+npm notice

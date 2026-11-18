@@ -4,19 +4,26 @@ Goal: progressively improve real-life six-max Hold’em decisions, especially ag
 
 This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PLAN.md) explains lesson progression, feature scope and completion criteria. [Foundation history](docs/FOUNDATION_HISTORY.md) retains the completed import/theme work.
 
+## Production promotion — November 18, 2026
+
+- [x] User explicitly authorized promoting the tested updates to the main app. Production `work` at `42a6a1b` is an ancestor of tested candidate `351c20e`; no newer production edits were replaced.
+- [x] Fast-forward the production branch to the verified candidate, preserving runtime code, chart data, theme and saved-state behavior. See [the release record](docs/implementation/PREFLOP_RELEASE.md).
+- [x] Complete promotion checks (249 unit tests, TypeScript/integrity, production build and 18 release browser journeys) and publish the verified update to `work` for the connected Vercel deployment.
+- [ ] Confirm the hosted production deployment is Ready; deployment-status API access is unavailable in this environment. Actual iPhone Safari/Home Screen checks remain outstanding; publishing authorization does not establish device verification.
+
 ## Current follow-up: watch the action before deciding
 
 - [x] Show new covered Preflop setups progressively, from posted blinds through each supplied action, with acting-seat highlights, public action captions and a thinking indicator before enabling the learner's decision.
 - [x] Keep playback separate from saved game actions/grades; preserve exact retries, reloads, random positions, Full hands opponent timing, range charts and the navy table. Pause playback in tools/review, cancel on mode changes, and honor reduced motion.
 - [x] Complete protected source integrity, TypeScript, 249 unit tests across 31 files, production build and all 118 browser checks; record [playback verification](docs/implementation/SETUP_PLAYBACK.md) and prepare the candidate update.
-- [ ] Actual iPhone/preview review before production integration.
+- [ ] Actual iPhone Safari/Home Screen checks remain outstanding; production promotion is authorized above.
 
 ## Current follow-up: random simulator positions
 
 - [x] Add Random each hand to Full hands position settings for six/eight/nine players, excluding the previous seat without inspecting cards. Preserve named fixed positions and covered Preflop's existing Any position sampler.
 - [x] Persist the preference separately from the current seat; preserve exact retries/reloads/parked hands and older fixed-position saves. Keep existing engine, charts, theme and feedback behavior.
 - [x] Finish integrity/TypeScript checks, 246 unit tests across 30 files, production build and all 114 browser regression checks; record [position verification](docs/implementation/RANDOM_POSITIONS.md) and prepare the candidate commit.
-- [ ] Actual iPhone/preview review before production integration.
+- [ ] Actual iPhone Safari/Home Screen checks remain outstanding; production promotion is authorized above.
 
 ## Current follow-up: uninterrupted ungraded Full hands play
 
@@ -33,11 +40,11 @@ The user approved replacing fold-heavy sampling with a declared educational stud
 - [x] Target about 60% new hands with a source-supported call/raise and 40% fold-only, using legal shuffled deals conditioned only on the learner's source category. Keep the category hidden until the answer.
 - [x] Reduce repeated setups/recent hand classes where alternatives exist; keep exact retries and old saves unchanged. Retain all 65 contexts and both source categories.
 - [x] Verify measured mix (736 continuing / 464 fold-only in 1,200 starts), 40 actual-control starts, all source/retention/offline/Full hands regressions: 235 unit tests, TypeScript/integrity, production build and 107 browser checks. Record [selection verification](docs/implementation/BALANCED_PREFLOP.md) and prepare the candidate commit.
-- [ ] Actual iPhone/preview review before production integration remains outstanding.
+- [ ] Actual iPhone Safari/Home Screen checks remain outstanding; production promotion is authorized above.
 
 ## Immediate planned priority: fully graded preflop practice
 
-Complete this scoped release before the longer postflop project. [PREFLOP_GRADING_PLAN.md](docs/PREFLOP_GRADING_PLAN.md) maps the requirements, proposed training constraints, existing gaps and completion checks. [GRADED_PREFLOP.md](docs/goals/GRADED_PREFLOP.md) is the copy-ready implementation goal. The user approved implementation after planning. The scoped candidate is on `test/graded-preflop`; production integration waits for candidate review.
+Complete this scoped release before the longer postflop project. [PREFLOP_GRADING_PLAN.md](docs/PREFLOP_GRADING_PLAN.md) maps the requirements, proposed training constraints, existing gaps and completion checks. [GRADED_PREFLOP.md](docs/goals/GRADED_PREFLOP.md) is the copy-ready implementation goal. The user approved implementation after planning. The scoped candidate is on `test/graded-preflop`; the user authorized production promotion on November 18, 2026, as recorded above.
 
 - [x] Inspect why live preflop decisions remain ungraded and confirm metadata matches for all 65 standard six-max reference contexts.
 - [x] Draft the covered-training scope, safeguards, acceptance criteria and implementation goal; distinguish guaranteed practice grading from unrestricted live play.
@@ -46,7 +53,7 @@ Complete this scoped release before the longer postflop project. [PREFLOP_GRADIN
 - [x] PF2: Grade every accepted learner choice, retaining source charts, explanations, exact retries and automatic stable mistake recording.
 - [x] PF3: Preserve mode settings, incompatible older saves, ownership and offline support; identify the supported profile clearly.
 - [x] PF4 automated: 10,985 source contexts/classes, 325 seeded rounds with 340 graded decisions and explicit boundary counts, 229 unit tests and 106 browser checks; complete TypeScript/integrity/build and final focused checks on the isolated candidate.
-- [ ] Actual iPhone Safari/Home Screen and candidate deployment confirmation; user review before any main-app merge/deployment. See [the implementation record](docs/implementation/GRADED_PREFLOP.md) and [test guide](docs/verification/graded-preflop/TEST_GUIDE.md).
+- [ ] Actual iPhone Safari/Home Screen checks; production promotion is authorized above. See [the implementation record](docs/implementation/GRADED_PREFLOP.md) and [test guide](docs/verification/graded-preflop/TEST_GUIDE.md).
 
 ## Deferred until preflop is complete: verified branching postflop grading
 

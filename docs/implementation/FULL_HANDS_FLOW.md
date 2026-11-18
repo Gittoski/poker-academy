@@ -1,5 +1,7 @@
 # Full hands: continue without empty feedback
 
+Release status: the user authorized production promotion of tested candidate `351c20e` on November 18, 2026. See [the production release record](PREFLOP_RELEASE.md). Earlier candidate verification is retained below; actual iPhone checks remain outstanding.
+
 The user requested removal of repeated Continue clicks for decisions with no applicable strategy reference. This follow-up changes Full hands interaction only; it does not add strategy answers or change poker rules.
 
 ## Behavior
@@ -19,4 +21,4 @@ Unit checks cover saved/acknowledged unknown actions, old checkpoints, real grad
 
 Final checks passed: `npm run check` (TypeScript, protected baseline integrity and 239 unit tests across 29 files), the production build, and all 112 browser checks. The browser suite includes the five dedicated Full hands flow journeys plus balanced/graded preflop, both chart palettes, saved review, offline cold starts, ownership, bankroll accounting and player journeys on phone/desktop viewports.
 
-See [verification artifacts](../verification/full-hands-flow/). Actual iPhone Safari/Home Screen and hosted preview verification remain separate. Work stays on the existing candidate branch; production integration is not part of this follow-up.
+See [verification artifacts](../verification/full-hands-flow/). Actual iPhone Safari/Home Screen and hosted preview verification remain separate. Development used the existing candidate branch; subsequent production promotion is authorized above.

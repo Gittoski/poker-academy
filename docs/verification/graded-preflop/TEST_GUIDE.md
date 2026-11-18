@@ -1,10 +1,10 @@
-# Test the graded preflop candidate
+# Test the preflop release
 
-Candidate branch: `test/graded-preflop`. Production branch: `work`. This candidate is for review before main-app integration.
+Development branch: `test/graded-preflop`. Production branch: `work`. The user authorized promotion of tested candidate `351c20e` on November 18, 2026; see [the release record](../../implementation/PREFLOP_RELEASE.md).
 
-Use the Vercel **Preview** deployment for the candidate branch if the connected project creates branch previews. Open that preview URL on your phone/computer. Preview and production normally have different origins and separate local progress. A preview deployment URL/status has not been verified by the development environment.
+For the main app, use your usual production URL after the Vercel deployment for `work` is Ready. Preview deployments for the development branch remain separate: preview and production normally have different origins and local progress. Confirm the newest deployment in Vercel if the usual URL still shows the earlier interface.
 
-For a local checkout of the candidate branch, run `npm ci`, `npm run build`, then `npm run start`. Open the URL shown by Next.js. The usual development option is `npm run dev`; keep the computer running while testing locally.
+For a local checkout of the production or development branch, run `npm ci`, `npm run build`, then `npm run start`. Open the URL shown by Next.js. The usual development option is `npm run dev`; keep the computer running while testing locally.
 
 ## Player checks
 
@@ -31,4 +31,4 @@ On an actual iPhone 13, check portrait/landscape, Home Screen mode, safe areas, 
 
 ## Scope
 
-This release grades choices against imported six-max 100 BB PTO charts. It does not independently validate their solver provenance, calculate EV loss, solve arbitrary preflop/multiway situations, or add random-postflop strategy grades. Older ungraded answers remain ungraded. Keep production integration pending until the candidate has been reviewed.
+This release grades choices against imported six-max 100 BB PTO charts. It does not independently validate their solver provenance, calculate EV loss, solve arbitrary preflop/multiway situations, or add random-postflop strategy grades. Older ungraded answers remain ungraded. Production promotion is authorized; actual device checks remain outstanding.

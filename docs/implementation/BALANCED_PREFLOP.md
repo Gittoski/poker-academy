@@ -1,6 +1,8 @@
 # Balanced preflop selection
 
-The user approved this follow-up after finding the first candidate too fold-heavy. Work stays on `test/graded-preflop`; production integration is separate.
+Release status: the user authorized production promotion of tested candidate `351c20e` on November 18, 2026. See [the production release record](PREFLOP_RELEASE.md). Earlier candidate verification is retained below; actual iPhone checks remain outstanding.
+
+The user approved this follow-up after finding the first candidate too fold-heavy. Development took place on `test/graded-preflop`; production promotion is authorized above.
 
 ## Behavior
 
