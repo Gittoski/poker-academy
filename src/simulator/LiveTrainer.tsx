@@ -8,6 +8,12 @@ import { loadTheme } from '@/lib/theme'
 import { chipsFromBB } from './liveAmounts'
 import { newPositionedDeal, positionChoice } from './livePositions'
 import {
+  SETUP_BEAT_MS,
+  startSetupPlayback,
+  publicActionLabel,
+  type LiveSetupPlayback,
+} from './liveSetupPlayback'
+import {
   appendLearnerAction,
   pendingLiveFeedback,
   requiresDecisionFeedback,
@@ -112,6 +118,9 @@ export function LiveTrainer() {
   const [outcome, setOutcome] = useState(false)
   const outcomeSeen = useRef('')
   const [session, setSession] = useState<LiveSession | null>(null)
+  const [setupPlayback, setSetupPlayback] = useState<LiveSetupPlayback | null>(
+    null,
+  )
   const [owner, setOwner] = useState<'pending' | 'owner' | 'other' | 'unsaved'>(
     'pending',
   )
@@ -330,6 +339,7 @@ export function LiveTrainer() {
       const d = newGradedPreflop(entries, { recent: session.archive })
       initializePreflop.current = false
       setSession({ ...session, version: 4, current: d })
+      setSetupPlayback(startSetupPlayback(d))
       setPlayers(6)
       setStacks(Array(6).fill('100').join(', '))
       setHeroSeat(-1)
@@ -342,14 +352,18 @@ export function LiveTrainer() {
     }
   }, [session, entries, owner, preflopAuditError])
   const pending = pendingLiveFeedback(current)
+  const playingSetup =
+    !review && !!setupPlayback && setupPlayback.deal === current
   const displayed = useMemo(
     () =>
       review
         ? practiceLiveDeal(review.deal, review.index)
-        : pending && current && lastRecord && !active?.heroFolded
-          ? practiceLiveDeal(current, lastRecord.index)
-          : active,
-    [review, current, lastRecord, pending, active],
+        : playingSetup && current && setupPlayback
+          ? practiceLiveDeal(current, setupPlayback.shown)
+          : pending && current && lastRecord && !active?.heroFolded
+            ? practiceLiveDeal(current, lastRecord.index)
+            : active,
+    [review, current, lastRecord, pending, active, playingSetup, setupPlayback],
   )
   useEffect(() => {
     if (
@@ -372,9 +386,44 @@ export function LiveTrainer() {
   }, [active, current, pending, tools, review, sizing])
   const deal = review?.deal ?? current
   const allowed = owner === 'owner' || owner === 'unsaved'
+  useEffect(() => {
+    if (
+      !playingSetup ||
+      !setupPlayback ||
+      !allowed ||
+      paused ||
+      tools ||
+      review ||
+      modeBusy ||
+      !entries ||
+      preflopAuditError
+    )
+      return
+    const timer = setTimeout(() => {
+      setSetupPlayback((previous) =>
+        previous !== setupPlayback
+          ? previous
+          : previous.shown >= previous.deal.actions.length
+            ? null
+            : { ...previous, shown: previous.shown + 1 },
+      )
+    }, SETUP_BEAT_MS)
+    return () => clearTimeout(timer)
+  }, [
+    playingSetup,
+    setupPlayback,
+    allowed,
+    paused,
+    tools,
+    review,
+    modeBusy,
+    entries,
+    preflopAuditError,
+  ])
   const commit = useCallback(
     (action: LiveAction, human: boolean) => {
       if (!current || !active || !allowed || review || switching.current) return
+      if (playingSetup) return
       if (initializePreflop.current) return
       if (!entries && !allowUngraded) return
       const index = current.actions.length,
@@ -405,7 +454,7 @@ export function LiveTrainer() {
         setError(e instanceof Error ? e.message : 'The action was rejected.')
       }
     },
-    [current, active, allowed, review, entries, allowUngraded],
+    [current, active, allowed, review, entries, allowUngraded, playingSetup],
   )
   useEffect(() => {
     if (
@@ -418,6 +467,7 @@ export function LiveTrainer() {
       sizing ||
       modeBusy ||
       active.toAct === current.hero ||
+      playingSetup ||
       paused ||
       tools ||
       review ||
@@ -465,6 +515,7 @@ export function LiveTrainer() {
     entries,
     allowUngraded,
     gradedState,
+    playingSetup,
   ])
   const legal = displayed ? legalLiveActions(displayed) : null
   const feedback = useMemo(() => {
@@ -513,6 +564,7 @@ export function LiveTrainer() {
     }
   }
   function submit(action: LiveAction) {
+    if (playingSetup) return
     if (!displayed || !deal || displayed.toAct !== deal.hero || !allowed) return
     if (review) {
       try {
@@ -559,6 +611,12 @@ export function LiveTrainer() {
       const encoded = encodeLiveSession(next)
       if (owner === 'owner') localStorage.setItem(LIVE_SAVE_KEY, encoded)
       setSession(next)
+      const newSetup =
+        nextMode === 'preflop' && !session.parked?.preflop
+          ? startSetupPlayback(next.current)
+          : null
+      setSetupPlayback(newSetup)
+      if (newSetup) setPaused(false)
       setReview(null)
       setError('')
       const d = next.current
@@ -591,6 +649,7 @@ export function LiveTrainer() {
     }
     if (!session || !allowed) return
     try {
+      setSetupPlayback(null)
       setSession(
         current?.graded
           ? retryGradedPreflop(session)
@@ -678,6 +737,7 @@ export function LiveTrainer() {
         current: next,
         archive: [...session.archive, session.current].slice(-20),
       })
+      setSetupPlayback(startSetupPlayback(next))
       setTools(false)
       setSizing(false)
       setOutcome(false)
@@ -804,25 +864,27 @@ export function LiveTrainer() {
             <span>
               {review
                 ? 'Live hand paused'
-                : pending
-                  ? 'Decision feedback'
-                  : ended
-                    ? 'Practice hand complete'
-                    : current.graded
-                      ? 'Graded · Supplied setup'
-                      : mode === 'preflop'
-                        ? 'Unrestricted preflop · Upgrade in tools'
-                        : displayed.toAct === deal.hero
-                          ? review || coverage?.status !== 'ungraded'
-                            ? 'Your move · Chart available'
-                            : !entries
-                              ? referenceState === 'loading'
-                                ? 'Loading grading charts…'
-                                : 'Grading charts unavailable'
-                              : displayed.street !== 'preflop'
-                                ? 'Your move · Postflop ungraded'
-                                : 'Your move · No matching chart'
-                          : 'Opponents are acting'}
+                : playingSetup
+                  ? 'Watching supplied setup'
+                  : pending
+                    ? 'Decision feedback'
+                    : ended
+                      ? 'Practice hand complete'
+                      : current.graded
+                        ? 'Graded · Supplied setup'
+                        : mode === 'preflop'
+                          ? 'Unrestricted preflop · Upgrade in tools'
+                          : displayed.toAct === deal.hero
+                            ? review || coverage?.status !== 'ungraded'
+                              ? 'Your move · Chart available'
+                              : !entries
+                                ? referenceState === 'loading'
+                                  ? 'Loading grading charts…'
+                                  : 'Grading charts unavailable'
+                                : displayed.street !== 'preflop'
+                                  ? 'Your move · Postflop ungraded'
+                                  : 'Your move · No matching chart'
+                            : 'Opponents are acting'}
             </span>
           </div>
           {!pending &&
@@ -862,7 +924,35 @@ export function LiveTrainer() {
           pot={bb(displayed.pot)}
           acting={displayed.toAct === null ? undefined : order[displayed.toAct]}
         />
-        {feedback ? (
+        {playingSetup && setupPlayback && entries && !preflopAuditError ? (
+          <div
+            className="actions actions--waiting live-wait"
+            role="status"
+            aria-label="Watching setup"
+          >
+            <div className="live-action-feed">
+              <strong key={setupPlayback.shown}>
+                {publicActionLabel(current, setupPlayback.shown) ??
+                  'Blinds posted · Supplied setup'}
+              </strong>
+              <span className="live-thinking">
+                {setupPlayback.shown < current.actions.length
+                  ? `${order[displayed.toAct!]} is thinking`
+                  : 'Your turn next'}
+                <span className="live-thinking-dots" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+              </span>
+            </div>
+            {paused && (
+              <button className="btn" onClick={() => setPaused(false)}>
+                Continue hand
+              </button>
+            )}
+          </div>
+        ) : feedback ? (
           <LiveDecisionFeedback
             key={`${deal.seed}:${review?.index ?? lastRecord?.index}:${review ? 'review' : 'live'}`}
             reference={feedback}
@@ -1054,7 +1144,21 @@ export function LiveTrainer() {
           </div>
         ) : (
           <div className="actions actions--waiting live-wait">
-            <span>{order[displayed.toAct!]} is thinking…</span>
+            <div className="live-action-feed" role="status">
+              {publicActionLabel(current) && (
+                <strong key={current.actions.length}>
+                  {publicActionLabel(current)}
+                </strong>
+              )}
+              <span className="live-thinking">
+                {order[displayed.toAct!]} is thinking
+                <span className="live-thinking-dots" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+              </span>
+            </div>
             {paused && (
               <button className="btn" onClick={() => setPaused(false)}>
                 Continue hand
@@ -1219,6 +1323,7 @@ export function LiveTrainer() {
                           encodeLiveSession(next),
                         )
                       setSession(next)
+                      setSetupPlayback(startSetupPlayback(next.current))
                       setPlayers(6)
                       setStacks(Array(6).fill('100').join(', '))
                       setHeroSeat(-1)

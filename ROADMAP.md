@@ -4,6 +4,13 @@ Goal: progressively improve real-life six-max Hold’em decisions, especially ag
 
 This file is the persistent build checklist. [LEARNING_PLAN.md](docs/LEARNING_PLAN.md) explains lesson progression, feature scope and completion criteria. [Foundation history](docs/FOUNDATION_HISTORY.md) retains the completed import/theme work.
 
+## Current follow-up: watch the action before deciding
+
+- [x] Show new covered Preflop setups progressively, from posted blinds through each supplied action, with acting-seat highlights, public action captions and a thinking indicator before enabling the learner's decision.
+- [x] Keep playback separate from saved game actions/grades; preserve exact retries, reloads, random positions, Full hands opponent timing, range charts and the navy table. Pause playback in tools/review, cancel on mode changes, and honor reduced motion.
+- [x] Complete protected source integrity, TypeScript, 249 unit tests across 31 files, production build and all 118 browser checks; record [playback verification](docs/implementation/SETUP_PLAYBACK.md) and prepare the candidate update.
+- [ ] Actual iPhone/preview review before production integration.
+
 ## Current follow-up: random simulator positions
 
 - [x] Add Random each hand to Full hands position settings for six/eight/nine players, excluding the previous seat without inspecting cards. Preserve named fixed positions and covered Preflop's existing Any position sampler.

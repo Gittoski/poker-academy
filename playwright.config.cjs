@@ -5,6 +5,8 @@ module.exports = defineConfig({
   testDir: './e2e',
   testMatch: '**/*.browser.cjs',
   timeout: 90000,
+  // New covered hands show the public setup before accepting an answer.
+  expect: { timeout: 15000 },
   workers: 1,
   use: {
     baseURL: 'http://127.0.0.1:3100',

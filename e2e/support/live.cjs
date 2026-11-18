@@ -22,4 +22,10 @@ async function reviewLatest(page) {
  if(!await summary.evaluate(e=>e.parentElement.open))await summary.click()
  await page.getByRole('button',{name:'Retry decision',exact:true}).first().click()
 }
-module.exports={readyRaise,setRaise,feedback,closeFeedback,tools,reviewLatest}
+// With a paused browser clock, let React install the next beat between advances.
+async function watchSetup(page) {
+ const setup=page.getByRole('status',{name:'Watching setup',exact:true})
+ for(let beat=0;beat<20 && await setup.isVisible();beat++)await page.clock.runFor(700)
+ await expect(setup).toHaveCount(0)
+}
+module.exports={readyRaise,setRaise,feedback,closeFeedback,tools,reviewLatest,watchSetup}

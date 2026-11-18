@@ -1,5 +1,5 @@
 const {test,expect}=require('@playwright/test')
-const {closeFeedback,tools}=require('./support/live.cjs')
+const {closeFeedback,tools,watchSetup}=require('./support/live.cjs')
 const key='poker-academy:live:v1'
 const read=page=>page.evaluate(k=>JSON.parse(localStorage.getItem(k)),key)
 test('actual Next hand controls deliver a varied balanced study mix without regrading the saved hand',async({page},info)=>{
@@ -11,6 +11,7 @@ test('actual Next hand controls deliver a varied balanced study mix without regr
   }})
   if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify({version:4,current:{mode:'preflop',seed:42,hero:0,style:'balanced',graded:{version:1,context:'open:LJ'},config:{stacks:Array(6).fill(10000),button:3,smallBlind:50,bigBlind:100},actions:[],feedback:[]},archive:[]}))
  },key)
+ await page.clock.install()
  await page.goto('/live');await expect(page.getByRole('group',{name:'Your move',exact:true})).toBeVisible()
  const original=(await read(page)).current
  await page.reload();await expect(page.getByRole('group',{name:'Your move',exact:true})).toBeVisible()
@@ -20,6 +21,7 @@ test('actual Next hand controls deliver a varied balanced study mix without regr
  page.on('pageerror',e=>errors.push(e.message))
  for(let n=0;n<40;n++){
   await page.getByRole('button',{name:'Deal next preflop hand',exact:true}).click()
+  await watchSetup(page)
   await expect(page.getByRole('group',{name:'Your move',exact:true})).toBeVisible()
   const before=(await read(page)).current
   expect(Object.keys(before.graded).sort()).toEqual(['context','version'])
